@@ -44,3 +44,6 @@ work/
 Thumbs.db
 Desktop.ini
 *.swp
+
+# JavaScript tooling
+node_modules/
