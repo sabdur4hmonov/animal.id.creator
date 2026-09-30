@@ -1,0 +1,25 @@
+species: cattle
+enabled: true
+config_version: 1
+model:
+  checkpoint: models/cattle/yolov8n-muzzle.pt
+  class_name: muzzle
+  confidence: 0.5
+  image_size: 640
+crop:
+  padding_ratio: 0.1
+  min_width: 128
+  min_height: 128
+  min_area_ratio: 0.01
+  edge_margin_ratio: 0.01
+quality:
+  min_width: 640
+  min_height: 480
+  analysis_max_dimension: 640
+  blur_min_variance: 100.0
+  brightness_min: 40.0
+  brightness_max: 215.0
+  dark_pixel_threshold: 25
+  bright_pixel_threshold: 230
+  max_dark_fraction: 0.6
+  max_bright_fraction: 0.6
