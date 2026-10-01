@@ -4,6 +4,8 @@ Last live repository inspection: 2026-10-01, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Field protocol documented (latest request):** docs/DATA_COLLECTION_GUIDE.md is a practical farm checklist checked against live QC/detection/schema/manifest code. Starter protocol: 100 cattle (50 at each of two farms), 3 visits on days 0/7/14, 6 accepted distinct shots/visit, 1,800 originals; 40 train, 30 validation, 30 test animals, with 20 enrolled/10 unknown in each evaluation split. This is a chosen pilot floor, not a statistical rare-error guarantee; repeated photos remain correlated. Permanent-tag verification ties visits to one identity; manual ledger retains session/farm/camera since the API has no such fields. Working phone/backend connection is a pre-trip gate because Retake deletes temporary images and no durable queue exists. No code, models, tests or live services changed for this documentation task; source/config review and git diff checks were performed, the earlier runtime/test results below were not rerun. Final Git status/log are checked after the documentation commit and reported to Sardorbek. Next substantive action: with repaired/replacement phone, prove the native camera/QC/authenticated upload flow before visiting a farm; then follow the guide. Otherwise remain stopped on external data/device availability.
+
 **Latest requested work is complete (2026-10-01):** authenticated registry/status/admin review, immutable scan evidence, deterministic formula/valuation and advisory image/device/GPS signals are built and tested without labeled animals. No new embedding work or sheep models was done. 128 Python tests pass (97 backend + 31 research); Ruff passes; Flutter analysis has no issues; 7 Flutter host tests pass; Android debug APK compiled successfully. Actual Docker/PostgreSQL upload/admin/valuation/advisory/concurrency/integrity checks passed. Normal backend on port 8000 is updated, both containers healthy, migration 0003, health 200, unauthenticated API 401 and authenticated API 200; all 43 code/config hashes match. No price is seeded and normal capture count remains 0. Local keys are only in ignored backend/.secrets; initialize once, never print/commit tokens. Stop here per the latest instruction: remaining calibration and device checks require external data/hardware, not more embedding implementation.
 
 **Physical mobile testing is paused indefinitely.** Sardorbek's phone has water damage and is being repaired. Camera → QC → authenticated upload, permissions and real GPS/device signals need a repaired/replacement device. This external blocker does not block backend/host builds. SDK installation is complete at C:\src\flutter. The committed `kotlin.incremental=false` cross-drive fix is now verified by a successful APK build; native runtime behavior remains unverified.
@@ -16,9 +18,10 @@ The live D: repository now has the local initial commit `f2b8698` and the intend
 
 ## Live Git evidence from the D: project
 
-Checked live on 2026-10-01. Working tree was clean at session entry. This snapshot precedes the final advisory/verification commit of the current session. `git log --oneline -20` returned:
+Checked live on 2026-10-01 at entry to the field-guide session: branch main, working tree clean, 7 commits ahead of origin/main. This snapshot precedes the field-guide documentation commit. `git log --oneline -20` returned:
 
 ```text
+cfeeb83 Add advisory spoof signals and verify authenticated stack and Android build
 5e01b0a Add formula weight estimates and versioned carcass market rates
 1ba94d8 Add authenticated animal registry and immutable scan controls
 65cb0a9 Add offline cattle embedding evaluation and data protocols
@@ -35,7 +38,7 @@ origin	https://github.com/sabdur4hmonov/animal.id.creator.git (fetch)
 origin	https://github.com/sabdur4hmonov/animal.id.creator.git (push)
 ```
 
-Initial commit, correct origin and ignore rules are present. Do not initialize again or import the recovery bundle. A final advisory/security commit follows this snapshot; refresh git status/log next session. All milestones are local; no push was performed.
+Initial commit, correct origin and ignore rules are present. Do not initialize again or import the recovery bundle. The field-guide documentation commit follows this snapshot; refresh git status/log next session. No push was performed by this agent. The live repository now has an origin/main tracking reference; do not infer remote history from earlier sessions' reports.
 
 ## Implemented and verification level
 
