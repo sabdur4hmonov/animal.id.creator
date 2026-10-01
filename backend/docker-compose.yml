@@ -17,14 +17,14 @@ services:
       context: ..
       dockerfile: backend/Dockerfile
     ports:
-      - '8000:8000'
+      - '${API_PORT:-8000}:8000'
     environment:
       DATABASE_URL: postgresql+psycopg://biolivestock:biolivestock@db:5432/biolivestock
       SPECIES_CONFIG_DIR: /srv/species_configs
       MODEL_ROOT: /srv
       STORAGE_ROOT: /srv/data
     volumes:
-      - ../data:/srv/data
+      - ${STORAGE_DIRECTORY:-../data}:/srv/data
       - ../models:/srv/models:ro
       - ../species_configs:/srv/species_configs:ro
     depends_on:
