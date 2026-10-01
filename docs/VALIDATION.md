@@ -48,3 +48,7 @@ Combined backend/research tests: **82 passed** (51 backend, 31 research); Ruff p
 ## Authenticated registry extension (2026-10-01)
 
 Backend suite now passes 59 tests. Migration tests include a pre-existing 0001 capture surviving the additive 0002 upgrade, registry backfill and raw-SQL mutation rejection. Actual Docker/PostgreSQL checks passed with operator/admin keys: real JPEG upload (`65a9351f-ded9-42dd-a248-827d97da7af4.json`) and synthetic registry/admin/exact-replay/immutability checks (`controls-d53b4892-0a8b-47c9-8309-90dfd636769e.json`) under data/verification/evidence. Run `tools/init_local_credentials.py` once before the Docker commands above; the upload verifier reads the ignored local token file without printing secrets. `tools/verify_controls_docker.py` repeats control checks and retains synthetic records/evidence.
+
+## Formula and market-rate extension (2026-10-01)
+
+Backend suite: 81 passed, including formula/yield/Decimal rounding, calibrated mock 3D geometry, rejected invalid/ambiguous inputs, role checks and price-history conflicts. Migration 0003 was applied and actual Docker/PostgreSQL synthetic market update/valuation endpoints passed; evidence: data/verification/evidence/controls-6a7d65ab-0056-47dd-896a-31cc0902bf6c.json. No animal accuracy or real market-rate validity was tested.

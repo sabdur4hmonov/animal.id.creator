@@ -1,0 +1,10 @@
+species: cattle
+enabled: true
+config_version: 1
+weight:
+  schoorl_offset_cm: 22
+  denominator: 100
+  trukhanovsky_factors: {dairy: 2, beef: 2.5}
+  carcass_yield_min: 0.50
+  carcass_yield_max: 0.58
+  min_keypoint_confidence: 0.8

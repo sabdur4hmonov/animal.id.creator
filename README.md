@@ -83,3 +83,5 @@ See `docs/ARCHITECTURE.md`, `docs/ROADMAP.md` and `docs/VALIDATION.md` for desig
 See `docs/PHASE2_RESEARCH.md` for offline extraction/matching commands and `docs/DATA_REQUIREMENTS.md` for the data gates for later phases. Physical-phone testing is currently paused because the device is being repaired; backend and offline tools proceed independently.
 
 See [SECURITY_AND_REGISTRY.md](docs/SECURITY_AND_REGISTRY.md) for operator/admin keys, status/review endpoints, immutable provenance, duplicate-check boundaries and rotation. Existing keys are preserved by initialization; run it only once. Protected endpoints fail closed when credentials are missing. Only the health endpoint and API documentation are public.
+
+See [WEIGHT_AND_VALUATION.md](docs/WEIGHT_AND_VALUATION.md) for deterministic adult-cattle formulas, calibrated 3D measurement inputs, configured carcass-yield scenarios and admin price updates. Prices start unset. Formula arithmetic is tested; real-world accuracy remains unverified.

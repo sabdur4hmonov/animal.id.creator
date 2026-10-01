@@ -1,0 +1,11 @@
+species: sheep
+enabled: false
+config_version: 1
+weight:
+  # Placeholder formula fields only; these cattle formulas are NOT validated for sheep.
+  schoorl_offset_cm: 22
+  denominator: 100
+  trukhanovsky_factors: {}
+  carcass_yield_min: 0.45
+  carcass_yield_max: 0.52
+  min_keypoint_confidence: 0.8

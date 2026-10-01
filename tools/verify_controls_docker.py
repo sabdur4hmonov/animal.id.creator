@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -125,6 +126,54 @@ def verify(args):
             and after["gps"] == metadata["gps"],
             "Immutable provenance changed",
         )
+        current = client.get("/api/v1/market-rates/cattle?currency=UZS")
+        require(current.status_code in (200, 404), "Market lookup failed")
+        quote = {
+            "species": "cattle",
+            "currency": "UZS",
+            "basis": "carcass",
+            "price_per_kg": "100",
+            "observed_at": datetime.now(UTC).isoformat(),
+            "source": "Synthetic Docker verification",
+            "expected_latest_id": current.json()["id"]
+            if current.status_code == 200
+            else None,
+        }
+        check(client.post("/api/v1/admin/market-rates", json=quote), 403)
+        rate = check(
+            client.post(
+                "/api/v1/admin/market-rates", json=quote, headers=admin_headers
+            ),
+            201,
+        )
+        check(
+            client.post(
+                "/api/v1/admin/market-rates", json=quote, headers=admin_headers
+            ),
+            409,
+        )
+        estimate = {
+            "species": "cattle",
+            "method": "trukhanovsky",
+            "adult": True,
+            "breed_category": "dairy",
+            "chest_girth_cm": "180",
+            "body_length_cm": "150",
+            "currency": "UZS",
+        }
+        valuation = check(client.post("/api/v1/valuation", json=estimate), 200)
+        require(
+            Decimal(valuation["measurements"]["live_weight_kg"]) == 540,
+            "Formula math mismatch",
+        )
+        require(
+            valuation["carcass_value_range"] == ["27000.00", "31320.00"],
+            "Valuation math mismatch",
+        )
+        require(valuation["market_rate_id"] == rate["id"], "Market provenance mismatch")
+        check(
+            client.post("/api/v1/valuation", json={**estimate, "species": "sheep"}), 422
+        )
     output = ROOT / "data" / "verification" / "evidence" / f"controls-{uuid4()}.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     report = {
@@ -139,6 +188,8 @@ def verify(args):
         "captures": [first, second],
         "insured_registration": insured,
         "review": reviewed,
+        "synthetic_market_rate": rate,
+        "synthetic_valuation": valuation,
     }
     with output.open("x", encoding="utf-8") as stream:
         json.dump(report, stream, indent=2, allow_nan=False)
