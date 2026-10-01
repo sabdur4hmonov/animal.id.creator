@@ -1,6 +1,6 @@
 # BioLivestock AI — Phase 1
 
-Cattle data collection only: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. No biometric matching, liveness, weight/valuation, authentication, cloud deployment or CI/CD.
+Cattle data collection API: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. Offline cattle embedding/matching experiments are in `research/`; they do not provide validated production identity decisions. Liveness, weight/valuation, authentication, cloud deployment and CI/CD are not implemented.
 
 ## Run the backend
 
@@ -76,3 +76,5 @@ flutter test
 For a non-Docker backend, provide a running PostgreSQL instance, copy `backend/.env.example` to `backend/.env` and adjust its connection string, then run `alembic upgrade head` followed by `uvicorn app.main:app --reload` from `backend/` using the virtual environment. Compose's database is deliberately not published on the host. Tests use temporary SQLite metadata storage and injected model doubles; they do not measure a real trained detector's accuracy.
 
 See `docs/ARCHITECTURE.md`, `docs/ROADMAP.md` and `docs/VALIDATION.md` for design, scope and checks. The initial commit is local and origin points to `https://github.com/sabdur4hmonov/animal.id.creator.git`. Nothing is pushed automatically.
+
+See `docs/PHASE2_RESEARCH.md` for offline extraction/matching commands and `docs/DATA_REQUIREMENTS.md` for the data gates for later phases. Physical-phone testing is currently paused because the device is being repaired; backend and offline tools proceed independently.

@@ -1,0 +1,12 @@
+species: cattle
+enabled: true
+config_version: 1
+architecture: resnet18
+feature_node: avgpool
+dimensions: 512
+checkpoint: models/cattle/research/resnet18-imagenet1k-v1.pth
+checkpoint_sha256: f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec
+input_size: 224
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+padding_rgb: [124, 116, 104]

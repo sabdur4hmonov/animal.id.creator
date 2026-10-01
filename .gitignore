@@ -31,6 +31,7 @@ ios/Flutter/flutter_export_environment.sh
 data/
 postgres-data/
 *.pt
+*.pth
 *.onnx
 *.sqlite*
 *.db

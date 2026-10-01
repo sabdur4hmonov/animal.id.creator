@@ -22,6 +22,8 @@ On 2026-10-01 the agent built and ran an isolated Docker stack on port 18000, up
 
 Evidence is retained in ignored `data/verification/evidence/24510aa3-f88a-43d8-aeeb-46efa72e4d19.json`; the capture UUID is the same. Image attribution is in [SAMPLE_MEDIA.md](SAMPLE_MEDIA.md). The verification stack has a separate Compose project/database volume and `data/verification` storage, so test samples stay separate from normal collection. This proves the Phase 1 HTTP → QC → filesystem → PostgreSQL path, not crash recovery, farm-image calibration or real YOLO inference.
 
+After verification, the normal backend was rebuilt with the same current sources and returned HTTP 200 with database ok. Its source hashes matched the tested code. The separate verification containers were stopped; their database volume, image and evidence were preserved.
+
 To reproduce using a quality-approved local JPEG, run from the project root:
 
 ```powershell
@@ -38,3 +40,7 @@ docker compose -f backend/docker-compose.yml up --build -d
 ```
 
 End-to-end physical-device testing is paused indefinitely because Sardorbek's phone has water damage and is being dried/repaired. The committed `kotlin.incremental=false` Android setting remains in place. Successful Android rebuilding, camera/permission behavior, and mobile upload/persistence need verification when a repaired or replacement device is available. This external blocker does not prevent backend or research work. Read the root [PROGRESS.md](../PROGRESS.md) for current state and resume instructions.
+
+## Offline research verification (2026-10-01)
+
+Combined backend/research tests: **82 passed** (51 backend, 31 research); Ruff passed for backend/research/tools. Command: `.\.venv\Scripts\python.exe -m pytest -c research/pyproject.toml backend/tests research/tests -q -p no:cacheprovider` from the repository root. Real CPU feature extraction with official checksum-verified weights produced 512-dimensional vectors and repeat cosine 1.0, with networking disabled. Evidence: `data/research/resnet18-smoke.json`. Unit tests and a one-image extraction smoke check do not validate biometric accuracy. [PHASE2_RESEARCH.md](PHASE2_RESEARCH.md) describes the labeled-data protocol and commands.
