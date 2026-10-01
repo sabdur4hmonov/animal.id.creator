@@ -1,5 +1,7 @@
 # Progress
 
+The authoritative session record is the root [PROGRESS.md](../PROGRESS.md). As of 2026-10-01, physical-device testing is paused indefinitely while Sardorbek's water-damaged phone is repaired or replaced. This is an external blocker; continue backend work independently. The setup below is historical resume context.
+
 ## Phase 1 — Data collection MVP
 
 ### Test setup (as of 2026-09-29)

@@ -30,3 +30,22 @@ def test_histogram_detects_clipped_shadows_despite_acceptable_mean(config):
     result = check_quality(image, config.quality)
     assert result.brightness > config.quality.brightness_min
     assert "too_dark" in result.reasons
+
+
+@pytest.mark.parametrize(
+    ("clipped", "other", "reason", "fraction"),
+    [(0, 200, "too_dark", "dark_fraction"), (255, 55, "too_bright", "bright_fraction")],
+)
+def test_lighting_preserves_clipped_pixels_when_blur_analysis_is_resized(
+    config, clipped, other, reason, fraction
+):
+    # Every 20-pixel group averages to a normal exposure when reduced to one pixel.
+    stripe = np.array([clipped] * 14 + [other] * 6, dtype=np.uint8)
+    gray = np.tile(stripe, (480, 32))
+    image = np.repeat(gray[:, :, None], 3, axis=2)
+    full = check_quality(image, config.quality)
+    reduced = check_quality(image, config.quality.model_copy(update={"analysis_max_dimension": 32}))
+    assert config.quality.brightness_min < reduced.brightness < config.quality.brightness_max
+    assert getattr(reduced, fraction) == pytest.approx(0.7)
+    assert reduced.brightness == pytest.approx(full.brightness)
+    assert reason in reduced.reasons

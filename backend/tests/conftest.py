@@ -56,3 +56,9 @@ def client(tmp_path):
         yield client
     app.dependency_overrides.clear()
     engine.dispose()
+
+
+@pytest.fixture
+def db_session(client):
+    # Inspect the same temporary database used by the API without real PostgreSQL.
+    yield from app.dependency_overrides[get_session]()

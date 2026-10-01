@@ -51,7 +51,8 @@ def upload_capture(
     try:
         parsed = CaptureMetadata.model_validate_json(metadata)
     except ValidationError as exc:
-        raise HTTPException(422, exc.errors(include_context=False)) from exc
+        # Echoing invalid inputs such as NaN would break JSON error serialization.
+        raise HTTPException(422, exc.errors(include_context=False, include_input=False)) from exc
     config = request.app.state.species_configs[parsed.species]
     if not config.enabled:
         raise HTTPException(422, "This species is disabled")

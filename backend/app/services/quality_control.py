@@ -10,14 +10,15 @@ from app.schemas.capture import QualityResult
 def check_quality(image: np.ndarray, config: QualityConfig) -> QualityResult:
     height, width = image.shape[:2]
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Measure exposure before resizing: averaging can hide clipped pixels.
+    histogram = cv2.calcHist([gray], [0], None, [256], [0, 256]).ravel().astype(np.float64)
+    histogram /= histogram.sum()
     scale = min(1.0, config.analysis_max_dimension / max(width, height))
     if scale < 1:
         gray = cv2.resize(
             gray, (max(1, round(width * scale)), max(1, round(height * scale))), interpolation=cv2.INTER_AREA
         )
     variance = float(cv2.Laplacian(gray, cv2.CV_64F, ksize=1).var())
-    histogram = cv2.calcHist([gray], [0], None, [256], [0, 256]).ravel()
-    histogram /= histogram.sum()
     brightness = float(np.dot(np.arange(256), histogram))
     dark = float(histogram[: config.dark_pixel_threshold + 1].sum())
     bright = float(histogram[config.bright_pixel_threshold :].sum())
