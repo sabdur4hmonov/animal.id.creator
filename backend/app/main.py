@@ -11,6 +11,7 @@ from app.api.valuation import router as valuation_router
 from app.core.auth import load_credentials
 from app.core.business_config import load_business_configs
 from app.core.request_limits import RequestSizeLimit
+from app.core.security_config import load_security_configs
 from app.core.settings import get_settings
 from app.core.species import load_species_configs
 from app.services.detection import NoseDetector
@@ -22,6 +23,7 @@ async def lifespan(app: FastAPI):
     app.state.settings = settings
     app.state.credentials = load_credentials(settings.auth_config_path)
     app.state.business_configs = load_business_configs(settings.business_config_dir)
+    app.state.security_configs = load_security_configs(settings.security_config_dir)
     app.state.species_configs = load_species_configs(settings.species_config_dir)
     app.state.detector = NoseDetector(settings.model_root)
     settings.storage_root.mkdir(parents=True, exist_ok=True)

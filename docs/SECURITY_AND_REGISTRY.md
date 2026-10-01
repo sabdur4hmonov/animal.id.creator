@@ -17,6 +17,7 @@ Use Swagger `/docs` → Authorize for the minimum admin interface:
 - POST/GET `/api/v1/animals`, GET `/api/v1/animals/{species}/{animal_id}`.
 - PATCH `/api/v1/animals/{species}/{animal_id}/status` (admin).
 - GET `/api/v1/captures/{uuid}` (own operator captures or admin).
+- GET `/api/v1/admin/captures/{uuid}/integrity` (admin): matched, mismatch, missing, unsafe_path or unavailable_legacy; it inspects bytes without editing evidence.
 - GET/POST `/api/v1/admin/duplicates`, PATCH `/api/v1/admin/duplicates/{uuid}` (admin).
 - GET `/api/v1/admin/audit?species=cattle` (admin).
 

@@ -36,6 +36,17 @@ def verify(args):
         "gps": {"latitude": 41, "longitude": 69},
         "timestamp": datetime.now(UTC).isoformat(),
         "operator_id": operator["operator_id"],
+        "device_signals": {
+            "source": "android_heuristic",
+            "is_rooted": True,
+            "is_emulator": True,
+        },
+        "gps_evidence": {
+            "source": "android_location",
+            "is_mock": True,
+            "accuracy_m": 500,
+            "observed_at": datetime.now(UTC).isoformat(),
+        },
     }
     with httpx.Client(
         base_url=args.url,
@@ -48,6 +59,15 @@ def verify(args):
             upload(client, content, {**metadata, "operator_id": "forged-operator"}), 403
         )
         first = check(upload(client, content, metadata), 201)
+        require(
+            first["risk_signals"]["liveness_verdict"] == "not_assessed",
+            "Unexpected liveness claim",
+        )
+        require(
+            "client_reports_mock_location"
+            in first["risk_signals"]["metadata"]["flags"],
+            "Mock location flag missing",
+        )
         second = check(
             upload(client, content, {**metadata, "animal_id": label + "-COPY"}), 201
         )
@@ -171,6 +191,23 @@ def verify(args):
             "Valuation math mismatch",
         )
         require(valuation["market_rate_id"] == rate["id"], "Market provenance mismatch")
+        wave = np.tile(
+            np.uint8(128 + 70 * np.sin(2 * np.pi * np.arange(640) / 12)), (480, 1)
+        )
+        periodic_image = cv2.imencode(".jpg", cv2.cvtColor(wave, cv2.COLOR_GRAY2BGR))[
+            1
+        ].tobytes()
+        periodic = check(
+            upload(
+                client, periodic_image, {**metadata, "animal_id": label + "-PERIODIC"}
+            ),
+            201,
+        )
+        require(
+            "periodic_texture_possible_moire"
+            in periodic["risk_signals"]["image"]["flags"],
+            "Synthetic periodic texture flag missing",
+        )
         check(
             client.post("/api/v1/valuation", json={**estimate, "species": "sheep"}), 422
         )
@@ -190,6 +227,7 @@ def verify(args):
         "review": reviewed,
         "synthetic_market_rate": rate,
         "synthetic_valuation": valuation,
+        "synthetic_periodic_capture": periodic,
     }
     with output.open("x", encoding="utf-8") as stream:
         json.dump(report, stream, indent=2, allow_nan=False)

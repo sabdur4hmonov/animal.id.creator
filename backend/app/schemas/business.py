@@ -3,14 +3,11 @@ from enum import Enum
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.species import Species
 from app.schemas.capture import CaptureMetadata
-
-
-class StrictInput(BaseModel):
-    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+from app.schemas.common import StrictInput
 
 
 class AnimalStatus(str, Enum):

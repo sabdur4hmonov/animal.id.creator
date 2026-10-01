@@ -10,7 +10,7 @@ Set-Location backend
 ..\.venv\Scripts\python.exe -m ruff check . --no-cache
 ```
 
-The backend suite passes **51 tests**. It uses temporary SQLite databases and image files, synthetic images, and explicit detector doubles. The Alembic test upgrades an empty temporary database, checks the schema against SQLAlchemy metadata, and downgrades it. No real checkpoint or mobile device is used.
+The initial hardening suite passed **51 tests**; final extensions below bring the backend count to 97. Tests use temporary SQLite databases/image files, synthetic images and detector doubles. Alembic upgrades/checks/reverses temporary schemas. No real checkpoint or mobile device is used.
 
 Coverage includes successful pending-model and mocked-crop collection, GPS/UTC-date handling, invalid metadata and non-finite coordinates, byte/pixel limits, blur and exposure rejection, clipping preserved across blur-analysis sizes, crop/model failures, storage/database failure cleanup, EXIF orientation, invalid image decoding, health failures, and finite species configuration.
 
@@ -39,7 +39,7 @@ The verifier preserves test records/files and writes JSON evidence for every suc
 docker compose -f backend/docker-compose.yml up --build -d
 ```
 
-End-to-end physical-device testing is paused indefinitely because Sardorbek's phone has water damage and is being dried/repaired. The committed `kotlin.incremental=false` Android setting remains in place. Successful Android rebuilding, camera/permission behavior, and mobile upload/persistence need verification when a repaired or replacement device is available. This external blocker does not prevent backend or research work. Read the root [PROGRESS.md](../PROGRESS.md) for current state and resume instructions.
+End-to-end physical-device testing is paused indefinitely while Sardorbek's phone is repaired. The Kotlin cross-drive fix now has a successful Android debug build (below). Camera/permission/GPS and mobile upload/persistence still need a repaired/replacement device. Read [PROGRESS.md](../PROGRESS.md) for current state and resume instructions.
 
 ## Offline research verification (2026-10-01)
 
@@ -52,3 +52,12 @@ Backend suite now passes 59 tests. Migration tests include a pre-existing 0001 c
 ## Formula and market-rate extension (2026-10-01)
 
 Backend suite: 81 passed, including formula/yield/Decimal rounding, calibrated mock 3D geometry, rejected invalid/ambiguous inputs, role checks and price-history conflicts. Migration 0003 was applied and actual Docker/PostgreSQL synthetic market update/valuation endpoints passed; evidence: data/verification/evidence/controls-6a7d65ab-0056-47dd-896a-31cc0902bf6c.json. No animal accuracy or real market-rate validity was tested.
+
+## Final independent checks (2026-10-01)
+
+- 128 Python tests passed (97 backend + 31 research), with one known upstream TestClient/httpx deprecation warning. Ruff passed for backend/research/tools. Tests add synthetic Fourier/glare/rectangle controls, mock/root/emulator/location/time anomalies, strict telemetry validation, capture ownership and stored-file integrity detection. No new embedding feature was added.
+- Flutter analyze --no-pub passed; flutter test --no-pub passed all 7 host tests. flutter build apk --debug --no-pub compiled successfully with the Kotlin flag, Flutter 3.47.5 / Dart 3.13.4 / Gradle 9.3.1. APK is under ignored mobile/build/app/outputs/flutter-apk/app-debug.apk; it contains no configured API token. Device behavior is unverified.
+- Actual latest real-image Docker upload/file/DB/source-hash evidence: data/verification/evidence/7fe42c24-4353-4df4-9b7a-38b1a2e44b7a.json. Synthetic advisory/price/status review: controls-e8cfbb7e-baf6-4d41-b1cb-022704f61261.json in that folder. PostgreSQL concurrency/integrity: concurrency-65781f3d-2672-49f4-becb-78dd5e6114f1.json. Concurrent exact scans yielded match counts [0,1], status edits [200,409], price edits [201,409], and stored-file hash matched.
+- Normal backend migrated to 0003 and is healthy on 8000: health 200/database ok, authenticated species 200, anonymous species 401, all 43 backend/migration/species/business/security config hashes match. Normal capture count preserved at 0; normal price remains unset. Pre-rollout SQL backup retained at data/backups/20261001-211413/pre-controls.sql. Synthetic samples/prices remain isolated; verification containers stopped with their volume/evidence retained.
+
+Reproduce controls in the isolated stack after the commands above with `tools/verify_controls_docker.py` and `tools/verify_concurrency_docker.py` using the repository Python environment. They create and retain synthetic evidence. Anti-spoof flags are advisory/unvalidated, formula math is not measured animal accuracy, and immutable client GPS is not verified GPS.

@@ -55,10 +55,16 @@ def read_record(project, capture_id):
 
 
 def verify_source(project):
-    files = [
-        "app/api/routes.py",
-        "app/services/quality_control.py",
-        "app/core/species.py",
+    backend = ROOT / "backend"
+    files = sorted(
+        path.relative_to(backend).as_posix()
+        for folder in (backend / "app", backend / "alembic")
+        for path in folder.rglob("*.py")
+    )
+    files += [
+        f"../{folder}/{name}.yaml"
+        for folder in ("species_configs", "business_configs", "security_configs")
+        for name in ("cattle", "sheep")
     ]
     code = "import hashlib,json,pathlib,sys; print(json.dumps({p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest() for p in sys.argv[1:]}))"
     remote = json.loads(

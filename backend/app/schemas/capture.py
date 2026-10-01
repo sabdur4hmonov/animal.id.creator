@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
 from app.core.species import Species
+from app.schemas.telemetry import DeviceSignals, GPSEvidence
 
 
 class GPS(BaseModel):
@@ -19,6 +20,8 @@ class CaptureMetadata(BaseModel):
     gps: GPS | None = None
     timestamp: AwareDatetime
     operator_id: str = Field(min_length=1, max_length=100)
+    device_signals: DeviceSignals | None = None
+    gps_evidence: GPSEvidence | None = None
 
     @field_validator("animal_id")
     @classmethod

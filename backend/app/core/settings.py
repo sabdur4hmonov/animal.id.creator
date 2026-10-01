@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     storage_root: Path = ROOT / "data"
     auth_config_path: Path = ROOT / "backend" / ".secrets" / "api_keys.json"
     business_config_dir: Path = ROOT / "business_configs"
+    security_config_dir: Path = ROOT / "security_configs"
     max_upload_bytes: int = Field(default=15 * 1024 * 1024, gt=0)
     max_image_pixels: int = Field(default=25_000_000, gt=0)
 

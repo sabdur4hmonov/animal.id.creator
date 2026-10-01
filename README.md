@@ -85,3 +85,5 @@ See `docs/PHASE2_RESEARCH.md` for offline extraction/matching commands and `docs
 See [SECURITY_AND_REGISTRY.md](docs/SECURITY_AND_REGISTRY.md) for operator/admin keys, status/review endpoints, immutable provenance, duplicate-check boundaries and rotation. Existing keys are preserved by initialization; run it only once. Protected endpoints fail closed when credentials are missing. Only the health endpoint and API documentation are public.
 
 See [WEIGHT_AND_VALUATION.md](docs/WEIGHT_AND_VALUATION.md) for deterministic adult-cattle formulas, calibrated 3D measurement inputs, configured carcass-yield scenarios and admin price updates. Prices start unset. Formula arithmetic is tested; real-world accuracy remains unverified.
+
+See [ANTI_SPOOF_GROUNDWORK.md](docs/ANTI_SPOOF_GROUNDWORK.md) for advisory Moiré/reflection/rectangle signals, Android root/emulator hints and mock-GPS plausibility checks. These do not return a live/genuine verdict. Breathing/micro-movement stays blocked on labeled videos and physical-device testing on the repaired phone.

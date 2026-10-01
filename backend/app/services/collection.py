@@ -2,12 +2,15 @@ import hashlib
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.security_config import SecurityConfig
 from app.core.settings import Settings
 from app.core.species import SpeciesConfig
 from app.models.capture import Capture
 from app.schemas.capture import CaptureMetadata
+from app.services.anti_spoofing import scan_risk
 from app.services.detection import NoseDetector
 from app.services.quality_control import check_quality
 from app.services.registration import duplicate_candidates, ensure_animal, flag_duplicates
@@ -27,6 +30,7 @@ def collect_capture(
     detector: NoseDetector,
     settings: Settings,
     session: Session,
+    security_config: SecurityConfig,
 ) -> Capture:
     image = decode_image(content, settings.max_image_pixels)
     quality = check_quality(image, config.quality)
@@ -47,9 +51,21 @@ def collect_capture(
     capture_id = str(uuid4())
     paths = []
     try:
+        received_at = datetime.now(UTC)
         fingerprint = hashlib.sha256(str(image.shape).encode() + image.tobytes()).hexdigest()
         matches = duplicate_candidates(session, metadata.species, fingerprint)
         ensure_animal(session, metadata)
+        previous = session.scalar(
+            select(Capture)
+            .where(
+                Capture.species == metadata.species,
+                Capture.operator_id == metadata.operator_id,
+                Capture.received_at.is_not(None),
+            )
+            .order_by(Capture.received_at.desc(), Capture.id.desc())
+            .limit(1)
+        )
+        risk = scan_risk(image, metadata, received_at, security_config, previous)
         original_path = write_image(settings.storage_root, metadata, capture_id, "original", image)
         paths.append(original_path)
         crop_path = None
@@ -72,7 +88,8 @@ def collect_capture(
             detection=result.metadata if result is not None else None,
             config_version=config.config_version,
             config_snapshot=config.model_dump(mode="json"),
-            received_at=datetime.now(UTC),
+            received_at=received_at,
+            risk_signals=risk,
             source_sha256=hashlib.sha256(content).hexdigest(),
             pixel_sha256=fingerprint,
             stored_sha256=hashlib.sha256((settings.storage_root / original_path).read_bytes()).hexdigest(),

@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import AwareDatetime, Field, field_validator, model_validator
 
 from app.core.species import Species
-from app.schemas.business import StrictInput
+from app.schemas.common import StrictInput
 
 
 class Point3D(StrictInput):

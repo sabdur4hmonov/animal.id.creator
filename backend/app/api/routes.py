@@ -68,7 +68,15 @@ def upload_capture(
     if len(content) > settings.max_upload_bytes:
         raise HTTPException(413, "Image exceeds upload limit")
     try:
-        return collect_capture(content, parsed, config, request.app.state.detector, settings, session)
+        return collect_capture(
+            content,
+            parsed,
+            config,
+            request.app.state.detector,
+            settings,
+            session,
+            request.app.state.security_configs[parsed.species],
+        )
     except QualityRejected as exc:
         raise HTTPException(422, {"stage": exc.stage, "quality": exc.quality.model_dump()}) from exc
     except FramingError as exc:

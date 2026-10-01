@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'api_client.dart';
+import 'device_signals.dart';
 import 'quality_control.dart';
 import 'species.dart';
 
@@ -101,7 +102,7 @@ class _CaptureScreenState extends State<CaptureScreen> with WidgetsBindingObserv
     }
   }
 
-  Future<Map<String, double>?> _captureGps() async {
+  Future<Map<String, dynamic>?> _captureGps() async {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return null;
       var permission = await Geolocator.checkPermission();
@@ -110,7 +111,14 @@ class _CaptureScreenState extends State<CaptureScreen> with WidgetsBindingObserv
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 8)),
       );
-      return {'latitude': position.latitude, 'longitude': position.longitude};
+      return {
+        'gps': {'latitude': position.latitude, 'longitude': position.longitude},
+        'gps_evidence': {
+          'source': Platform.isAndroid ? 'android_location' : 'ios_location',
+          'is_mock': position.isMocked, 'accuracy_m': position.accuracy,
+          'observed_at': position.timestamp.toUtc().toIso8601String(),
+        },
+      };
     } catch (_) {
       return null;
     }
@@ -132,6 +140,7 @@ class _CaptureScreenState extends State<CaptureScreen> with WidgetsBindingObserv
       final timestamp = DateTime.now().toUtc();
       photo = await camera.takePicture();
       final gps = await _captureGps();
+      final deviceSignals = await readDeviceSignals();
       final quality = await compute(checkLocalQuality, {
         'bytes': await photo.readAsBytes(), 'quality': config.quality,
       });
@@ -145,7 +154,8 @@ class _CaptureScreenState extends State<CaptureScreen> with WidgetsBindingObserv
         _saved = false;
         _metadata = {
           'animal_id': animalId, 'operator_id': operatorId, 'species': config.species.name,
-          'timestamp': timestamp.toIso8601String(), 'gps': gps,
+          'timestamp': timestamp.toIso8601String(), 'gps': gps?['gps'],
+          'gps_evidence': gps?['gps_evidence'], 'device_signals': deviceSignals,
         };
       });
     } catch (error) {
@@ -258,7 +268,7 @@ class _CaptureScreenState extends State<CaptureScreen> with WidgetsBindingObserv
               validator: (value) => RegExp(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$').hasMatch(value?.trim() ?? '')
                   ? null : 'Use 1–64 letters, digits, underscores or hyphens'),
             const SizedBox(height: 12),
-            TextFormField(controller: _operator, enabled: editable, maxLength: 100,
+            TextFormField(controller: _operator, enabled: false, maxLength: 100,
               decoration: const InputDecoration(labelText: 'Operator ID'),
               validator: (value) => value == null || value.trim().isEmpty ? 'Enter an operator ID' : null),
           ])),

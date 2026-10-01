@@ -1,0 +1,16 @@
+species: cattle
+enabled: true
+config_version: 1
+# Advisory prototype thresholds; no liveness confidence or automatic rejection.
+analysis_max_dimension: 512
+periodic_peak_fraction: 0.10
+reflection_pixel_threshold: 245
+reflection_max_saturation: 40
+reflection_min_area_fraction: 0.005
+rectangle_min_area_fraction: 0.15
+rectangle_max_area_fraction: 0.95
+gps_max_accuracy_m: 100
+gps_max_age_seconds: 30
+gps_max_speed_mps: 90
+capture_max_age_seconds: 600
+future_tolerance_seconds: 300

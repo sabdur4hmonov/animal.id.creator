@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir torch torchvision --index-url https://download.py
 COPY backend/ .
 COPY species_configs/ /srv/species_configs/
 COPY business_configs/ /srv/business_configs/
+COPY security_configs/ /srv/security_configs/
 ENV SPECIES_CONFIG_DIR=/srv/species_configs MODEL_ROOT=/srv STORAGE_ROOT=/srv/data
 EXPOSE 8000
 CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]

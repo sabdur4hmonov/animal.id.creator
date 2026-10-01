@@ -21,6 +21,7 @@ from app.schemas.business import (
     StatusChange,
 )
 from app.schemas.capture import CaptureResponse
+from app.services.integrity import verify_stored_image
 from app.services.registration import audit
 
 router = APIRouter(prefix="/api/v1")
@@ -85,6 +86,8 @@ def set_status(
 ):
     enabled(request, species)
     record = get_animal(species, animal_id, session, admin)
+    if record.version != data.expected_version:
+        raise HTTPException(409, "Registration changed; reload its version")
     before = record.status
     changed = session.execute(
         update(Animal)
@@ -172,6 +175,8 @@ def review_duplicate(case_id: UUID, data: DuplicateReview, session: SessionDep, 
     record = session.get(DuplicateCase, str(case_id))
     if record is None:
         raise HTTPException(404, "Duplicate case not found")
+    if record.version != data.expected_version:
+        raise HTTPException(409, "Duplicate review changed; reload its version")
     before = record.state
     changed = session.execute(
         update(DuplicateCase)
@@ -230,3 +235,12 @@ def list_audit(
         }
         for r in records
     ]
+
+
+@router.get("/admin/captures/{capture_id}/integrity")
+def capture_integrity(capture_id: UUID, request: Request, session: SessionDep, admin: AdminDep):
+    record = get_capture(capture_id, session, admin)
+    try:
+        return verify_stored_image(request.app.state.settings.storage_root, record)
+    except OSError as exc:
+        raise HTTPException(503, "Stored image could not be checked") from exc

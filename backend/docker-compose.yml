@@ -29,6 +29,7 @@ services:
       - ../models:/srv/models:ro
       - ../species_configs:/srv/species_configs:ro
       - ../business_configs:/srv/business_configs:ro
+      - ../security_configs:/srv/security_configs:ro
       - ./.secrets:/srv/secrets:ro
     depends_on:
       db:
