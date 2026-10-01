@@ -23,10 +23,12 @@ services:
       SPECIES_CONFIG_DIR: /srv/species_configs
       MODEL_ROOT: /srv
       STORAGE_ROOT: /srv/data
+      AUTH_CONFIG_PATH: /srv/secrets/api_keys.json
     volumes:
       - ${STORAGE_DIRECTORY:-../data}:/srv/data
       - ../models:/srv/models:ro
       - ../species_configs:/srv/species_configs:ro
+      - ./.secrets:/srv/secrets:ro
     depends_on:
       db:
         condition: service_healthy

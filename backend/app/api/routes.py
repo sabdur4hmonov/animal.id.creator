@@ -7,6 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.auth import PrincipalDep
 from app.core.database import get_session
 from app.schemas.capture import CaptureMetadata, CaptureResponse
 from app.services.collection import QualityRejected, collect_capture
@@ -36,7 +37,7 @@ def health(request: Request, session: SessionDep):
 
 
 @router.get("/api/v1/species")
-def species_configs(request: Request):
+def species_configs(request: Request, principal: PrincipalDep):
     # The app obtains its quality rules here, so sheep needs no new UI branch.
     return [config.model_dump(mode="json") for config in request.app.state.species_configs.values()]
 
@@ -45,6 +46,7 @@ def species_configs(request: Request):
 def upload_capture(
     request: Request,
     session: SessionDep,
+    principal: PrincipalDep,
     image: Annotated[UploadFile, File()],
     metadata: Annotated[str, Form()],
 ):
@@ -54,6 +56,8 @@ def upload_capture(
         # Echoing invalid inputs such as NaN would break JSON error serialization.
         raise HTTPException(422, exc.errors(include_context=False, include_input=False)) from exc
     config = request.app.state.species_configs[parsed.species]
+    if parsed.operator_id != principal.operator_id:
+        raise HTTPException(403, "Operator ID must match authenticated principal")
     if not config.enabled:
         raise HTTPException(422, "This species is disabled")
     settings = request.app.state.settings

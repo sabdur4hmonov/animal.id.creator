@@ -64,3 +64,8 @@ class CaptureResponse(BaseModel):
     crop_quality: QualityResult | None
     detection: dict | None
     config_version: int
+    received_at: datetime | None
+    source_sha256: str | None
+    stored_sha256: str | None
+    risk_signals: dict | None
+    duplicate_summary: dict | None

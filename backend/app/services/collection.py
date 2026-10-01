@@ -1,4 +1,5 @@
-from datetime import UTC
+import hashlib
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlalchemy.orm import Session
@@ -9,6 +10,7 @@ from app.models.capture import Capture
 from app.schemas.capture import CaptureMetadata
 from app.services.detection import NoseDetector
 from app.services.quality_control import check_quality
+from app.services.registration import duplicate_candidates, ensure_animal, flag_duplicates
 from app.services.storage import decode_image, write_image
 
 
@@ -45,6 +47,9 @@ def collect_capture(
     capture_id = str(uuid4())
     paths = []
     try:
+        fingerprint = hashlib.sha256(str(image.shape).encode() + image.tobytes()).hexdigest()
+        matches = duplicate_candidates(session, metadata.species, fingerprint)
+        ensure_animal(session, metadata)
         original_path = write_image(settings.storage_root, metadata, capture_id, "original", image)
         paths.append(original_path)
         crop_path = None
@@ -67,8 +72,19 @@ def collect_capture(
             detection=result.metadata if result is not None else None,
             config_version=config.config_version,
             config_snapshot=config.model_dump(mode="json"),
+            received_at=datetime.now(UTC),
+            source_sha256=hashlib.sha256(content).hexdigest(),
+            pixel_sha256=fingerprint,
+            stored_sha256=hashlib.sha256((settings.storage_root / original_path).read_bytes()).hexdigest(),
+            duplicate_summary={
+                "exact_image_matches": len(matches[:100]),
+                "truncated": len(matches) > 100,
+                "biometric_identity_checked": False,
+            },
         )
         session.add(record)
+        session.flush()
+        flag_duplicates(session, record, matches)
         session.commit()
         return record
     except Exception:

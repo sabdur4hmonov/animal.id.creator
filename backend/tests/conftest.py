@@ -1,3 +1,4 @@
+import hashlib
 from datetime import UTC, datetime
 
 import cv2
@@ -8,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.auth import Principal
 from app.core.database import Base, get_session
 from app.core.settings import get_settings
 from app.core.species import Species, load_species_configs
@@ -53,6 +55,17 @@ def client(tmp_path):
     app.dependency_overrides[get_session] = session_override
     with TestClient(app) as client:
         app.state.settings = get_settings().model_copy(update={"storage_root": tmp_path})
+        app.state.credentials = [
+            Principal(
+                operator_id="operator-1",
+                role="operator",
+                token_sha256=hashlib.sha256(b"test-operator").hexdigest(),
+            ),
+            Principal(
+                operator_id="admin-1", role="admin", token_sha256=hashlib.sha256(b"test-admin").hexdigest()
+            ),
+        ]
+        client.headers["Authorization"] = "Bearer test-operator"
         yield client
     app.dependency_overrides.clear()
     engine.dispose()

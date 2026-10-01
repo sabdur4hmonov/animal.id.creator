@@ -26,6 +26,7 @@ ios/Flutter/Generated.xcconfig
 ios/Flutter/flutter_export_environment.sh
 # Local data / Docker
 .env
+.secrets/
 .env.*
 !.env.example
 data/

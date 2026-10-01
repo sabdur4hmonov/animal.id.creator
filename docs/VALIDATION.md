@@ -44,3 +44,7 @@ End-to-end physical-device testing is paused indefinitely because Sardorbek's ph
 ## Offline research verification (2026-10-01)
 
 Combined backend/research tests: **82 passed** (51 backend, 31 research); Ruff passed for backend/research/tools. Command: `.\.venv\Scripts\python.exe -m pytest -c research/pyproject.toml backend/tests research/tests -q -p no:cacheprovider` from the repository root. Real CPU feature extraction with official checksum-verified weights produced 512-dimensional vectors and repeat cosine 1.0, with networking disabled. Evidence: `data/research/resnet18-smoke.json`. Unit tests and a one-image extraction smoke check do not validate biometric accuracy. [PHASE2_RESEARCH.md](PHASE2_RESEARCH.md) describes the labeled-data protocol and commands.
+
+## Authenticated registry extension (2026-10-01)
+
+Backend suite now passes 59 tests. Migration tests include a pre-existing 0001 capture surviving the additive 0002 upgrade, registry backfill and raw-SQL mutation rejection. Actual Docker/PostgreSQL checks passed with operator/admin keys: real JPEG upload (`65a9351f-ded9-42dd-a248-827d97da7af4.json`) and synthetic registry/admin/exact-replay/immutability checks (`controls-d53b4892-0a8b-47c9-8309-90dfd636769e.json`) under data/verification/evidence. Run `tools/init_local_credentials.py` once before the Docker commands above; the upload verifier reads the ignored local token file without printing secrets. `tools/verify_controls_docker.py` repeats control checks and retains synthetic records/evidence.

@@ -20,7 +20,7 @@ class _CaptureScreenState extends State<CaptureScreen> with WidgetsBindingObserv
   final _api = ApiClient();
   final _form = GlobalKey<FormState>();
   final _animal = TextEditingController();
-  final _operator = TextEditingController();
+  final _operator = TextEditingController(text: authenticatedOperatorId);
   CameraController? _camera;
   List<SpeciesConfig> _configs = [];
   SpeciesConfig? _selected;

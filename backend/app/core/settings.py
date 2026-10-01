@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     species_config_dir: Path = ROOT / "species_configs"
     model_root: Path = ROOT
     storage_root: Path = ROOT / "data"
+    auth_config_path: Path = ROOT / "backend" / ".secrets" / "api_keys.json"
     max_upload_bytes: int = Field(default=15 * 1024 * 1024, gt=0)
     max_image_pixels: int = Field(default=25_000_000, gt=0)
 

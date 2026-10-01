@@ -1,12 +1,14 @@
 # BioLivestock AI — Phase 1
 
-Cattle data collection API: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. Offline cattle embedding/matching experiments are in `research/`; they do not provide validated production identity decisions. Liveness, weight/valuation, authentication, cloud deployment and CI/CD are not implemented.
+Cattle data collection API: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. Authenticated registration/status controls, exact-image reuse review and immutable scan provenance are available. Offline cattle embedding/matching experiments are in `research/`; they do not provide validated production identity decisions. Cloud deployment and CI/CD are not implemented.
 
 ## Run the backend
 
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 
 ```powershell
+cd 'D:\Coding projects\moliddetector'
+python tools/init_local_credentials.py
 cd 'D:\Coding projects\moliddetector\backend'
 docker compose up --build
 ```
@@ -28,7 +30,8 @@ Install stable Flutter (Dart 3.10+), Android Studio/Android SDK or Xcode for iOS
 cd 'D:\Coding projects\moliddetector\mobile'
 flutter pub get
 adb reverse tcp:8000 tcp:8000
-flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000
+$localKeys = Get-Content '../backend/.secrets/tokens.json' -Raw | ConvertFrom-Json
+flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define="API_TOKEN=$($localKeys.operator.token)" --dart-define="OPERATOR_ID=$($localKeys.operator.operator_id)"
 ```
 
 Phase 1 testing is done on a physical Android phone connected over USB (USB debugging enabled); no Android emulator is set up or used. `adb reverse tcp:8000 tcp:8000` forwards the phone's port 8000 to the backend on this computer, so the app reaches it at `http://127.0.0.1:8000` with no LAN IP or firewall rule. Re-run `adb reverse` whenever the phone is reconnected or adb restarts (`adb reverse --list` shows active rules). Always pass the `--dart-define` above: the fallback in `mobile/lib/api_client.dart` is still the emulator address `10.0.2.2`, which does not work on a real phone. Without USB, a phone on the same trusted LAN can use the computer's LAN IP instead (for example `http://192.168.1.20:8000`, with port 8000 allowed through the firewall). For iOS Simulator use `http://127.0.0.1:8000`. Local HTTP is allowed for development by the platform manifests. iOS must be built/run on macOS. Start the backend before opening the app so it can fetch species rules.
@@ -45,7 +48,7 @@ Both YAMLs hold the same model, crop and quality structure. To add sheep later, 
 
 ## Upload example
 
-In the API docs, supply an image and this JSON in the `metadata` field:
+In the API docs, click Authorize with your operator bearer token, then supply an image and this JSON in the `metadata` field. The operator_id must match that credential:
 
 ```json
 {
@@ -78,3 +81,5 @@ For a non-Docker backend, provide a running PostgreSQL instance, copy `backend/.
 See `docs/ARCHITECTURE.md`, `docs/ROADMAP.md` and `docs/VALIDATION.md` for design, scope and checks. The initial commit is local and origin points to `https://github.com/sabdur4hmonov/animal.id.creator.git`. Nothing is pushed automatically.
 
 See `docs/PHASE2_RESEARCH.md` for offline extraction/matching commands and `docs/DATA_REQUIREMENTS.md` for the data gates for later phases. Physical-phone testing is currently paused because the device is being repaired; backend and offline tools proceed independently.
+
+See [SECURITY_AND_REGISTRY.md](docs/SECURITY_AND_REGISTRY.md) for operator/admin keys, status/review endpoints, immutable provenance, duplicate-check boundaries and rotation. Existing keys are preserved by initialization; run it only once. Protected endpoints fail closed when credentials are missing. Only the health endpoint and API documentation are public.

@@ -146,6 +146,7 @@ def verify_rejections(client, content, metadata, project, storage, record):
 
 
 def verify(args):
+    credential = json.loads(args.credentials_file.read_text("utf-8"))["operator"]
     source_hashes = verify_source(args.project)
     content = args.image.read_bytes()
     with Image.open(BytesIO(content)) as image:
@@ -156,9 +157,13 @@ def verify(args):
         "species": "cattle",
         "gps": None,
         "timestamp": datetime.now(UTC).isoformat(),
-        "operator_id": "backend-verification",
+        "operator_id": credential["operator_id"],
     }
-    with httpx.Client(base_url=args.url, timeout=30) as client:
+    with httpx.Client(
+        base_url=args.url,
+        timeout=30,
+        headers={"Authorization": f"Bearer {credential['token']}"},
+    ) as client:
         health = client.get("/health")
         require(health.status_code == 200, f"Health failed: {health.text}")
         require(
@@ -235,6 +240,11 @@ def verify(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", type=Path, required=True)
+    parser.add_argument(
+        "--credentials-file",
+        type=Path,
+        default=ROOT / "backend" / ".secrets" / "tokens.json",
+    )
     parser.add_argument("--image-source", default="locally supplied verification image")
     parser.add_argument("--project", default="biolivestock-verification")
     parser.add_argument("--url", default="http://127.0.0.1:18000")
