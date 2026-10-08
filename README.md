@@ -4,6 +4,8 @@ Cattle data collection API: native camera capture, image quality feedback, optio
 
 ## Run the backend
 
+Offline collection/retries and backup/restore commands: [COLLECTION_RELIABILITY.md](docs/COLLECTION_RELIABILITY.md).
+
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 
 ```powershell
