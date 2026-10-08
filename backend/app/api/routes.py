@@ -29,6 +29,7 @@ def health(request: Request, session: SessionDep):
     return {
         "status": "ok",
         "database": "ok",
+        "capabilities": {"idempotent_capture_uploads": True},
         "models": {
             key.value: ("checkpoint_present" if detector.checkpoint(config).is_file() else "pending_model")
             for key, config in request.app.state.species_configs.items()

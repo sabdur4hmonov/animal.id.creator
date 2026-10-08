@@ -46,6 +46,18 @@ def query(project, sql, database="biolivestock"):
     return result.stdout.decode("utf-8").strip()
 
 
+def validate_storage_mount(project, root):
+    ids = run(project, "ps", "-q", "--all", "api", stdout=subprocess.PIPE).stdout.decode().split()
+    if not ids:
+        raise ValueError("No API container exists for this project; cannot verify its storage mount")
+    result = subprocess.run(["docker", "inspect", *ids], check=True, capture_output=True, timeout=30)
+    containers = json.loads(result.stdout)
+    for container in containers:
+        mounts = [mount for mount in container["Mounts"] if mount["Destination"] == "/srv/data"]
+        if len(mounts) != 1 or mounts[0]["Type"] != "bind" or Path(mounts[0]["Source"]).resolve() != root.resolve():
+            raise ValueError("Storage root does not match this project's actual /srv/data bind mount")
+
+
 def capture_index(project, database="biolivestock"):
     sql = """SELECT coalesce(json_agg(c), '[]'::json) FROM
              (SELECT id, species, animal_id, file_path, crop_path, stored_sha256
@@ -132,6 +144,7 @@ def backup(args):
     copied_roots += [ROOT / name for name in ("species_configs", "business_configs", "security_configs")]
     if any(args.output.resolve().is_relative_to(path.resolve()) for path in copied_roots):
         raise ValueError("Backup output must be outside the directories being copied")
+    validate_storage_mount(args.project, source)
     args.output.mkdir(parents=True, exist_ok=False)
     was_running = bool(run(args.project, "ps", "-q", "--status", "running", "api", stdout=subprocess.PIPE).stdout.strip())
     try:
@@ -220,6 +233,7 @@ def main():
         verify_bundle(args.bundle)
         print("All backup checksums and capture files verified")
     else:
+        validate_storage_mount(args.project, args.storage_root.resolve())
         report = reconcile(args.storage_root.resolve(), capture_index(args.project))
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open("x", encoding="utf-8") as stream:

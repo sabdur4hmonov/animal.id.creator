@@ -110,6 +110,17 @@ def test_failed_backup_restores_original_api_state(tmp_path, monkeypatch, runnin
 
     monkeypatch.setattr(storage, "run", run)
     monkeypatch.setattr(storage, "capture_index", fail)
+    monkeypatch.setattr(storage, "validate_storage_mount", lambda *_: None)
     with pytest.raises(RuntimeError, match="database failure"):
         storage.backup(Namespace(storage_root=source, output=tmp_path / "backup", project="test"))
     assert actions == (["ps", "stop", "start"] if running else ["ps"])
+
+
+def test_wrong_project_storage_pair_is_rejected(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "run", lambda *args, **kwargs: SimpleNamespace(stdout=b"container"))
+    mounts = [{"Mounts": [{"Destination": "/srv/data", "Type": "bind", "Source": str(tmp_path / "correct")}]}]
+    monkeypatch.setattr(storage.subprocess, "run", lambda *args, **kwargs:
+                        SimpleNamespace(stdout=json.dumps(mounts).encode()))
+    storage.validate_storage_mount("test", tmp_path / "correct")
+    with pytest.raises(ValueError, match="does not match"):
+        storage.validate_storage_mount("test", tmp_path / "wrong")

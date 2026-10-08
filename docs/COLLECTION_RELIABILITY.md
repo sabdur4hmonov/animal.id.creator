@@ -43,11 +43,13 @@ Exit 2 means inconsistency. Legacy originals/crops without historical hashes are
 `hash_unavailable`, not claimed integrity matches.
 
 Backup briefly stops this project's API if running and restarts it in `finally`, including on failure.
-Do not upload or directly modify files/database during this maintenance window. Confirm the project
-and host mount match. The bundle contains a custom-format PostgreSQL dump (all tables), capture index,
+Do not upload or directly modify files/database during this maintenance window. The tool checks the
+actual API container bind mount and rejects a wrong project/storage pair. The bundle contains a
+custom-format PostgreSQL dump (all tables), capture index,
 cattle/sheep storage, research labels/crops/references and species/business/security configs.
-Secrets and other backup/test/evidence trees are excluded. Every included file has a checked SHA-256;
-originals also match database hashes. Failure leaves an incomplete directory for inspection; only a
+Secrets and other backup/test/evidence trees are excluded. Keep credentials separately protected and
+retain any required model checkpoints separately. Every included file has a checked SHA-256; originals
+also match database hashes. Failure leaves an incomplete directory for inspection; only a
 successful verified bundle is a backup. Copy the **entire directory** to a second drive. Protect backups
 as animal/operator/location data. Hashes detect corruption, not authenticity.
 

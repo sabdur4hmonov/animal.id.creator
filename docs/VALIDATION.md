@@ -1,5 +1,34 @@
 # Phase 1 validation
 
+## Collection reliability checks (2026-10-08)
+
+- 122 backend/tooling tests and 45 research tests passed; Ruff passed for backend/research/tools.
+  The README's backend-directory pytest command was also verified. New coverage includes request replay,
+  key conflicts/operator isolation, reviewed CSV import/CLI/leakage, backup corruption/path/mount guards
+  and API restart after failed backup.
+- Flutter analysis: no issues; 17 host tests passed. Tests exercise queue restart, retained original bytes,
+  failed/partial uploads, acknowledgement-write failure, wrong backend/operator, cached settings and
+  refusal to POST to an older backend without idempotency support.
+- Final Android debug APK built in 49.6 seconds after the initial 498.8-second build installed required
+  Android SDK 35/CMake dependencies. Flutter SDK and Kotlin cross-drive setting were not upgraded.
+  APK SHA-256: `b8738369d54de1321f37d8f07b994f3ff22e529436d91144a9d5a7d0b672f1f4`.
+  No API token is compiled in; use the README's configured run command on the actual phone.
+- Isolated `biolivestock-reliability` stack on port 18001: four simultaneous retries produced one capture
+  and one immutable receipt, original response replay, changed-payload 409, invalid-token 401 and
+  wrong-operator 403. Evidence: `data/reliability/evidence/idempotency-20261008.json`.
+- Actual Dart queue → Docker API/PostgreSQL test used a synthetic JPEG: passed local QC, saved a durable
+  journal, simulated response loss after server commit, reopened the queue, replayed the same key and
+  obtained the same UUID while keeping the local original. Capture UUID:
+  `bb8f1414-122b-49c9-9f52-1ba1767bc046`; journal/receipt retained under
+  `data/reliability/mobile-queue-20261008`. This is host filesystem/HTTP integration, not native camera testing.
+- Final verified backup: `data/backups/reliability-final-20261008`; all table counts/capture index restored
+  to new `biolivestock_restore_final_20261008` and `data/restores/reliability-final-20261008`.
+  Source and clone each have 2 synthetic captures/2 receipts. Read-only reconciliation is healthy:
+  `data/reliability/evidence/reconcile-final-20261008.json`. Earlier backup/clone are retained too.
+- All 46 backend/config source hashes matched the running isolated image. Normal collection data/volumes
+  were not changed. The verification stack is stopped after checks; its volumes, backups and evidence
+  remain. Physical camera/GPS/offline/restart flow and real-animal QC/model accuracy are still unverified.
+
 ## Backend checks (2026-10-01)
 
 From the repository root, with backend development dependencies installed:

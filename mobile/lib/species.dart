@@ -6,7 +6,13 @@ class SpeciesConfig {
   final Map<String, dynamic> quality;
 
   SpeciesConfig.fromJson(Map<String, dynamic> json)
-      : species = Species.values.byName(json['species'] as String),
-        enabled = json['enabled'] as bool,
-        quality = Map<String, dynamic>.from(json['quality'] as Map);
+    : species = Species.values.byName(json['species'] as String),
+      enabled = json['enabled'] as bool,
+      quality = Map<String, dynamic>.from(json['quality'] as Map);
+
+  Map<String, dynamic> toJson() => {
+    'species': species.name,
+    'enabled': enabled,
+    'quality': quality,
+  };
 }

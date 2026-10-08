@@ -24,6 +24,7 @@ def post(client, metadata, content):
 
 def test_health_and_species(client):
     assert client.get("/health").json()["status"] == "ok"
+    assert client.get("/health").json()["capabilities"]["idempotent_capture_uploads"] is True
     configs = {c["species"]: c for c in client.get("/api/v1/species").json()}
     assert configs["cattle"]["enabled"]
     assert not configs["sheep"]["enabled"]
