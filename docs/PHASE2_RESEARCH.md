@@ -22,6 +22,18 @@ Select candidate thresholds on validation data, freeze the threshold, and evalua
 
 Dataset validation and matching metrics use the existing Python environment without PyTorch:
 
+Fill `research/templates/muzzle_annotations.csv` with explicitly reviewed crops and independent
+animal/session labels. Use `true` for `reviewed_muzzle`, forward slashes in paths relative to the crop
+root, and the documented split/role scheme. A blank `sha256` is computed from the crop bytes; a
+supplied checksum must match. The importer rejects unknown/missing headers, unreviewed images,
+duplicate content/IDs, species mixing, unsafe paths and animal/session leakage. It never crops an
+image or infers a label. Output creation refuses overwrites; use a fresh versioned filename.
+
+```powershell
+.\.venv\Scripts\python.exe tools/research.py import-csv --config research/species_configs/cattle.yaml --csv data/research/muzzle_annotations.csv --dataset-root data/research/crops --output data/research/manifest-v1.json
+.\.venv\Scripts\python.exe tools/research.py validate --config research/species_configs/cattle.yaml --manifest data/research/manifest-v1.json --dataset-root data/research/crops
+```
+
 ```powershell
 .\.venv\Scripts\python.exe tools/research.py validate --config research/species_configs/cattle.yaml --manifest data/research/manifest.json --dataset-root data/research/crops
 .\.venv\Scripts\python.exe tools/research.py evaluate --config research/species_configs/cattle.yaml --artifact data/research/embeddings.npz --split test --threshold 0.8 --output data/research/test-report.json

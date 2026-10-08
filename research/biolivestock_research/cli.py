@@ -7,6 +7,7 @@ import numpy as np
 
 from biolivestock_research.dataset import Sample, load_manifest, manifest_digest, resolve_image
 from biolivestock_research.embedding import FeatureExtractor, load_config, normalize_vectors
+from biolivestock_research.import_manifest import reviewed_csv, write_manifest
 from biolivestock_research.matching import evaluate
 
 
@@ -78,9 +79,12 @@ def smoke(args):
 def main():
     parser = argparse.ArgumentParser(description="Offline cattle embeddings/matching evaluation only")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("validate", "extract", "evaluate", "smoke"):
+    for name in ("import-csv", "validate", "extract", "evaluate", "smoke"):
         command = sub.add_parser(name)
         command.add_argument("--config", type=Path, required=True)
+        if name == "import-csv":
+            command.add_argument("--csv", type=Path, required=True)
+            command.add_argument("--dataset-root", type=Path, required=True)
         if name in ("validate", "extract"):
             command.add_argument("--manifest", type=Path, required=True)
             command.add_argument("--dataset-root", type=Path, required=True)
@@ -95,7 +99,12 @@ def main():
             command.add_argument("--split", choices=["validation", "test"], required=True)
             command.add_argument("--threshold", type=float, required=True)
     args = parser.parse_args()
-    if args.command == "validate":
+    if args.command == "import-csv":
+        config = load_config(args.config)
+        samples = reviewed_csv(args.csv, args.dataset_root, config.species)
+        write_manifest(args.output, samples)
+        print(f"Imported {len(samples)} reviewed crops; manifest SHA-256={manifest_digest(samples)}")
+    elif args.command == "validate":
         config = load_config(args.config)
         samples = load_manifest(args.manifest, args.dataset_root, config.species)
         print(f"Validated {len(samples)} reviewed samples; manifest SHA-256={manifest_digest(samples)}")
