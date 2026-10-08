@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Request, UploadFile
 from pydantic import ValidationError
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,6 +12,7 @@ from app.core.database import get_session
 from app.schemas.capture import CaptureMetadata, CaptureResponse
 from app.services.collection import QualityRejected, collect_capture
 from app.services.detection import DetectionUnavailable, FramingError
+from app.services.idempotency import UploadConflict
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def upload_capture(
     principal: PrincipalDep,
     image: Annotated[UploadFile, File()],
     metadata: Annotated[str, Form()],
+    idempotency_key: Annotated[str | None, Header(pattern=r"^[A-Za-z0-9_-]{16,128}$")] = None,
 ):
     try:
         parsed = CaptureMetadata.model_validate_json(metadata)
@@ -76,7 +78,10 @@ def upload_capture(
             settings,
             session,
             request.app.state.security_configs[parsed.species],
+            request_key=idempotency_key,
         )
+    except UploadConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
     except QualityRejected as exc:
         raise HTTPException(422, {"stage": exc.stage, "quality": exc.quality.model_dump()}) from exc
     except FramingError as exc:

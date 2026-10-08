@@ -1,5 +1,23 @@
 # Local authentication and registration controls
 
+## Safe upload retries
+
+Send `Idempotency-Key` (16–128 ASCII letters/digits/underscores/hyphens) on `POST /api/v1/captures`.
+Generate it once per capture and retain the exact image bytes and capture metadata for retries.
+Keys are scoped to the authenticated operator ID, including across key rotation. The same key/payload
+returns the original HTTP 201 response/UUID without new images, scans or duplicate-review events.
+Different image bytes or metadata with a committed key return 409; authentication and operator binding
+still apply. Failed validation/QC/persistence does not consume a key. Requests without a key keep the
+old behavior, creating a new scan. Do not invent a new key merely because an upload timed out.
+
+Additive migration 0004 stores append-only upload receipts in the same transaction as the capture.
+PostgreSQL transaction locks serialize concurrent retries across API workers; a unique operator/key
+constraint is the final guard. SQLite is used for sequential API tests, not the production concurrency
+guarantee. Receipts have no expiry in this local collection MVP. Future removal requires a deliberate
+retention policy because old retries would otherwise create new scans.
+
+## Local keys and registry
+
 Run `.\.venv\Scripts\python.exe tools/init_local_credentials.py` from the repository root once. It creates distinct random operator/admin bearer keys and SHA-256-only server records in ignored `backend/.secrets/`. No key is printed or included in the Docker build context. Start/restart Compose to load `api_keys.json`; absent credentials return 503 on protected endpoints, never anonymous access. `/health` stays public for container health checks. API schemas/docs are public, while `/api/v1/*` requires a key. Rotate by creating a fresh random token, replacing its server hash and client token, and restarting the API. Never use an admin key in the capture app.
 
 Use `backend/.secrets/tokens.json` locally to retrieve credentials. Protect this file with your machine's user permissions; it is not a secrets vault. Development bearer keys identify operators, not hardware or organizations. There is no multitenancy/ownership/legal verification or external identity provider yet. Send keys over HTTPS before exposing the service outside a trusted local development network. A compile-time mobile API_TOKEN can be recovered from the app binary; this is a development client, not a production credential-distribution solution.

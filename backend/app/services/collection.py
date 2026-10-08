@@ -9,9 +9,11 @@ from app.core.security_config import SecurityConfig
 from app.core.settings import Settings
 from app.core.species import SpeciesConfig
 from app.models.capture import Capture
-from app.schemas.capture import CaptureMetadata
+from app.models.upload_receipt import UploadReceipt
+from app.schemas.capture import CaptureMetadata, CaptureResponse
 from app.services.anti_spoofing import scan_risk
 from app.services.detection import NoseDetector
+from app.services.idempotency import lock_request, replay, request_digest
 from app.services.quality_control import check_quality
 from app.services.registration import duplicate_candidates, ensure_animal, flag_duplicates
 from app.services.storage import decode_image, write_image
@@ -31,7 +33,14 @@ def collect_capture(
     settings: Settings,
     session: Session,
     security_config: SecurityConfig,
-) -> Capture:
+    request_key: str | None = None,
+) -> Capture | dict:
+    digest = request_digest(content, metadata) if request_key else None
+    if request_key:
+        lock_request(session, metadata.operator_id, request_key)
+        previous_response = replay(session, metadata.operator_id, request_key, digest)
+        if previous_response is not None:
+            return previous_response
     image = decode_image(content, settings.max_image_pixels)
     quality = check_quality(image, config.quality)
     if not quality.passed:
@@ -102,6 +111,16 @@ def collect_capture(
         session.add(record)
         session.flush()
         flag_duplicates(session, record, matches)
+        if request_key:
+            session.add(
+                UploadReceipt(
+                    operator_id=metadata.operator_id,
+                    request_key=request_key,
+                    payload_sha256=digest,
+                    capture_id=record.id,
+                    response=CaptureResponse.model_validate(record, from_attributes=True).model_dump(mode="json"),
+                )
+            )
         session.commit()
         return record
     except Exception:
