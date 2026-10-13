@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import func, select
 
+from app.core.species import Species
 from app.models.business import Animal
 from app.models.registry import AnimalNumberCounter, RegistryReceipt
 from tests.test_api import post
@@ -33,10 +34,10 @@ def test_unique_numbering_replay_and_conflicting_payload(client, db_session):
     key = uuid4().hex
     first = send(client, key=key)
     assert first.status_code == 201, first.text
-    assert first.json()["animal_id"] == "M00000001"
+    assert first.json()["animal_id"] == "MAA00000001"
     assert send(client, key=key).json() == first.json()
     assert send(client, key=key, body={"species": "cattle", "owner": NEW_OWNER}).status_code == 409
-    assert send(client).json()["animal_id"] == "M00000002"
+    assert send(client).json()["animal_id"] == "MAA00000002"
     assert db_session.scalar(select(func.count()).select_from(Animal)) == 2
     assert db_session.scalar(select(func.count()).select_from(RegistryReceipt)) == 2
     assert db_session.get(AnimalNumberCounter, "M").last_number == 2
@@ -46,7 +47,7 @@ def test_legacy_lookalike_is_skipped_and_manual_numeric_assignment_blocked(clien
     db_session.add(
         Animal(
             species="cattle",
-            animal_id="m00000001",
+            animal_id="maa00000001",
             status="open",
             version=1,
             created_at=datetime.now(UTC),
@@ -54,9 +55,9 @@ def test_legacy_lookalike_is_skipped_and_manual_numeric_assignment_blocked(clien
         )
     )
     db_session.commit()
-    assert send(client).json()["animal_id"] == "M00000002"
+    assert send(client).json()["animal_id"] == "MAA00000002"
     assert (
-        client.post("/api/v1/animals", json={"species": "cattle", "animal_id": "M00000003"}).status_code
+        client.post("/api/v1/animals", json={"species": "cattle", "animal_id": "MAA00000003"}).status_code
         == 409
     )
 
@@ -106,7 +107,57 @@ def test_archiving_retains_id_owner_and_scans_and_never_reuses_number(
     assert check["recorded_slaughter"] == (state == "slaughtered")
     assert check["biometric_identity_verified"] is False and check["independent_slaughter_verified"] is False
     assert check["animal"]["terminal_record"]["capture_stored_sha256"] == scan["stored_sha256"]
-    assert send(client).json()["animal_id"] == "M00000002"
+    assert send(client).json()["animal_id"] == "MAA00000002"
+
+
+@pytest.mark.parametrize("seed,expected", [
+    (99_999_998, ["MAA99999999", "MAB00000001"]),
+    (26 * 99_999_999 - 1, ["MAZ99999999", "MBA00000001"]),
+])
+def test_api_rollover_advances_same_counter_without_reset(client, db_session, seed, expected):
+    db_session.add(AnimalNumberCounter(prefix="M", last_number=seed))
+    db_session.commit()
+    for animal_id in expected:
+        response = send(client)
+        assert response.status_code == 201, response.text
+        assert response.json()["animal_id"] == animal_id
+    db_session.expire_all()
+    assert db_session.get(AnimalNumberCounter, "M").last_number == seed + 2
+
+
+def test_old_id_receipt_and_capture_survive_format_upgrade(client, db_session, metadata, jpeg):
+    current = client.app.state.species_configs[Species.cattle]
+    old = current.model_copy(update={"numbering": current.numbering.model_copy(update={"series_letters": 0})})
+    client.app.state.species_configs[Species.cattle] = old
+    key = uuid4().hex
+    try:
+        legacy = send(client, key=key).json()
+        assert legacy["animal_id"] == "M00000001"
+    finally:
+        client.app.state.species_configs[Species.cattle] = current
+    assert send(client, key=key).json() == legacy
+    assert send(client).json()["animal_id"] == "MAA00000002"
+    metadata["animal_id"] = legacy["animal_id"]
+    assert post(client, metadata, jpeg).status_code == 201
+    route = "/api/v1/registry/animals/cattle/M00000001"
+    assert send(client, route + "/owner", {**observation(), "owner": NEW_OWNER}).status_code == 200
+    assert client.get(route).json()["animal_id"] == "M00000001"
+    db_session.expire_all()
+    assert db_session.get(AnimalNumberCounter, "M").last_number == 2
+
+
+def test_final_series_exhaustion_does_not_create_receipt_or_reset(client, db_session):
+    maximum = 676 * 99_999_999
+    db_session.add(AnimalNumberCounter(prefix="M", last_number=maximum - 1))
+    db_session.commit()
+    final_key = uuid4().hex
+    last = send(client, key=final_key)
+    assert last.status_code == 201 and last.json()["animal_id"] == "MZZ99999999"
+    assert send(client).status_code == 503
+    assert send(client, key=final_key).json() == last.json()
+    db_session.expire_all()
+    assert db_session.get(AnimalNumberCounter, "M").last_number == maximum
+    assert db_session.scalar(select(func.count()).select_from(RegistryReceipt)) == 1
 
 
 def test_nonregistrar_cannot_change_owner_or_retire(client):

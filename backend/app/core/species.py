@@ -24,6 +24,7 @@ class ModelConfig(ConfigBase):
 class NumberingConfig(ConfigBase):
     prefix: str = Field(pattern=r"^[A-Z]{1,8}$")
     digits: int = Field(ge=4, le=12)
+    series_letters: int = Field(default=0, ge=0, le=2)
 
 
 class CropConfig(ConfigBase):

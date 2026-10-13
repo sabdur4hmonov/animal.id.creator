@@ -22,8 +22,8 @@ from app.schemas.business import (
 )
 from app.schemas.capture import CaptureResponse
 from app.services.integrity import verify_stored_image
+from app.services.numbering import reserved_number
 from app.services.registration import audit
-from app.services.registry import reserved_number
 
 router = APIRouter(prefix="/api/v1")
 SessionDep = Annotated[Session, Depends(get_session)]

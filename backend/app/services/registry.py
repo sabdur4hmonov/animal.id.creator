@@ -1,6 +1,5 @@
 import hashlib
 import json
-import re
 from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException
@@ -13,11 +12,8 @@ from app.models.capture import Capture
 from app.models.registry import AnimalNumberCounter, AnimalProfile, RegistryReceipt
 from app.schemas.registry import RegistryAnimal
 from app.services.idempotency import lock_request
+from app.services.numbering import capacity, format_number
 from app.services.registration import audit
-
-
-def reserved_number(config, animal_id):
-    return re.fullmatch(re.escape(config.numbering.prefix) + r"[0-9]+", animal_id.upper()) is not None
 
 
 def utc(value):
@@ -92,7 +88,7 @@ def run_operation(session, principal, key, operation, data, execute):
 
 def next_id(session, config):
     insert = pg_insert if session.get_bind().dialect.name == "postgresql" else sqlite_insert
-    prefix, digits = config.numbering.prefix, config.numbering.digits
+    prefix = config.numbering.prefix
     while True:
         number = session.scalar(
             insert(AnimalNumberCounter)
@@ -100,13 +96,13 @@ def next_id(session, config):
             .on_conflict_do_update(
                 index_elements=["prefix"],
                 set_={"last_number": AnimalNumberCounter.last_number + 1},
-                where=AnimalNumberCounter.last_number < 10**digits - 1,
+                where=AnimalNumberCounter.last_number < capacity(config.numbering),
             )
             .returning(AnimalNumberCounter.last_number)
         )
         if number is None:
             raise HTTPException(503, "Animal numbering range is exhausted; never reset its counter")
-        candidate = f"{prefix}{number:0{digits}d}"
+        candidate = format_number(config.numbering, number)
         # Preserve legacy spelling and skip all look-alike IDs across species.
         if (
             session.scalar(select(Animal.animal_id).where(func.upper(Animal.animal_id) == candidate).limit(1))

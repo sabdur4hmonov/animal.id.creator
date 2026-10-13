@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
@@ -36,13 +37,16 @@ def verify(args):
         return compose_output(args.project, "exec", "-T", "db", "psql", "-U", "biolivestock", "-Atc", sql)
 
     sources = verify_source(args.project)
+    configs = httpx.get(args.url + "/api/v1/species", headers=headers, timeout=30).json()
+    numbering = next(item["numbering"] for item in configs if item["species"] == "cattle")
+    pattern = re.compile(re.escape(numbering["prefix"]) + rf"[A-Z]{{{numbering.get('series_letters', 0)}}}[0-9]{{{numbering['digits']}}}")
     require(query("SELECT version_num FROM alembic_version") == "0005", "Registry migration missing")
     before = int(query("SELECT count(*) FROM captures"))
     with ThreadPoolExecutor(max_workers=8) as pool:
         allocations = list(pool.map(lambda _: post(root, issuance, uuid4().hex), range(8)))
     require(all(r.status_code == 201 for r in allocations), "Concurrent allocation failed")
     ids = [r.json()["animal_id"] for r in allocations]
-    require(len(set(ids)) == 8 and all(i.startswith("M") and len(i) == 9 for i in ids), "Numbers overlap")
+    require(len(set(ids)) == 8 and all(pattern.fullmatch(i) for i in ids), "Numbers overlap or format differs")
     replay_key = uuid4().hex
     with ThreadPoolExecutor(max_workers=4) as pool:
         retries = list(pool.map(lambda _: post(root, issuance, replay_key), range(4)))
