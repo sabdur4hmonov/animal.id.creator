@@ -1,6 +1,6 @@
 # Farm checklist — cattle identity pilot
 
-**Sardorbek · current code/config: 2026-10-08.** Collect cattle only. No muzzle checkpoint exists: accepted originals are `pending_model`, not verified nose crops. This protocol's **100-animal floor** supports a first pilot; it cannot establish rare-error reliability. Required sample size depends on the error target ([NIST](https://www.nist.gov/publications/using-chebyshevs-inequality-determine-sample-size-biometric-evaluation-fingerprint-data)).
+**Sardorbek · current code/config: 2026-10-13.** Collect cattle only. No muzzle checkpoint exists: accepted originals are `pending_model`, not verified nose crops. This protocol's **100-animal floor** supports a first pilot; it cannot establish rare-error reliability. Required sample size depends on the error target ([NIST](https://www.nist.gov/publications/using-chebyshevs-inequality-determine-sample-size-biometric-evaluation-fingerprint-data)).
 
 ## 1. Before travelling
 
@@ -11,9 +11,15 @@
 
 ## 2. Fixed cohort and capture recipe
 
-Use `F01-C001`…`F01-C050` and `F02-C001`…`F02-C050` (ASCII, no spaces). Assign numbers from the shuffled roster, not by breed/age.
+For new cattle, use the canonical backend's **Register new animal** once per animal,
+record its issued `M00000001` style ID on the tag/ledger and press **Use this ID**.
+Never invent or reissue an M-number. Keep farm cohort labels `F01-C001`…`F01-C050`
+and `F02-C001`…`F02-C050` in a separate `cohort_slot` ledger column; the table below
+uses those slots, not allocated number ranges. Shuffle slots independently of
+breed/age, then map each slot to its permanent server `animal_id`. Existing legacy
+IDs stay unchanged. Do not create another ID for a later visit or owner change.
 
-| IDs at **each** farm | Research split | Purpose |
+| Cohort slots at **each** farm | Research split | Purpose |
 |---|---|---|
 | C001–C020 | train | 40 animals total; never validation/test |
 | C021–C030 | validation | 20 enrolled animals total |
@@ -30,7 +36,7 @@ Use `F01-C001`…`F01-C050` and `F02-C001`…`F02-C050` (ASCII, no spaces). Assi
 
 Session ID = `F01-YYYYMMDD-V1` (then actual dates with V2/V3); F02 uses its own prefix. Each is a separate visit/day. Lighting changes and consecutive shots **do not** create independent sessions.
 
-- [ ] Before **each** visit's muzzle shots, read the permanent tag with the handler. Use the phone's ordinary camera for tag + side-view references; do not upload/count these as muzzle captures. In `roster.csv` record `animal_id, permanent_tag, identity_verified_by, verification_time, reference_filename`; V1/V2/V3 must agree. Conflicting/unreadable/replaced tag → `identity_uncertain`; exclude until independently resolved.
+- [ ] Before **each** visit's muzzle shots, read the permanent tag with the handler. Use the phone's ordinary camera for tag + side-view references; do not upload/count these as muzzle captures. In `roster.csv` record `animal_id, cohort_slot, permanent_tag, identity_verified_by, verification_time, reference_filename`; V1/V2/V3 must agree. Conflicting/unreadable/replaced tag → `identity_uncertain`; exclude until independently resolved.
 - [ ] Per animal: breed, sex, birth date/estimated age, coat/markings, health/nose damage/soiling, owner/farm code and permission reference. Record unknown rather than guessing. If available, add actual scale kg/time/device and tape girth/straight length in cm; muzzle photos alone cannot establish weight.
 - [ ] In `scans.csv`, one row/photo: `animal_id, species=cattle, session_id, farm_id, camera_id, shot_no, view(front/left15/right15), distance_cm, timestamp_with_timezone, operator_id, gps_latitude, gps_longitude, lighting, nose_condition, request_key, capture_uuid, server_file_path, upload_result`. Keep UUID/path blank until upload; keep the request key unchanged. Camera e.g. `PHONE-01`; operator matches its key. Time: `2026-10-08T09:15:00+05:00`; blank GPS means unavailable, never invented `0,0`.
 
@@ -38,16 +44,16 @@ The API accepts animal ID, species, timezone-aware timestamp, authenticated oper
 
 ```text
 Server originals (leave names/files unchanged):
-data/cattle/F01-C021/<UTC-date>/<capture-uuid>_original.jpg
+data/cattle/M00000021/<UTC-date>/<capture-uuid>_original.jpg
 
 Separate research copies after manual nose review/cropping:
-data/research/crops/cattle/F01-C021/F01-20261008-V1/01-front.jpg
+data/research/crops/cattle/M00000021/F01-20261008-V1/01-front.jpg
 
 Ledger + identity references (outside crops/):
 data/research/field/roster.csv
 data/research/field/scans.csv
-data/research/field/references/F01-C021/F01-20261008-V1/tag.jpg
-data/research/field/references/F01-C021/F01-20261008-V1/body.jpg
+data/research/field/references/M00000021/F01-20261008-V1/tag.jpg
+data/research/field/references/M00000021/F01-20261008-V1/body.jpg
 ```
 
 Research shot names: `01-front.jpg`, `02-front.jpg`, `03-left15.jpg`, `04-left15.jpg`, `05-right15.jpg`, `06-right15.jpg` (the animal's left/right). UTC date may differ from local date; session comes from the ledger. Never rename server evidence. Back up ledger, originals and database before leaving; verify 6 saved UUIDs per animal/visit.
@@ -68,4 +74,4 @@ Research shot names: `01-front.jpg`, `02-front.jpg`, `03-left15.jpg`, `04-left15
 
 ## 5. Sheep — later, not this visit
 
-- [ ] Keep sheep disabled. Later use separate IDs (`F01-S001`), `species=sheep`, the same visit/ledger scheme and separate manifests. Smaller/wool-obscured muzzles need fresh framing/QC calibration and a sheep checkpoint before enabling collection; do not assume cattle distance/thresholds/formulas work. Record breed, age and wool/nose obstruction; retain identity proof across visits. No sheep model work is part of this protocol.
+- [ ] Keep sheep disabled. Later use server-issued S-prefix IDs (cohort slots e.g. `F01-S001`), `species=sheep`, the same visit/ledger scheme and separate manifests. Smaller/wool-obscured muzzles need fresh framing/QC calibration and a sheep checkpoint before enabling collection; do not assume cattle distance/thresholds/formulas work. Record breed, age and wool/nose obstruction; retain identity proof across visits. No sheep model work is part of this protocol.

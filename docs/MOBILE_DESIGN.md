@@ -1,6 +1,12 @@
 # Field capture design — 2026-10-13
 
-The native Flutter app now separates **Capture**, **Saved** and **Tools**. The
+**Latest registry extension:** 84 full Flutter host tests passed; analyzer clean.
+Final debug APK SHA-256 `998d45179dada676d1dc1eca2313a38ae25cc108654899fb0ee58e25e488191e`.
+Actual widget previews below are refreshed for four-tab navigation. Permanent-ID
+dialogs and report previews: [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md). These use
+mock records and SDK fonts; physical-device operation remains unverified.
+
+The native Flutter app now separates **Capture**, **Saved**, **Animals** and **Tools**. The
 previous screen put queue management and backup controls between the form and
 camera. The new capture screen puts the camera first and keeps the primary action
 above navigation, with animal details, readable QC feedback and preserved originals.
@@ -34,6 +40,7 @@ in `mobile/lib/app_design.dart`; capture logic remains species/config driven.
 | Capture | Visible preview, visual positioning guide, animal ID/species, configured operator, fixed capture action. Invalid input is brought into view before taking a photo. |
 | Review | Full original preview, local QC result, explicit GPS absence, expandable measurements/timestamp/request key. Failed QC offers retake; accepted captures offer upload or next capture. |
 | Saved | Pending capture count, explicit manual batch upload, original review, existing 50-item pagination, receipt review. Counts are captures, not verified animal identities. |
+| Animals | Server-issued permanent M IDs with readable tabular digits; owner transfers, death/slaughter archives, paginated records and report/history lookup. Financial status is explicitly separate. |
 | Receipts | Readable acknowledgement cards, selectable UUID/request/path, existing pagination and close action. |
 | Tools | Verified ZIP backup/share, scope/retention explanation, cached-rule status, configured operator/backend, refresh and field checklist. |
 | Errors | Separate error icon/color plus text; uploads/backup failures retain local evidence. Permission failure offers retry. |
@@ -41,8 +48,8 @@ in `mobile/lib/app_design.dart`; capture logic remains species/config driven.
 The guide is a positioning aid, not a detected muzzle, crop, liveness result or
 identity confidence. A dark camera caption gradient keeps guidance readable
 against bright frames. There is no fake online indicator: cached-rule/local-save
-labels describe known state. API/auth/QC thresholds, immutable journals, upload
-receipts, species enablement and storage schema remain unchanged. Sheep stays
+labels describe known state. Registry adds separate mutation journals and additive
+schema 0005; the existing capture/auth/QC and upload-receipt contract is preserved. Sheep stays
 disabled; no checkpoint means server uploads still use `pending_model`.
 
 Capture/tools scroll as bounded forms so validation remains mounted even at large
@@ -75,7 +82,7 @@ touch-target guidance. Physical Android/iOS rendering, camera texture/orientatio
 real keyboard/share sheet, sunlight and gloved operation still need a device.
 English UI is retained; translation is a separate future product decision.
 
-**Verified:** 68 Flutter host tests passed; final analyzer reported no issues.
+**Earlier design milestone:** 68 Flutter host tests passed; final analyzer reported no issues.
 The small-phone check also confirms invalid Animal ID feedback is scrolled above
 the fixed action without taking a photo. Android touch-target guidance passed on
 Capture and Tools. Final debug APK built in 26.0 seconds, SHA-256

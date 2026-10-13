@@ -7,6 +7,7 @@ Cattle data collection API: native camera capture, image quality feedback, optio
 Offline collection/retries and backup/restore commands: [COLLECTION_RELIABILITY.md](docs/COLLECTION_RELIABILITY.md).
 Phone ZIP recovery, queue benchmark and dependency pins: [collection improvements](docs/COLLECTION_IMPROVEMENTS_2026-10-13.md).
 Mobile screen design, visual previews and UI checks: [MOBILE_DESIGN.md](docs/MOBILE_DESIGN.md).
+Permanent M-number issuance, ownership transfers, death/slaughter archives and report lookup: [ANIMAL_REGISTRY.md](docs/ANIMAL_REGISTRY.md).
 
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 
@@ -43,6 +44,14 @@ Phase 1 testing is done on a physical Android phone connected over USB (USB debu
 Enter the animal ID, position one muzzle fully within the frame, and tap Capture; the operator comes from the configured key. Camera permission and optional GPS are requested; missing GPS stays null. Local-QC-passing photos are saved to a durable phone queue before **Saved on this phone** appears. After one connection caches species settings, capture can continue offline. **Next capture (saved locally)** retains the image; restart recovers pending uploads. Reconnect and upload individually or use **Upload pending captures**. Stable request keys make retries safe even if a response was lost after persistence. Server QC/framing remains authoritative. **Review saved upload receipts** shows UUID/file-path mappings for the ledger. Originals/receipts are retained locally; do not clear app data/uninstall before upload and backup. See [collection reliability](docs/COLLECTION_RELIABILITY.md) for pre-trip testing and recovery.
 
 ## Models and species configuration
+
+For a new animal, connect once and choose **New animal ID** (or Animals →
+**Register new animal**), enter its owner and use the server-issued `M00000001`
+style number. Keep that number on the tag/ledger and use it for every photo and
+owner change. Existing legacy IDs remain valid; never invent an M-number.
+Animals offers owner transfers and death/slaughter reports, retained archives and
+abattoir record lookup. A recorded slaughter report is not physical/biometric proof.
+Back up before upgrading the backend; startup applies additive Alembic 0005.
 
 No trained cattle muzzle checkpoint was supplied. This repository therefore starts in useful collection mode: quality-approved originals are saved with `crop_status=pending_model` and `crop_path=null`. It does **not** pretend a center crop or a full cow box is a detected nose.
 

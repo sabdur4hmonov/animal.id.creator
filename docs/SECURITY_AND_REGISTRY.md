@@ -2,6 +2,12 @@
 
 ## Safe upload retries
 
+Permanent server-issued M IDs, owner reports and death/slaughter archives are now
+available under `/api/v1/registry`; see [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md).
+Only the registering operator/admin mutates those records. Managed numeric IDs
+must be issued first; legacy nonnumeric registration/upload behavior remains.
+Recorded ownership is an operator assertion, not legal verification or owner accounts.
+
 Send `Idempotency-Key` (16–128 ASCII letters/digits/underscores/hyphens) on `POST /api/v1/captures`.
 Generate it once per capture and retain the exact image bytes and capture metadata for retries.
 Keys are scoped to the authenticated operator ID, including across key rotation. The same key/payload

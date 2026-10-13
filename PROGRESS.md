@@ -4,7 +4,7 @@ Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
-**Permanent numbering/ownership/lifecycle complete (2026-10-13, latest request).** New cattle register once with server-issued M00000001-style IDs, readable tabular digits and owner reference/name. Mobile now has Capture/Saved/Animals/Tools; Animals supports owner transfers, death/slaughter reports, active/archive lists and abattoir ID/report/history lookup. Clarification: Sardorbek meant death, not sale; no sale terminal state. Death/slaughter archives rather than physically deletes; IDs, owners at reporting, scans and immutable history remain. Additive migration 0005 preserves legacy IDs/data. New IDs require one canonical backend; existing registered IDs still collect offline. Entry clean at 9c745b1. Backend local milestone b9a34a4; mobile/docs milestone follows. No push or normal-stack deployment.
+**Permanent numbering/ownership/lifecycle complete (2026-10-13, latest request).** New cattle register once with server-issued M00000001-style IDs, readable tabular digits and owner reference/name. Mobile now has Capture/Saved/Animals/Tools; Animals supports owner transfers, death/slaughter reports, active/archive lists and abattoir ID/report/history lookup. Clarification: Sardorbek meant death, not sale; no sale terminal state. Death/slaughter archives rather than physically deletes; IDs, owners at reporting, scans and immutable history remain. Additive migration 0005 preserves legacy IDs/data. New IDs require one canonical backend; existing registered IDs still collect offline. Entry clean at 9c745b1. Local code milestones: b9a34a4 (backend) and 9f577a4 (mobile/recovery); final documentation commit contains this update. No push or normal-stack deployment.
 
 **Key decisions & config:** cattle numbering M/eight digits in species_configs/cattle.yaml, sheep S/eight digits present but disabled. No sheep models/branches added. Never reset counters/change live numbering format or issue real IDs from independently writable test/restore clones. Stale backup restores after later issued IDs need reconciliation before writes. Financial open/insured/collateral status remains separate (also labeled Financial in UI); death/slaughter does not automatically settle it. Original registrar/admin controls owner/terminal changes; owner references are ledger identities, not accounts, consent/legal ownership proof. Server and mobile retain replay keys/immutable payloads; acknowledgement loss/restart cannot silently allocate another ID. Pending/corrupt/rejected journals remain backed up; new number remains visible until acknowledged. Full owner/time/GPS/report metadata is sensitive; protect backup copies. New numbering prevents collisions, not multiple IDs for the same physical animal; independent tag/session checks remain necessary.
 
@@ -17,6 +17,43 @@ Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Cod
 **Mobile directly verified:** full 84 Flutter host tests passed, plus four final real-font widget cases after clarifying Financial status; analyzer clean. Nine new journal cases cover lost reply/restart, explicit ID acknowledgement, receipt-write failure, changed payload, backend/operator scopes, known rejection, malformed acknowledgement, corruption and backup inclusion. Two HTTP contract tests and four registry widget scenarios cover issuance/recovery, owner/slaughter validation, death retry and stale-version cancellation, archived controls and 320x720 at 200% text. Integrated Capture/Animals navigation cannot relabel an open original and returns to it with visible feedback. Actual native widgets rendered with SDK fonts and mock boundaries, visually inspected; previews docs/design/registry-*.png plus refreshed capture/saved/tools. New ID and registry dialogs have no gallery/photo source substitution. Full totals: 171 backend + 48 research + 84 Flutter = 303 distinct tests. Backend suite has dependency deprecation and inaccessible pytest-cache warnings only; no failed tests. Final Android debug APK built in 26.1 seconds (preceding build 45.2 seconds), SHA-256 998d45179dada676d1dc1eca2313a38ae25cc108654899fb0ee58e25e488191e. No API token configured in this build. SDK C:\src\flutter (3.47.5), kotlin.incremental=false unchanged.
 
 **Exact next action / external blockers:** before new real numbering, back up the normal backend, review then rebuild from backend/ with docker compose up --build -d (startup applies 0005). Rebuild/run the operator-configured app using README. On a repaired/replacement phone verify native camera/GPS/keyboard and registry creation/acknowledgement, offline restart/retry, owner changes, death/slaughter archive lookup and ZIP export/share on synthetic test records. Real phone remains unavailable/unverified; this is external, not a known code blocker. Real cattle dataset/checkpoint/calibration still gates biometric matching, actual slaughter/identity authenticity, liveness and weight accuracy. Guide now maps server IDs to separate farm cohort slots; preserve all existing labels. No routine architectural question is pending. Requested code work finished; no automatic push or new model work.
+
+
+## Git evidence — registry code milestones, before final documentation commit
+
+Live git inspection: 2026-10-13. HEAD 9f577a4; only the requested docs/previews remain uncommitted before this final documentation commit. No tracked secrets, datasets, weights or builds. Cached origin/main remote-only/local-only counts 0/10; no fresh remote fetch or push in this task. The final documentation commit follows this snapshot; inspect live status/log next session.
+
+Real git log --oneline -20 output:
+
+```text
+9f577a4 Add mobile animal registry, durable ID acknowledgement and archive workflows
+b9a34a4 Add permanent species-configured animal numbers and audited ownership lifecycle
+9c745b1 Document mobile design references, visual previews and verification
+7b86d1c Redesign field capture, saved originals and backup tools for mobile
+5c16b0c Refresh persistent progress with final runtime and git evidence
+1a511e4 Document verified collection enhancements and field recovery limits
+b6c4e0b Pin tested backend containers, CPU dependencies and Flutter SDK
+001b9a2 Respect Windows path casing when exporting phone evidence
+183341b Export verified phone evidence and scale restart-safe capture queues
+fff4799 Reject exact decoded-pixel duplicates in reviewed research datasets
+eaaf857 Clarify published repair milestone status
+ad5f754 Record authorized GitHub publication of audit repairs
+b5da129 Record verified audit repairs and PostgreSQL recovery proof
+0ba8dd7 Measure mobile exposure before resizing and share clipping regression fixtures
+de5e76d Isolate corrupt offline journals and validate capture labels before saving
+8c722c2 Reject invalid contour geometry, truncated research pixels and unsafe UTC times
+4ac39d8 Verify every restored image and research file against backup hashes
+d3704e5 Preserve capture evidence across uncertain database commits
+27c1e85 Document code audit findings and reproducible repair plan
+d99c2f1 Persist camera captures offline with restart-safe upload retries
+```
+
+Real git remote -v output:
+
+```text
+origin	https://github.com/sabdur4hmonov/animal.id.creator.git (fetch)
+origin	https://github.com/sabdur4hmonov/animal.id.creator.git (push)
+```
 
 ## Previous mobile design milestone
 

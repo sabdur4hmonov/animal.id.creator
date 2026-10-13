@@ -20,6 +20,17 @@ References: [Flutter camera plugin](https://pub.dev/packages/camera), [FastAPI m
 
 ## Offline research extension
 
+Permanent numbering/ownership/lifecycle lives in the shared registry service and
+additive Alembic 0005 tables. Species YAML includes a distinct numbering prefix
+and width; cattle M is active, sheep S remains disabled. Atomic counters allocate
+IDs in the canonical PostgreSQL database; immutable idempotency receipts and audit
+events retain ownership/terminal reports, with a mutable current profile for lists.
+Death/slaughter archives retain IDs/scans and never reset numbering. Legacy IDs
+are preserved. Mobile journals uncertain mutations before HTTP and requires an
+issued-ID acknowledgement before another number. Financial status remains separate.
+Lookup states that slaughter/identity are operator reports without independent
+physical/biometric verification. See [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md).
+
 Audit repairs (2026-10-13): both server and mobile exposure histograms use oriented original
 pixels; only blur analysis resizes. The typed mobile journal isolates per-file corruption and
 validates labels before enqueue. Server file fsync precedes COMMIT; attempted/uncertain COMMIT

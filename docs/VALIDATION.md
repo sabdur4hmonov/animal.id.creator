@@ -1,5 +1,23 @@
 # Phase 1 validation
 
+## Permanent numbering, ownership and lifecycle registry (2026-10-13, latest)
+
+171 backend/tooling and 48 research tests passed; the full mobile suite passed
+84 tests with clean Flutter analysis. New cases cover allocation/replay,
+legacy-ID retention, owner permissions/versions, death/slaughter archives,
+actual migration guards, journal restart/lost reply/write failure/corruption,
+typed HTTP contracts, report dialogs and narrow/large-text rendering. Integrated
+Capture/Animals selection cannot relabel an open original.
+
+Isolated PostgreSQL verified eight concurrent unique allocations and four
+same-request replays, competing owner transfers (200/409), a numbered JPEG
+pending_model upload with persisted hash, terminal replay and database guards.
+Complete registry contents matched a new restore database; nine captures reconciled
+healthy. Details and evidence: [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md).
+Test containers were stopped while retaining volumes, files, clones and evidence.
+No normal-stack deployment, sheep enablement or push. Real phone operation and
+physical-animal/slaughter/biometric identity remain unverified.
+
 ## Native mobile design refresh (2026-10-13, latest)
 
 68 Flutter host tests passed; final Flutter analyzer was clean. Capture/Saved/Tools,
