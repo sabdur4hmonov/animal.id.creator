@@ -1,3 +1,4 @@
+import os
 import warnings
 from datetime import UTC
 from io import BytesIO
@@ -8,6 +9,20 @@ import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.schemas.capture import CaptureMetadata
+
+
+def sync_directories(directory: Path, root: Path) -> None:
+    # Linux Docker supports directory fsync; Windows has no equivalent Python handle.
+    if os.name == "nt":
+        return
+    directory, root = directory.resolve(), root.resolve()
+    while directory.is_relative_to(root):
+        descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+        directory = directory.parent
 
 
 def decode_image(content: bytes, max_pixels: int) -> np.ndarray:
@@ -43,6 +58,9 @@ def write_image(root: Path, metadata: CaptureMetadata, capture_id: str, kind: st
         with target.open("xb") as stream:
             created = True
             stream.write(encoded.tobytes())
+            stream.flush()
+            os.fsync(stream.fileno())
+        sync_directories(target.parent, root)
     except Exception:
         if created:
             target.unlink(missing_ok=True)

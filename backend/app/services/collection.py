@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -17,6 +18,8 @@ from app.services.idempotency import lock_request, replay, request_digest
 from app.services.quality_control import check_quality
 from app.services.registration import duplicate_candidates, ensure_animal, flag_duplicates
 from app.services.storage import decode_image, write_image
+
+logger = logging.getLogger(__name__)
 
 
 class QualityRejected(Exception):
@@ -38,7 +41,7 @@ def collect_capture(
     digest = request_digest(content, metadata) if request_key else None
     if request_key:
         lock_request(session, metadata.operator_id, request_key)
-        previous_response = replay(session, metadata.operator_id, request_key, digest)
+        previous_response = replay(session, metadata.operator_id, request_key, digest, settings.storage_root)
         if previous_response is not None:
             return previous_response
     image = decode_image(content, settings.max_image_pixels)
@@ -59,6 +62,7 @@ def collect_capture(
             raise QualityRejected("crop", crop_quality)
     capture_id = str(uuid4())
     paths = []
+    commit_attempted = False
     try:
         received_at = datetime.now(UTC)
         fingerprint = hashlib.sha256(str(image.shape).encode() + image.tobytes()).hexdigest()
@@ -121,10 +125,24 @@ def collect_capture(
                     response=CaptureResponse.model_validate(record, from_attributes=True).model_dump(mode="json"),
                 )
             )
+        # Complete all SQL writes before distinguishing the uncertain COMMIT boundary.
+        session.flush()
+        commit_attempted = True
         session.commit()
         return record
     except Exception:
-        session.rollback()
-        for path in paths:
-            (settings.storage_root / path).unlink(missing_ok=True)
+        try:
+            session.rollback()
+        except Exception:
+            logger.exception("Capture rollback failed; original error preserved")
+        if commit_attempted:
+            # The server may have committed even if the acknowledgement was lost.
+            # A retry resolves the outcome via the receipt; reconciliation retains orphans.
+            logger.warning("Uncertain COMMIT outcome for capture %s; image files retained", capture_id)
+        else:
+            for path in paths:
+                try:
+                    (settings.storage_root / path).unlink(missing_ok=True)
+                except OSError:
+                    logger.exception("Could not clean up uncommitted image %s", path)
         raise

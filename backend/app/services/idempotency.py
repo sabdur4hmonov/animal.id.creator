@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.upload_receipt import UploadReceipt
 from app.schemas.capture import CaptureMetadata
+from app.services.integrity import require_saved_files
 
 
 class UploadConflict(Exception):
@@ -29,10 +30,11 @@ def lock_request(session: Session, operator_id: str, key: str) -> None:
         )
 
 
-def replay(session: Session, operator_id: str, key: str, digest: str) -> dict | None:
+def replay(session: Session, operator_id: str, key: str, digest: str, storage_root) -> dict | None:
     receipt = session.get(UploadReceipt, (operator_id, key))
     if receipt is None:
         return None
     if receipt.payload_sha256 != digest:
         raise UploadConflict("Idempotency key was already used with different image or metadata")
+    require_saved_files(storage_root, receipt.response)
     return receipt.response

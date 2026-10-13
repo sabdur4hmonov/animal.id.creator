@@ -180,14 +180,14 @@ def test_pixel_limit(client, metadata, jpeg):
     assert post(client, metadata, jpeg).status_code == 422
 
 
-def test_failed_commit_removes_images(client, metadata, jpeg, db_session, monkeypatch):
+def test_uncertain_commit_retains_images(client, metadata, jpeg, db_session, monkeypatch):
     def failed_commit():
         raise OperationalError("insert", {}, Exception("database down"))
 
     monkeypatch.setattr(db_session, "commit", failed_commit)
     app.dependency_overrides[get_session] = lambda: db_session
     assert post(client, metadata, jpeg).status_code == 503
-    assert not list(Path(app.state.settings.storage_root).rglob("*.jpg"))
+    assert len(list(Path(app.state.settings.storage_root).rglob("*.jpg"))) == 1
 
 
 def test_crop_write_failure_removes_saved_original(client, metadata, jpeg, sharp, db_session, monkeypatch):

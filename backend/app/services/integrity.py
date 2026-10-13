@@ -1,5 +1,22 @@
 import hashlib
 from datetime import UTC, datetime
+from types import SimpleNamespace
+
+
+def require_saved_files(root, response):
+    """Do not replay a successful receipt when its retained evidence is unavailable."""
+    record = SimpleNamespace(
+        id=response["id"], file_path=response["file_path"], stored_sha256=response.get("stored_sha256")
+    )
+    if verify_stored_image(root, record)["status"] != "matched":
+        raise OSError("Saved original is missing, changed or unverifiable; restore evidence before retrying")
+    if response.get("crop_status") == "cropped":
+        relative = response.get("crop_path")
+        if not relative:
+            raise OSError("Saved crop path is unavailable")
+        path = (root / relative).resolve()
+        if not path.is_relative_to(root.resolve()) or not path.is_file():
+            raise OSError("Saved crop is unavailable")
 
 
 def verify_stored_image(root, record):

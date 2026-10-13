@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sqlite3
 
 import pytest
 from sqlalchemy import func, select
@@ -8,6 +9,7 @@ from app.core.auth import Principal
 from app.main import app
 from app.models.capture import Capture
 from app.models.upload_receipt import UploadReceipt
+from app.services import storage
 from app.services.detection import DetectionUnavailable
 
 KEY = "a" * 32
@@ -76,4 +78,49 @@ def test_keys_are_scoped_to_operator_not_shared_across_principals(client, metada
 @pytest.mark.parametrize("key", ["short", "x" * 129, "a/b" * 8])
 def test_invalid_key_does_not_save(client, metadata, jpeg, key):
     assert send(client, metadata, jpeg, key).status_code == 422
+    assert not list(app.state.settings.storage_root.rglob("*.jpg"))
+
+
+def test_lost_commit_ack_keeps_committed_evidence_and_replays(client, metadata, jpeg, db_session, monkeypatch):
+    dialect = db_session.get_bind().dialect
+    real_commit = dialect.do_commit
+    failed = False
+
+    def lost_ack(connection):
+        nonlocal failed
+        real_commit(connection)
+        if not failed:
+            failed = True
+            raise sqlite3.OperationalError("Simulated lost COMMIT acknowledgement")
+
+    monkeypatch.setattr(dialect, "do_commit", lost_ack)
+    assert send(client, metadata, jpeg).status_code == 503
+    assert db_session.scalar(select(func.count()).select_from(Capture)) == 1
+    assert db_session.scalar(select(func.count()).select_from(UploadReceipt)) == 1
+    record = db_session.scalar(select(Capture))
+    assert (app.state.settings.storage_root / record.file_path).is_file()
+    retried = send(client, metadata, jpeg)
+    assert retried.status_code == 201
+    assert retried.json()["id"] == record.id
+    assert db_session.scalar(select(func.count()).select_from(Capture)) == 1
+
+
+@pytest.mark.parametrize("fault", ["missing", "changed"])
+def test_replay_refuses_missing_or_changed_original(client, metadata, jpeg, fault):
+    first = send(client, metadata, jpeg).json()
+    path = app.state.settings.storage_root / first["file_path"]
+    if fault == "missing":
+        path.unlink()
+    else:
+        path.write_bytes(b"corrupt evidence")
+    assert send(client, metadata, jpeg).status_code == 503
+
+
+def test_file_fsync_failure_never_commits_capture(client, metadata, jpeg, db_session, monkeypatch):
+    def failed_sync(*_):
+        raise OSError("Simulated disk flush failure")
+
+    monkeypatch.setattr(storage.os, "fsync", failed_sync)
+    assert send(client, metadata, jpeg).status_code == 503
+    assert db_session.scalar(select(func.count()).select_from(Capture)) == 0
     assert not list(app.state.settings.storage_root.rglob("*.jpg"))
