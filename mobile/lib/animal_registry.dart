@@ -16,6 +16,10 @@ const _numberStyle = TextStyle(
   color: FieldColors.forest,
 );
 
+bool validCaptureReference(String value) => RegExp(
+  r'^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$',
+).hasMatch(value);
+
 Future<Map<String, dynamic>?> issueAnimalDialog(
   BuildContext context,
   ApiClient api,
@@ -267,6 +271,8 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
   List<RegistryRequest> pending = [];
   bool busy = false, archived = false;
   int offset = 0;
+  int historyOffset = 0;
+  bool historyExpanded = false;
   String? message;
   @override
   void initState() {
@@ -306,10 +312,14 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       }
     } catch (error) {
       if (mounted) {
-        setState(
-          () => message =
-              '$error. Registry lookup needs the backend; saved captures stay on this phone.',
-        );
+        setState(() {
+          animals = [];
+          selected = null;
+          slaughterCheck = null;
+          history = [];
+          message =
+              '$error. Registry lookup needs the backend; saved captures stay on this phone.';
+        });
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -320,18 +330,29 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       '$registryRoot/${animal['species']}/${animal['animal_id']}';
   Future<void> open(String id) async {
     if (busy) return;
-    setState(() => busy = true);
+    setState(() {
+      busy = true;
+      selected = null;
+      slaughterCheck = null;
+      history = [];
+      historyOffset = 0;
+      historyExpanded = false;
+    });
     try {
       final path = '$registryRoot/${config.species.name}/$id';
-      final animal = Map<String, dynamic>.from(
-        await widget.environment.api.registryGet(path) as Map,
-      );
-      final events = await widget.environment.api.registryGet(
-        '$path/history?limit=50',
-      );
       final check = Map<String, dynamic>.from(
         await widget.environment.api.registryGet('$path/slaughter-check')
             as Map,
+      );
+      final animal = Map<String, dynamic>.from(check['animal'] as Map);
+      if (animal['animal_id'] != id ||
+          animal['species'] != config.species.name) {
+        throw const FormatException(
+          'Registry response does not match the requested animal',
+        );
+      }
+      final events = await widget.environment.api.registryGet(
+        '$path/history?limit=50',
       );
       if (mounted) {
         setState(() {
@@ -345,6 +366,35 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       }
     } catch (error) {
       if (mounted) setState(() => message = '$error');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> historyPage(int pageOffset) async {
+    if (busy || selected == null) return;
+    final path = route(selected!);
+    setState(() => busy = true);
+    try {
+      final rows = await widget.environment.api.registryGet(
+        '$path/history?limit=50&offset=$pageOffset',
+      );
+      if (mounted) {
+        setState(() {
+          history = (rows as List)
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList();
+          historyOffset = pageOffset;
+          message = null;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => message =
+              'History page unavailable: $error. Showing the previous page.',
+        );
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -422,6 +472,9 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
     );
     final facility = TextEditingController(
       text: waiting?.body['facility_id'] as String?,
+    );
+    final captureId = TextEditingController(
+      text: waiting?.body['capture_id'] as String?,
     );
     final form = GlobalKey<FormState>();
     var saving = false;
@@ -520,6 +573,24 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                               ? 'A reason is required'
                               : null,
                         ),
+                        if (kind != 'owner') ...[
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: captureId,
+                            enabled: !saving && waiting == null,
+                            decoration: const InputDecoration(
+                              labelText: 'Uploaded capture UUID (optional)',
+                              helperText:
+                                  'Copy from Saved upload receipts. Must belong to this animal; a local request key is not a capture UUID.',
+                              helperMaxLines: 4,
+                            ),
+                            validator: (value) =>
+                                value!.trim().isEmpty ||
+                                    validCaptureReference(value.trim())
+                                ? null
+                                : 'Enter a valid uploaded capture UUID or leave blank',
+                          ),
+                        ],
                         if (error != null)
                           Text(
                             error!,
@@ -570,6 +641,11 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                                   'lifecycle': kind,
                                 if (kind == 'slaughtered')
                                   'facility_id': facility.text.trim(),
+                                if (kind != 'owner' &&
+                                    captureId.text.trim().isNotEmpty)
+                                  'capture_id': captureId.text
+                                      .trim()
+                                      .toLowerCase(),
                               };
                             }
                             await journal.submit(
@@ -625,6 +701,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       ownerName.dispose();
       reason.dispose();
       facility.dispose();
+      captureId.dispose();
     }
   }
 
@@ -677,6 +754,14 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
             Text(
               'Facility: ${terminal['facility_id'] ?? 'Not applicable'}\nRecorded by: ${terminal['actor_id']}\nReported time: ${terminal['observed_at']}\nReceived: ${terminal['received_at']}\nReason: ${terminal['reason']}',
             ),
+            const SizedBox(height: 8),
+            SelectableText(
+              'Capture evidence: ${terminal['capture_id'] ?? 'Not attached'}',
+            ),
+            if (terminal['capture_stored_sha256'] != null)
+              SelectableText(
+                'Stored image SHA-256: ${terminal['capture_stored_sha256']}',
+              ),
           ],
           const SizedBox(height: 16),
           if (active)
@@ -718,6 +803,9 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
             ),
           const SizedBox(height: 16),
           ExpansionTile(
+            key: ValueKey('history-${animal['animal_id']}-$historyExpanded'),
+            initiallyExpanded: historyExpanded,
+            onExpansionChanged: (value) => historyExpanded = value,
             tilePadding: EdgeInsets.zero,
             title: const Text('Ownership & event history'),
             children: [
@@ -729,6 +817,25 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                     '${event['actor_id']} · ${event['received_at']}\n${event['details']}',
                   ),
                 ),
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: busy || historyOffset == 0
+                        ? null
+                        : () => historyPage(historyOffset - 50),
+                    child: const Text('Previous history'),
+                  ),
+                  Text('History page ${historyOffset ~/ 50 + 1}'),
+                  TextButton(
+                    onPressed: busy || history.length < 50
+                        ? null
+                        : () => historyPage(historyOffset + 50),
+                    child: const Text('Next history'),
+                  ),
+                ],
+              ),
             ],
           ),
           TextButton(
@@ -817,6 +924,19 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Register new animal'),
               ),
+              TextButton.icon(
+                onPressed: busy
+                    ? null
+                    : () async {
+                        final id = selected?['animal_id'] as String?;
+                        await reload();
+                        if (mounted && id != null && message == null) {
+                          await open(id);
+                        }
+                      },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Refresh registry'),
+              ),
             ],
           ),
         ),
@@ -865,7 +985,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                     reload();
                   },
           ),
-          if (animals.isEmpty && !busy)
+          if (animals.isEmpty && !busy && message == null)
             const FieldCard(
               child: Text(
                 'No animals in this view. Connect to the backend to review the registry.',

@@ -148,19 +148,54 @@ class RegistryRequest {
 /// Persist every intent before HTTP; retry unchanged keys/bodies after uncertain outcomes.
 /// Known validation/version rejections are retained separately and never called accepted.
 class RegistryJournal {
+  static final _activeRoots = <String>{};
   final Directory root;
   final String backend, operatorId;
   final List<String> issues = [];
   bool _sending = false;
   RegistryJournal(this.root, this.backend, this.operatorId);
+  Future<String> _acquire() async {
+    if (_sending) throw StateError('A registry operation is already running');
+    _sending = true;
+    try {
+      await root.create(recursive: true);
+      var path = await root.resolveSymbolicLinks();
+      if (Platform.isWindows) path = path.toLowerCase();
+      if (!_activeRoots.add(path)) {
+        throw StateError(
+          'Another registry operation is using this phone store',
+        );
+      }
+      return path;
+    } catch (_) {
+      _sending = false;
+      rethrow;
+    }
+  }
+
+  void _release(String path) {
+    _activeRoots.remove(path);
+    _sending = false;
+  }
+
   Future<void> _write(String name, Object value) async {
     await root.create(recursive: true);
     final file = File('${root.path}/$name.next');
+    for (final path in [file.path, '${root.path}/$name']) {
+      if (await FileSystemEntity.type(path, followLinks: false) ==
+          FileSystemEntityType.link) {
+        throw const FormatException('Linked registry evidence is unsupported');
+      }
+    }
     await file.writeAsString(jsonEncode(value), flush: true);
     await file.rename('${root.path}/$name');
   }
 
   Future<Map<String, dynamic>> _read(File file) async {
+    if (await FileSystemEntity.type(file.path, followLinks: false) ==
+        FileSystemEntityType.link) {
+      throw const FormatException('Linked registry evidence is unsupported');
+    }
     if (await file.length() > 256 * 1024) {
       throw const FormatException('Oversized registry journal');
     }
@@ -266,8 +301,7 @@ class RegistryJournal {
     Map<String, dynamic> body,
     ApiClient api,
   ) async {
-    if (_sending) throw StateError('A registry operation is already running');
-    _sending = true;
+    final lock = await _acquire();
     try {
       var request = await waiting(path);
       if (request != null &&
@@ -304,7 +338,7 @@ class RegistryJournal {
       }
       return await _send(request, api);
     } finally {
-      _sending = false;
+      _release(lock);
     }
   }
 
@@ -339,8 +373,7 @@ class RegistryJournal {
   }
 
   Future<List<Map<String, dynamic>>> retry(ApiClient api) async {
-    if (_sending) throw StateError('A registry operation is already running');
-    _sending = true;
+    final lock = await _acquire();
     try {
       final requests = await pending();
       if (issues.isNotEmpty) {
@@ -354,7 +387,7 @@ class RegistryJournal {
       }
       return responses;
     } finally {
-      _sending = false;
+      _release(lock);
     }
   }
 
@@ -400,25 +433,36 @@ class RegistryJournal {
   }
 
   Future<void> confirmIssued(String key) async {
-    final request = RegistryRequest.decode(
-      await _read(File('${root.path}/registry-$key.json')),
-      key,
-    );
-    if (request.backend != backend ||
-        request.operatorId != operatorId ||
-        request.path != registryRoot) {
-      throw const FormatException('Invalid ID acknowledgement scope');
+    if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(key)) {
+      throw const FormatException('Invalid registry request key');
     }
-    final receipt = await _read(
-      File('${root.path}/registry-receipt-$key.json'),
-    );
-    if (receipt['accepted'] != true || receipt['key'] != key) {
-      throw const FormatException('ID has not been issued');
+    final lock = await _acquire();
+    try {
+      final request = RegistryRequest.decode(
+        await _read(File('${root.path}/registry-$key.json')),
+        key,
+      );
+      if (request.backend != backend ||
+          request.operatorId != operatorId ||
+          request.path != registryRoot) {
+        throw const FormatException('Invalid ID acknowledgement scope');
+      }
+      final receipt = await _read(
+        File('${root.path}/registry-receipt-$key.json'),
+      );
+      if (receipt['accepted'] != true || receipt['key'] != key) {
+        throw const FormatException('ID has not been issued');
+      }
+      _checkResponse(
+        request,
+        Map<String, dynamic>.from(receipt['response'] as Map),
+      );
+      await _write('registry-receipt-$key.json', {
+        ...receipt,
+        'delivered': true,
+      });
+    } finally {
+      _release(lock);
     }
-    _checkResponse(
-      request,
-      Map<String, dynamic>.from(receipt['response'] as Map),
-    );
-    await _write('registry-receipt-$key.json', {...receipt, 'delivered': true});
   }
 }

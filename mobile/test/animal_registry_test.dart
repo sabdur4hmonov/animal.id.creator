@@ -32,15 +32,23 @@ class RegistryWidgetApi extends ApiClient {
     'terminal_record': null,
   };
   bool loseResponse = false, offline = false;
+  List<Map<String, dynamic>> events = [];
   int? reject;
   final requests = <Map<String, dynamic>>[];
   final receipts = <String, Map<String, dynamic>>{};
   @override
   Future<dynamic> registryGet(String path) async {
     if (offline) throw const SocketException('offline');
-    if (path.contains('history')) return <Map<String, dynamic>>[];
+    if (path.contains('history')) {
+      final offset =
+          int.tryParse(Uri.parse(path).queryParameters['offset'] ?? '0') ?? 0;
+      return events.skip(offset).take(50).toList();
+    }
     if (path.endsWith('slaughter-check')) {
-      return {'recorded_slaughter': animal['lifecycle'] == 'slaughtered'};
+      return {
+        'animal': animal,
+        'recorded_slaughter': animal['lifecycle'] == 'slaughtered',
+      };
     }
     if (path.contains('?')) {
       return path.contains('lifecycle=all') || animal['lifecycle'] == 'active'
@@ -80,6 +88,7 @@ class RegistryWidgetApi extends ApiClient {
             ...body,
             'actor_id': 'operator-1',
             'received_at': '2026-10-13T00:01:00Z',
+            if (body['capture_id'] != null) 'capture_stored_sha256': 'a' * 64,
           },
         };
       }
@@ -330,6 +339,102 @@ void main() {
       await tapVisible(tester, 'Record death');
       expect(tester.takeException(), isNull);
       await tapVisible(tester, 'Cancel');
+    },
+  );
+  testWidgets('failed lookup clears old identity and slaughter result', (
+    tester,
+  ) async {
+    api.animal = {
+      ...api.animal,
+      'lifecycle': 'slaughtered',
+      'terminal_record': {
+        'actor_id': 'operator-1',
+        'observed_at': '2026-10-13T00:00:00Z',
+        'received_at': '2026-10-13T00:01:00Z',
+        'reason': 'Synthetic',
+        'facility_id': 'SITE-1',
+      },
+    };
+    await screen(tester);
+    await tester.enterText(find.byType(TextField).first, 'MAA00000001');
+    await tapVisible(tester, 'Check animal / slaughter record');
+    expect(find.text('Slaughter report on file'), findsOneWidget);
+    api.offline = true;
+    await tester.enterText(find.byType(TextField).first, 'MAA00000002');
+    await tapVisible(tester, 'Check animal / slaughter record');
+    expect(find.text('Slaughter report on file'), findsNothing);
+    expect(find.text('Capture with this ID'), findsNothing);
+    expect(find.textContaining('SocketException'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+    'terminal report validates UUID, retains it on retry and shows linked hash',
+    (tester) async {
+      await screen(tester);
+      await tapVisible(tester, 'MAA00000001');
+      await tapVisible(tester, 'Record slaughter');
+      await tester.enterText(field('Slaughter facility ID'), 'SITE-1');
+      await tester.enterText(
+        field('Reason / report notes'),
+        'Synthetic report',
+      );
+      await tester.enterText(
+        field('Uploaded capture UUID (optional)'),
+        'local-request-key',
+      );
+      await tapVisible(tester, 'Confirm slaughter report');
+      expect(api.requests, isEmpty);
+      const capture = '12345678-1234-1234-1234-123456789abc';
+      await tester.enterText(
+        field('Uploaded capture UUID (optional)'),
+        capture.toUpperCase(),
+      );
+      api.loseResponse = true;
+      await tapVisible(tester, 'Confirm slaughter report');
+      expect(api.requests.single['body']['capture_id'], capture);
+      expect(
+        tester
+            .widget<TextFormField>(field('Uploaded capture UUID (optional)'))
+            .enabled,
+        false,
+      );
+      await tapVisible(tester, 'Retry same request');
+      expect(api.requests[0], api.requests[1]);
+      expect(find.text('Capture evidence: $capture'), findsOneWidget);
+      expect(find.text('Stored image SHA-256: ${'a' * 64}'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'history pages beyond the first fifty and preserves the page on failure',
+    (tester) async {
+      api.events = List.generate(
+        51,
+        (n) => {
+          'action': 'event-$n',
+          'actor_id': 'operator-1',
+          'received_at': '2026-10-13T00:00:00Z',
+          'details': {'index': n},
+        },
+      );
+      await screen(tester);
+      await tapVisible(tester, 'MAA00000001');
+      await tapVisible(tester, 'Ownership & event history');
+      expect(find.text('event-49'), findsOneWidget);
+      expect(find.text('event-50'), findsNothing);
+      await tapVisible(tester, 'Next history');
+      expect(find.text('History page 2'), findsOneWidget);
+      expect(find.text('event-50'), findsOneWidget);
+      expect(find.text('event-0'), findsNothing);
+      api.offline = true;
+      await tapVisible(tester, 'Previous history');
+      expect(find.text('History page 2'), findsOneWidget);
+      expect(find.text('event-50'), findsOneWidget);
+      api.offline = false;
+      await tapVisible(tester, 'Previous history');
+      expect(find.text('History page 1'), findsOneWidget);
+      expect(find.text('event-0'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     },
   );
 }

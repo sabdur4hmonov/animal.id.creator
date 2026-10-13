@@ -42,7 +42,9 @@ class FakeApi extends ApiClient {
   @override
   Future<dynamic> registryGet(String path) async {
     if (path.contains('history')) return [];
-    if (path.endsWith('slaughter-check')) return {'recorded_slaughter': false};
+    if (path.endsWith('slaughter-check')) {
+      return {'animal': registryAnimal, 'recorded_slaughter': false};
+    }
     return path.contains('?') ? [registryAnimal] : registryAnimal;
   }
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'package:biolivestock_capture/api_client.dart';
 import 'package:biolivestock_capture/registry_journal.dart';
@@ -49,6 +50,21 @@ class RegistryFake extends ApiClient {
   }
 }
 
+class BlockingRegistryFake extends RegistryFake {
+  final started = Completer<void>();
+  final release = Completer<void>();
+  @override
+  Future<Map<String, dynamic>> registryPost(
+    String path,
+    Map<String, dynamic> body,
+    String key,
+  ) async {
+    if (!started.isCompleted) started.complete();
+    await release.future;
+    return super.registryPost(path, body, key);
+  }
+}
+
 void main() {
   late Directory root;
   late RegistryJournal journal;
@@ -59,6 +75,45 @@ void main() {
     api = RegistryFake();
   });
   tearDown(() async => root.delete(recursive: true));
+  test(
+    'ID acknowledgement rejects unsafe request paths before touching files',
+    () async {
+      await expectLater(
+        journal.confirmIssued('../outside'),
+        throwsFormatException,
+      );
+      expect(await root.list().toList(), isEmpty);
+    },
+  );
+  test(
+    'separate journal instances cannot issue duplicate IDs concurrently in one phone store',
+    () async {
+      final blocked = BlockingRegistryFake();
+      final first = journal.submit(registryRoot, body, blocked);
+      await blocked.started.future;
+      final other = RegistryJournal(
+        Directory('${root.path}/.'),
+        'http://canonical',
+        'operator-1',
+      );
+      try {
+        await expectLater(
+          other.submit(registryRoot, body, blocked),
+          throwsStateError,
+        );
+        await expectLater(other.retry(blocked), throwsStateError);
+      } finally {
+        blocked.release.complete();
+      }
+      final saved = await first;
+      expect(
+        (await other.submit(registryRoot, body, blocked))['animal_id'],
+        saved['animal_id'],
+      );
+      expect(blocked.requests.length, 1);
+      await other.confirmIssued(saved['_request_key'] as String);
+    },
+  );
   test(
     'older issued ID survives restart and keeps its receipt while new IDs use letters',
     () async {
