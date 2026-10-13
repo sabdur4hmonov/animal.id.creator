@@ -2,31 +2,30 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'api_client.dart';
 import 'animal_id.dart';
-import 'device_signals.dart';
+import 'capture_environment.dart';
 import 'offline_queue.dart';
 import 'quality_control.dart';
 import 'species.dart';
 
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key});
+  final CaptureEnvironment? environment;
+  const CaptureScreen({super.key, this.environment});
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
 }
 
 class _CaptureScreenState extends State<CaptureScreen>
     with WidgetsBindingObserver {
-  final _api = ApiClient();
+  late final CaptureEnvironment _environment;
+  ApiClient get _api => _environment.api;
   final _form = GlobalKey<FormState>();
   final _animal = TextEditingController();
-  final _operator = TextEditingController(text: authenticatedOperatorId);
-  CameraController? _camera;
+  final _operator = TextEditingController();
+  CaptureCamera? _camera;
   List<SpeciesConfig> _configs = [];
   SpeciesConfig? _selected;
   XFile? _photo;
@@ -36,7 +35,9 @@ class _CaptureScreenState extends State<CaptureScreen>
   QueuedCapture? _queued;
   List<QueuedCapture> _pending = [];
   List<String> _queueIssues = [];
-  String get _backend => apiBaseUrl.replaceAll(RegExp(r'/+$'), '');
+  String get _backend => _environment.backend;
+  int _queuePage = 0;
+  static const _pageSize = 50;
   String? _message;
   String? _cameraError;
   bool _busy = false;
@@ -48,6 +49,8 @@ class _CaptureScreenState extends State<CaptureScreen>
   @override
   void initState() {
     super.initState();
+    _environment = widget.environment ?? CaptureEnvironment.native();
+    _operator.text = _environment.operatorId;
     WidgetsBinding.instance.addObserver(this);
     unawaited(_loadConfigs());
     unawaited(_openCamera());
@@ -56,11 +59,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   Future<void> _loadConfigs() async {
     setState(() => _loading = true);
     try {
-      _queue ??= OfflineQueue(
-        Directory(
-          '${(await getApplicationSupportDirectory()).path}/capture_queue',
-        ),
-      );
+      _queue ??= await _environment.openQueue();
       List<SpeciesConfig> configs;
       var cached = false;
       try {
@@ -102,10 +101,14 @@ class _CaptureScreenState extends State<CaptureScreen>
   Future<void> _refreshQueue() async {
     if (_queue == null) return;
     try {
-      final pending = await _queue!.pending(_backend, authenticatedOperatorId);
+      final pending = await _queue!.pending(_backend, _environment.operatorId);
       if (mounted) {
         setState(() {
           _pending = pending;
+          _queuePage = _queuePage.clamp(
+            0,
+            pending.isEmpty ? 0 : (pending.length - 1) ~/ _pageSize,
+          );
           _queueIssues = List.of(_queue!.issues);
         });
       }
@@ -126,7 +129,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     try {
       final count = await _queue!.sync(
         _backend,
-        authenticatedOperatorId,
+        _environment.operatorId,
         _api.upload,
       );
       final acknowledged =
@@ -153,35 +156,55 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   Future<void> _showReceipts() async {
     try {
-      final saved = await _queue!.receipts(_backend, authenticatedOperatorId);
+      final saved = await _queue!.receipts(_backend, _environment.operatorId);
       if (!mounted) return;
       setState(() => _queueIssues = List.of(_queue!.issues));
+      var page = 0;
       await showDialog<void>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Saved upload receipts'),
-          content: SizedBox(
-            width: 500,
-            child: SingleChildScrollView(
-              child: SelectableText(
-                saved.isEmpty
-                    ? 'No uploads acknowledged yet.'
-                    : saved
-                          .map(
-                            (item) =>
-                                '${item['animal_id']} · ${item['species']}\nRequest: ${item['request_key']}\n'
-                                'Capture: ${item['id']}\nFile: ${item['file_path']}',
-                          )
-                          .join('\n\n'),
+        builder: (context) => StatefulBuilder(
+          builder: (context, update) => AlertDialog(
+            title: const Text('Saved upload receipts'),
+            content: SizedBox(
+              width: 500,
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  saved.isEmpty
+                      ? 'No uploads acknowledged yet.'
+                      : saved
+                            .skip(page * _pageSize)
+                            .take(_pageSize)
+                            .map(
+                              (item) =>
+                                  '${item['animal_id']} · ${item['species']}\nRequest: ${item['request_key']}\n'
+                                  'Capture: ${item['id']}\nFile: ${item['file_path']}',
+                            )
+                            .join('\n\n'),
+                ),
               ),
             ),
+            actions: [
+              if (saved.length > _pageSize) ...[
+                TextButton(
+                  onPressed: page > 0 ? () => update(() => page--) : null,
+                  child: const Text('Previous receipts'),
+                ),
+                Text(
+                  'Page ${page + 1} of ${(saved.length + _pageSize - 1) ~/ _pageSize}',
+                ),
+                TextButton(
+                  onPressed: (page + 1) * _pageSize < saved.length
+                      ? () => update(() => page++)
+                      : null,
+                  child: const Text('Next receipts'),
+                ),
+              ],
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
         ),
       );
     } catch (error) {
@@ -191,6 +214,39 @@ class _CaptureScreenState extends State<CaptureScreen>
               _message = 'Receipt review failed: $error. Local files retained.',
         );
       }
+    }
+  }
+
+  Future<void> _exportBackup(Rect origin) async {
+    if (_busy || _queue == null) return;
+    setState(() {
+      _busy = true;
+      _message = 'Preparing phone backup…';
+    });
+    try {
+      final directory = await _environment.exportDirectory();
+      await directory.create(recursive: true);
+      final file = File(
+        '${directory.path}/biolivestock-${DateTime.now().microsecondsSinceEpoch}.zip',
+      );
+      final manifest = await _environment.backup(_queue!.root.path, file.path);
+      if (!mounted) return;
+      await _environment.share(file, origin);
+      if (mounted) {
+        setState(
+          () => _message =
+              'Verified backup of ${(manifest['files'] as Map).length} files. Save a copy outside this app. Originals retained.',
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _message =
+              'Backup failed: $error. Originals retained on this phone.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -215,21 +271,9 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   Future<void> _openCamera() async {
     final generation = ++_cameraGeneration;
-    CameraController? candidate;
+    CaptureCamera? candidate;
     try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) {
-        throw Exception('No camera is available on this device');
-      }
-      final rear = cameras.where(
-        (camera) => camera.lensDirection == CameraLensDirection.back,
-      );
-      candidate = CameraController(
-        rear.isEmpty ? cameras.first : rear.first,
-        ResolutionPreset.high,
-        enableAudio: false,
-      );
-      await candidate.initialize();
+      candidate = await _environment.openCamera();
       if (!mounted || !_active || generation != _cameraGeneration) {
         await candidate.dispose();
         return;
@@ -263,37 +307,6 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
   }
 
-  Future<Map<String, dynamic>?> _captureGps() async {
-    try {
-      if (!await Geolocator.isLocationServiceEnabled()) return null;
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        return null;
-      }
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 8),
-        ),
-      );
-      return {
-        'gps': {'latitude': position.latitude, 'longitude': position.longitude},
-        'gps_evidence': {
-          'source': Platform.isAndroid ? 'android_location' : 'ios_location',
-          'is_mock': position.isMocked,
-          'accuracy_m': position.accuracy,
-          'observed_at': position.timestamp.toUtc().toIso8601String(),
-        },
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<void> _capture() async {
     final camera = _camera;
     final config = _selected;
@@ -313,14 +326,11 @@ class _CaptureScreenState extends State<CaptureScreen>
       // Snapshot labels before asynchronous work; fields stay locked during capture.
       final animalId = _animal.text.trim();
       final operatorId = _operator.text.trim();
-      final timestamp = DateTime.now().toUtc();
+      final timestamp = _environment.now().toUtc();
       photo = await camera.takePicture();
-      final gps = await _captureGps();
-      final deviceSignals = await readDeviceSignals();
-      final quality = await compute(checkLocalQuality, {
-        'bytes': await photo.readAsBytes(),
-        'quality': config.quality,
-      });
+      final gps = await _environment.gps();
+      final deviceSignals = await _environment.deviceSignals();
+      final quality = await _environment.quality(photo, config);
       final metadata = {
         'animal_id': animalId,
         'operator_id': operatorId,
@@ -433,13 +443,13 @@ class _CaptureScreenState extends State<CaptureScreen>
         ),
       );
     }
-    if (_camera == null || !_camera!.value.isInitialized) {
+    if (_camera == null || !_camera!.initialized) {
       return const Center(child: CircularProgressIndicator());
     }
     return Center(
       child: AspectRatio(
-        aspectRatio: _camera!.value.aspectRatio,
-        child: CameraPreview(_camera!),
+        aspectRatio: _camera!.aspectRatio,
+        child: _camera!.preview(),
       ),
     );
   }
@@ -550,9 +560,30 @@ class _CaptureScreenState extends State<CaptureScreen>
                   onPressed: !_busy && _queue != null ? _showReceipts : null,
                   child: const Text('Review saved upload receipts'),
                 ),
+                Builder(
+                  builder: (buttonContext) => OutlinedButton.icon(
+                    onPressed: !_busy && _queue != null
+                        ? () {
+                            final box =
+                                buttonContext.findRenderObject() as RenderBox;
+                            unawaited(
+                              _exportBackup(
+                                box.localToGlobal(Offset.zero) & box.size,
+                              ),
+                            );
+                          }
+                        : null,
+                    icon: const Icon(Icons.save_alt),
+                    label: const Text('Export phone backup'),
+                  ),
+                ),
+                const Text(
+                  'Backup includes all local captures/operators. Originals stay on this phone.',
+                ),
                 for (final issue in _queueIssues) Text(issue),
                 if (_photo == null)
-                  for (final entry in _pending)
+                  for (final entry
+                      in _pending.skip(_queuePage * _pageSize).take(_pageSize))
                     ListTile(
                       title: Text(
                         '${entry.metadata['animal_id']} · ${entry.metadata['species']}',
@@ -562,6 +593,28 @@ class _CaptureScreenState extends State<CaptureScreen>
                       ),
                       onTap: _busy ? null : () => _openQueued(entry),
                     ),
+                if (_photo == null && _pending.length > _pageSize)
+                  Wrap(
+                    children: [
+                      TextButton(
+                        onPressed: !_busy && _queuePage > 0
+                            ? () => setState(() => _queuePage--)
+                            : null,
+                        child: const Text('Previous captures'),
+                      ),
+                      Text(
+                        'Page ${_queuePage + 1} of ${(_pending.length + _pageSize - 1) ~/ _pageSize}',
+                      ),
+                      TextButton(
+                        onPressed:
+                            !_busy &&
+                                (_queuePage + 1) * _pageSize < _pending.length
+                            ? () => setState(() => _queuePage++)
+                            : null,
+                        child: const Text('Next captures'),
+                      ),
+                    ],
+                  ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text(

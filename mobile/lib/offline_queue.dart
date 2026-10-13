@@ -72,17 +72,42 @@ class OfflineQueue {
     return QueuedCapture(journal, image.path);
   }
 
-  Future<List<QueuedCapture>> _entries(
+  Future<List<T>> _batched<T>(
+    List<QueuedCapture> entries,
+    Future<T> Function(QueuedCapture) read,
+  ) async {
+    final values = <T>[];
+    for (var start = 0; start < entries.length; start += 32) {
+      values.addAll(await Future.wait(entries.skip(start).take(32).map(read)));
+    }
+    return values;
+  }
+
+  Future<({List<QueuedCapture> entries, Set<String> files})> _entries(
     String backend,
     String operatorId,
   ) async {
     issues.clear();
-    if (!await root.exists()) return [];
+    if (!await root.exists()) {
+      return (entries: <QueuedCapture>[], files: <String>{});
+    }
     final entries = <QueuedCapture>[];
-    await for (final entity in root.list()) {
-      if (entity is! File || !entity.path.endsWith('.json')) continue;
+    // One directory inventory replaces thousands of sequential existence syscalls.
+    final inventory = await root.list(followLinks: false).toList();
+    final files = inventory
+        .whereType<File>()
+        .map((file) => file.uri.pathSegments.last)
+        .toSet();
+    final journals = inventory
+        .whereType<File>()
+        .where(
+          (file) =>
+              file.path.endsWith('.json') &&
+              file.uri.pathSegments.last.startsWith('entry-'),
+        )
+        .toList();
+    Future<void> read(File entity) async {
       final name = entity.uri.pathSegments.last;
-      if (!name.startsWith('entry-')) continue;
       try {
         final journal = CaptureJournal.decode(
           jsonDecode(await entity.readAsString()),
@@ -94,39 +119,56 @@ class OfflineQueue {
           issues.add(
             '$key belongs to another backend/operator; retained without upload.',
           );
-          continue;
+          return;
         }
         entries.add(QueuedCapture(journal, '${root.path}/$key.jpg'));
       } catch (error) {
         issues.add('$name needs review: $error. Files retained.');
       }
     }
+
+    // Bound open handles, while overlapping independent metadata reads.
+    for (var start = 0; start < journals.length; start += 32) {
+      await Future.wait(journals.skip(start).take(32).map(read));
+    }
     entries.sort((a, b) {
       final order = a.journal.timestamp.compareTo(b.journal.timestamp);
       return order == 0 ? a.key.compareTo(b.key) : order;
     });
-    return entries;
+    issues.sort();
+    return (entries: entries, files: files);
   }
 
-  Future<Map<String, dynamic>?> _receipt(QueuedCapture entry) async {
+  Future<Map<String, dynamic>?> _receipt(
+    QueuedCapture entry, [
+    Set<String>? inventory,
+  ]) async {
     final file = File('${root.path}/receipt-${entry.key}.json');
-    if (!await file.exists()) return null;
+    if (inventory != null
+        ? !inventory.contains('receipt-${entry.key}.json')
+        : !await file.exists()) {
+      return null;
+    }
     return entry.journal.receipt(jsonDecode(await file.readAsString()));
   }
 
   Future<List<QueuedCapture>> pending(String backend, String operatorId) async {
-    final pending = <QueuedCapture>[];
-    for (final entry in await _entries(backend, operatorId)) {
+    final snapshot = await _entries(backend, operatorId);
+    final values = await _batched<QueuedCapture?>(snapshot.entries, (
+      entry,
+    ) async {
       try {
-        if (!await File(entry.imagePath).exists()) {
+        if (!snapshot.files.contains('${entry.key}.jpg')) {
           throw const FormatException('Original image is missing');
         }
-        if (await _receipt(entry) == null) pending.add(entry);
+        if (await _receipt(entry, snapshot.files) == null) return entry;
       } catch (error) {
         issues.add('${entry.key} needs review: $error. Files retained.');
       }
-    }
-    return pending;
+      return null;
+    });
+    issues.sort();
+    return values.whereType<QueuedCapture>().toList();
   }
 
   Future<Map<String, dynamic>> uploadOne(
@@ -152,18 +194,22 @@ class OfflineQueue {
     String backend,
     String operatorId,
   ) async {
-    final saved = <Map<String, dynamic>>[];
-    for (final entry in await _entries(backend, operatorId)) {
+    final snapshot = await _entries(backend, operatorId);
+    final saved = await _batched<Map<String, dynamic>?>(snapshot.entries, (
+      entry,
+    ) async {
       try {
-        final receipt = await _receipt(entry);
-        if (receipt != null) saved.add({...receipt, 'request_key': entry.key});
+        final receipt = await _receipt(entry, snapshot.files);
+        if (receipt != null) return {...receipt, 'request_key': entry.key};
       } catch (error) {
         issues.add(
           '${entry.key} receipt needs review: $error. Files retained.',
         );
       }
-    }
-    return saved;
+      return null;
+    });
+    issues.sort();
+    return saved.whereType<Map<String, dynamic>>().toList();
   }
 
   Future<int> sync(
