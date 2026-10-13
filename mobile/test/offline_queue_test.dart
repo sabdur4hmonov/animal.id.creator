@@ -195,4 +195,76 @@ void main() {
       expect(raw.contains('token'), isFalse);
     },
   );
+
+  for (final field in [
+    'timestamp',
+    'animal_id',
+    'species',
+    'operator_id',
+    'quality',
+  ]) {
+    test('a malformed $field never hides healthy pending captures', () async {
+      final healthy = await capture();
+      final broken = await capture();
+      final file = File('${queue.root.path}/entry-${broken.key}.json');
+      final value = jsonDecode(await file.readAsString()) as Map;
+      if (field == 'quality') {
+        value['quality'] = {
+          'blur_variance': null,
+          'brightness': 128,
+          'reasons': [],
+        };
+      } else {
+        (value['metadata'] as Map)[field] = null;
+      }
+      await file.writeAsString(jsonEncode(value));
+      final recovered = await queue.pending(backend, 'operator-1');
+      expect(recovered.single.key, healthy.key);
+      expect(queue.issues.single, contains(broken.key));
+      expect(await File(broken.imagePath).exists(), isTrue);
+      expect(await file.exists(), isTrue);
+    });
+  }
+
+  test('corrupt entries and receipts do not hide valid receipts', () async {
+    final healthy = await capture();
+    final broken = await capture();
+    await queue.uploadOne(healthy, (_, _, _) async => receipt(healthy));
+    await File('${queue.root.path}/entry-broken.json').writeAsString('{broken');
+    await File(
+      '${queue.root.path}/receipt-${broken.key}.json',
+    ).writeAsString('{broken');
+    final saved = await queue.receipts(backend, 'operator-1');
+    expect(saved.single['request_key'], healthy.key);
+    expect(queue.issues.length, 2);
+    expect(await queue.acknowledged(broken), isFalse);
+  });
+
+  test('empty receipt IDs cannot acknowledge a capture anywhere', () async {
+    final entry = await capture();
+    await File(
+      '${queue.root.path}/receipt-${entry.key}.json',
+    ).writeAsString(jsonEncode({...receipt(entry), 'id': ''}));
+    expect(await queue.acknowledged(entry), isFalse);
+    expect(await queue.receipts(backend, 'operator-1'), isEmpty);
+    expect(queue.issues, isNotEmpty);
+    expect(await queue.pending(backend, 'operator-1'), isEmpty);
+    expect(queue.issues, isNotEmpty);
+  });
+
+  test(
+    'timestamp sorting compares instants and preserves original timezone labels',
+    () async {
+      await capture();
+      final earlier = await queue.enqueue(
+        '${root.path}/queue/${(await queue.pending(backend, 'operator-1')).single.key}.jpg',
+        {...metadata, 'timestamp': '2026-10-08T12:00:00+05:00'},
+        quality,
+        backend,
+      );
+      final pending = await queue.pending(backend, 'operator-1');
+      expect(pending.first.key, earlier.key);
+      expect(pending.first.metadata['timestamp'], '2026-10-08T12:00:00+05:00');
+    },
+  );
 }

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'capture_journal.dart';
+
 typedef QueueUploader =
     Future<Map<String, dynamic>> Function(
       String imagePath,
@@ -10,19 +12,13 @@ typedef QueueUploader =
     );
 
 class QueuedCapture {
-  final String key;
+  final CaptureJournal journal;
   final String imagePath;
-  final Map<String, dynamic> metadata;
-  final Map<String, dynamic> quality;
-  final String backend;
-
-  QueuedCapture(
-    this.key,
-    this.imagePath,
-    this.metadata,
-    this.quality,
-    this.backend,
-  );
+  String get key => journal.key;
+  Map<String, dynamic> get metadata => journal.metadata;
+  Map<String, dynamic> get quality => journal.quality.toJson();
+  String get backend => journal.backend;
+  QueuedCapture(this.journal, this.imagePath);
 }
 
 /// Journal entries are immutable; a separate receipt marks server acknowledgement.
@@ -52,6 +48,17 @@ class OfflineQueue {
       16,
       (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
     ).join();
+    final journal = CaptureJournal.decode(
+      jsonDecode(
+        jsonEncode({
+          'version': 1,
+          'key': key,
+          'metadata': metadata,
+          'quality': quality,
+          'backend': backend,
+        }),
+      ),
+    );
     await root.create(recursive: true);
     // Flush image bytes before publishing the journal entry used by recovery.
     final image = File('${root.path}/$key.jpg');
@@ -61,23 +68,14 @@ class OfflineQueue {
       flush: true,
     );
     await temporary.rename(image.path);
-    await _atomicJson('entry-$key.json', {
-      'version': 1,
-      'key': key,
-      'metadata': metadata,
-      'quality': quality,
-      'backend': backend,
-    });
-    return QueuedCapture(
-      key,
-      image.path,
-      Map<String, dynamic>.from(jsonDecode(jsonEncode(metadata)) as Map),
-      Map<String, dynamic>.from(jsonDecode(jsonEncode(quality)) as Map),
-      backend,
-    );
+    await _atomicJson('entry-$key.json', journal.toJson());
+    return QueuedCapture(journal, image.path);
   }
 
-  Future<List<QueuedCapture>> pending(String backend, String operatorId) async {
+  Future<List<QueuedCapture>> _entries(
+    String backend,
+    String operatorId,
+  ) async {
     issues.clear();
     if (!await root.exists()) return [];
     final entries = <QueuedCapture>[];
@@ -86,56 +84,49 @@ class OfflineQueue {
       final name = entity.uri.pathSegments.last;
       if (!name.startsWith('entry-')) continue;
       try {
-        final value = jsonDecode(await entity.readAsString()) as Map;
-        final key = value['key'] as String;
-        if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(key) ||
-            name != 'entry-$key.json' ||
-            value['version'] != 1) {
-          throw const FormatException('Invalid journal entry');
-        }
-        final metadata = Map<String, dynamic>.from(value['metadata'] as Map);
-        if (value['backend'] != backend ||
-            metadata['operator_id'] != operatorId) {
+        final journal = CaptureJournal.decode(
+          jsonDecode(await entity.readAsString()),
+          filename: name,
+        );
+        final key = journal.key;
+        if (journal.backend != backend ||
+            journal.metadata['operator_id'] != operatorId) {
           issues.add(
             '$key belongs to another backend/operator; retained without upload.',
           );
           continue;
         }
-        final image = File('${root.path}/$key.jpg');
-        if (!await image.exists()) {
-          throw const FormatException('Original image is missing');
-        }
-        final receipt = File('${root.path}/receipt-$key.json');
-        if (await receipt.exists()) {
-          final saved = jsonDecode(await receipt.readAsString()) as Map;
-          if (saved['id'] is! String ||
-              (saved['id'] as String).isEmpty ||
-              saved['animal_id'] != metadata['animal_id'] ||
-              saved['species'] != metadata['species'] ||
-              saved['operator_id'] != metadata['operator_id']) {
-            throw const FormatException('Invalid saved receipt');
-          }
-          continue;
-        }
-        entries.add(
-          QueuedCapture(
-            key,
-            image.path,
-            metadata,
-            Map<String, dynamic>.from(value['quality'] as Map),
-            backend,
-          ),
-        );
+        entries.add(QueuedCapture(journal, '${root.path}/$key.jpg'));
       } catch (error) {
         issues.add('$name needs review: $error. Files retained.');
       }
     }
-    entries.sort(
-      (a, b) => (a.metadata['timestamp'] as String).compareTo(
-        b.metadata['timestamp'] as String,
-      ),
-    );
+    entries.sort((a, b) {
+      final order = a.journal.timestamp.compareTo(b.journal.timestamp);
+      return order == 0 ? a.key.compareTo(b.key) : order;
+    });
     return entries;
+  }
+
+  Future<Map<String, dynamic>?> _receipt(QueuedCapture entry) async {
+    final file = File('${root.path}/receipt-${entry.key}.json');
+    if (!await file.exists()) return null;
+    return entry.journal.receipt(jsonDecode(await file.readAsString()));
+  }
+
+  Future<List<QueuedCapture>> pending(String backend, String operatorId) async {
+    final pending = <QueuedCapture>[];
+    for (final entry in await _entries(backend, operatorId)) {
+      try {
+        if (!await File(entry.imagePath).exists()) {
+          throw const FormatException('Original image is missing');
+        }
+        if (await _receipt(entry) == null) pending.add(entry);
+      } catch (error) {
+        issues.add('${entry.key} needs review: $error. Files retained.');
+      }
+    }
+    return pending;
   }
 
   Future<Map<String, dynamic>> uploadOne(
@@ -143,58 +134,33 @@ class OfflineQueue {
     QueueUploader upload,
   ) async {
     final response = await upload(entry.imagePath, entry.metadata, entry.key);
-    if (response['id'] is! String ||
-        (response['id'] as String).isEmpty ||
-        response['animal_id'] != entry.metadata['animal_id'] ||
-        response['species'] != entry.metadata['species'] ||
-        response['operator_id'] != entry.metadata['operator_id']) {
-      throw const FormatException(
-        'Server receipt does not match queued capture',
-      );
-    }
+    entry.journal.receipt(response);
     await _atomicJson('receipt-${entry.key}.json', response);
     return response;
   }
 
   Future<bool> acknowledged(QueuedCapture entry) async {
-    final file = File('${root.path}/receipt-${entry.key}.json');
-    if (!await file.exists()) return false;
-    final response = jsonDecode(await file.readAsString()) as Map;
-    return response['id'] is String &&
-        response['animal_id'] == entry.metadata['animal_id'] &&
-        response['species'] == entry.metadata['species'] &&
-        response['operator_id'] == entry.metadata['operator_id'];
+    try {
+      return await _receipt(entry) != null;
+    } catch (error) {
+      issues.add('${entry.key} receipt needs review: $error. Files retained.');
+      return false;
+    }
   }
 
   Future<List<Map<String, dynamic>>> receipts(
     String backend,
     String operatorId,
   ) async {
-    if (!await root.exists()) return [];
     final saved = <Map<String, dynamic>>[];
-    await for (final file in root.list()) {
-      if (file is! File ||
-          !file.uri.pathSegments.last.startsWith('entry-') ||
-          !file.path.endsWith('.json')) {
-        continue;
-      }
-      final entry = jsonDecode(await file.readAsString()) as Map;
-      if (entry['backend'] != backend ||
-          (entry['metadata'] as Map)['operator_id'] != operatorId) {
-        continue;
-      }
-      final key = entry['key'] as String;
-      if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(key)) {
-        throw const FormatException('Invalid receipt key');
-      }
-      final receipt = File('${root.path}/receipt-$key.json');
-      if (await receipt.exists()) {
-        saved.add({
-          'request_key': key,
-          ...Map<String, dynamic>.from(
-            jsonDecode(await receipt.readAsString()) as Map,
-          ),
-        });
+    for (final entry in await _entries(backend, operatorId)) {
+      try {
+        final receipt = await _receipt(entry);
+        if (receipt != null) saved.add({...receipt, 'request_key': entry.key});
+      } catch (error) {
+        issues.add(
+          '${entry.key} receipt needs review: $error. Files retained.',
+        );
       }
     }
     return saved;

@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'api_client.dart';
+import 'animal_id.dart';
 import 'device_signals.dart';
 import 'offline_queue.dart';
 import 'quality_control.dart';
@@ -154,6 +155,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     try {
       final saved = await _queue!.receipts(_backend, authenticatedOperatorId);
       if (!mounted) return;
+      setState(() => _queueIssues = List.of(_queue!.issues));
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
@@ -194,16 +196,16 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   void _openQueued(QueuedCapture entry) {
     if (_busy || _photo != null) return;
-    final quality = entry.quality;
+    final quality = entry.journal.quality;
     _animal.text = entry.metadata['animal_id'] as String;
     setState(() {
       _queued = entry;
       _photo = XFile(entry.imagePath);
       _metadata = entry.metadata;
       _quality = LocalQuality(
-        (quality['blur_variance'] as num).toDouble(),
-        (quality['brightness'] as num).toDouble(),
-        List<String>.from(quality['reasons'] as List),
+        quality.blurVariance,
+        quality.brightness,
+        quality.reasons,
       );
       _saved = false;
       _message =
@@ -513,12 +515,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                         decoration: const InputDecoration(
                           labelText: 'Animal ID',
                         ),
-                        validator: (value) =>
-                            RegExp(
-                              r'^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$',
-                            ).hasMatch(value?.trim() ?? '')
-                            ? null
-                            : 'Use 1–64 letters, digits, underscores or hyphens',
+                        validator: validateAnimalId,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
