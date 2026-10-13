@@ -1,8 +1,20 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
 import pytest
 
 from app.services.quality_control import check_quality
+
+
+@pytest.mark.parametrize("kind", ["dark", "bright"])
+@pytest.mark.parametrize("extension", ["jpg", "png"])
+def test_shared_clipping_fixture(kind, extension, config):
+    path = Path(__file__).parent / "fixtures/quality" / f"clipped_{kind}.{extension}"
+    result = check_quality(cv2.imread(str(path)), config.quality)
+    assert result.blur_variance > config.quality.blur_min_variance
+    assert not result.passed
+    assert ("too_dark" if kind == "dark" else "too_bright") in result.reasons
 
 
 def test_sharp_vs_blurred(sharp, config):

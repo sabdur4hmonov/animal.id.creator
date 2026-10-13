@@ -9,10 +9,13 @@ import 'package:image/image.dart' as img;
 import 'package:yaml/yaml.dart';
 
 void main() {
-  final yaml = loadYaml(File('../species_configs/cattle.yaml').readAsStringSync()) as YamlMap;
+  final yaml =
+      loadYaml(File('../species_configs/cattle.yaml').readAsStringSync())
+          as YamlMap;
   final rules = Map<String, dynamic>.from(yaml['quality'] as Map);
   LocalQuality check(img.Image image) => checkLocalQuality({
-    'bytes': Uint8List.fromList(img.encodeJpg(image)), 'quality': rules,
+    'bytes': Uint8List.fromList(img.encodeJpg(image)),
+    'quality': rules,
   });
 
   test('rejects flat blurry image with adequate brightness', () {
@@ -21,7 +24,10 @@ void main() {
     final quality = check(image);
     expect(quality.passed, isFalse);
     expect(quality.blurVariance, lessThan(1));
-    expect(quality.reasons.any((reason) => reason.startsWith('Blurry')), isTrue);
+    expect(
+      quality.reasons.any((reason) => reason.startsWith('Blurry')),
+      isTrue,
+    );
   });
 
   test('rejects darkness and highlights', () {
@@ -29,7 +35,12 @@ void main() {
       final image = img.Image(width: 640, height: 480);
       img.fill(image, color: img.ColorRgb8(level, level, level));
       final quality = check(image);
-      expect(quality.reasons.any((reason) => reason.startsWith(level == 0 ? 'Too dark' : 'Too bright')), isTrue);
+      expect(
+        quality.reasons.any(
+          (reason) => reason.startsWith(level == 0 ? 'Too dark' : 'Too bright'),
+        ),
+        isTrue,
+      );
     }
   });
 
@@ -45,9 +56,39 @@ void main() {
   });
 
   test('species enum and config support disabled sheep', () {
-    final sheep = loadYaml(File('../species_configs/sheep.yaml').readAsStringSync()) as YamlMap;
+    final sheep =
+        loadYaml(File('../species_configs/sheep.yaml').readAsStringSync())
+            as YamlMap;
     final config = SpeciesConfig.fromJson(Map<String, dynamic>.from(sheep));
     expect(config.species, Species.sheep);
     expect(config.enabled, isFalse);
   });
+
+  for (final kind in ['dark', 'bright']) {
+    for (final extension in ['jpg', 'png']) {
+      test(
+        'shared $kind clipping fixture is rejected before averaging ($extension)',
+        () {
+          final result = checkLocalQuality({
+            'bytes': File(
+              '../backend/tests/fixtures/quality/clipped_$kind.$extension',
+            ).readAsBytesSync(),
+            'quality': rules,
+          });
+          expect(
+            result.blurVariance,
+            greaterThan(rules['blur_min_variance'] as num),
+          );
+          expect(result.passed, isFalse);
+          expect(
+            result.reasons.any(
+              (reason) =>
+                  reason.startsWith(kind == 'dark' ? 'Too dark' : 'Too bright'),
+            ),
+            isTrue,
+          );
+        },
+      );
+    }
+  }
 }
