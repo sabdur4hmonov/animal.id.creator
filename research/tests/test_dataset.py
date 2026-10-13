@@ -71,3 +71,25 @@ def test_truncated_jpeg_pixels_cannot_enter_manifest(tmp_path):
                     sha256=hashlib.sha256(path.read_bytes()).hexdigest(), reviewed_muzzle=True)
     with pytest.raises(ValueError, match="Undecodable.*bad"):
         validate_samples([sample], tmp_path, Species.cattle)
+
+
+@pytest.mark.parametrize("oriented", [False, True])
+def test_identical_pixels_reencoded_or_exif_rotated_are_rejected(tmp_path, oriented):
+    image = Image.new("RGB", (48, 64), (30, 100, 150))
+    image.putpixel((2, 7), (200, 50, 40))
+    first, second = tmp_path / "a.png", tmp_path / "b.png"
+    if oriented:
+        exif = Image.Exif()
+        exif[274] = 6
+        image.save(first, exif=exif)
+        image.transpose(Image.Transpose.ROTATE_270).save(second)
+    else:
+        image.save(first, compress_level=0)
+        image.save(second, compress_level=9)
+    assert first.read_bytes() != second.read_bytes()
+    samples = [Sample(sample_id=path.stem, species=Species.cattle, animal_id=path.stem,
+                      session_id="S", split="train", role="train", image_path=path.name,
+                      sha256=hashlib.sha256(path.read_bytes()).hexdigest(), reviewed_muzzle=True)
+               for path in (first, second)]
+    with pytest.raises(ValueError, match="Duplicate decoded pixels: a and b"):
+        validate_samples(samples, tmp_path, Species.cattle)

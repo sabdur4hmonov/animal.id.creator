@@ -48,6 +48,7 @@ def resolve_image(root: Path, relative: str) -> Path:
 
 def validate_samples(samples: list[Sample], root: Path, species: Species) -> None:
     validate_protocol(samples, species)
+    pixels_seen = {}
     for sample in samples:
         path = resolve_image(root, sample.image_path)
         if hashlib.sha256(path.read_bytes()).hexdigest() != sample.sha256:
@@ -59,9 +60,15 @@ def validate_samples(samples: list[Sample], root: Path, species: Species) -> Non
         try:
             # verify() checks structure; extraction also needs fully decodable pixels.
             with Image.open(path) as image:
-                ImageOps.exif_transpose(image).convert("RGB").load()
+                pixels = ImageOps.exif_transpose(image).convert("RGB")
+                pixels.load()
+                digest = hashlib.sha256(f"RGB:{pixels.width}:{pixels.height}:".encode())
+                digest.update(pixels.tobytes())
         except (OSError, ValueError) as exc:
             raise ValueError(f"Undecodable image pixels: {sample.sample_id} ({sample.image_path})") from exc
+        previous = pixels_seen.setdefault(digest.hexdigest(), sample.sample_id)
+        if previous != sample.sample_id:
+            raise ValueError(f"Duplicate decoded pixels: {previous} and {sample.sample_id}; review original/session labels")
 
 
 def validate_protocol(samples: list[Sample], species: Species) -> None:
