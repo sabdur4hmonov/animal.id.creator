@@ -21,6 +21,11 @@ class ModelConfig(ConfigBase):
     image_size: int = Field(gt=0)
 
 
+class NumberingConfig(ConfigBase):
+    prefix: str = Field(pattern=r"^[A-Z]{1,8}$")
+    digits: int = Field(ge=4, le=12)
+
+
 class CropConfig(ConfigBase):
     padding_ratio: float = Field(ge=0, le=0.5)
     min_width: int = Field(gt=0)
@@ -57,6 +62,7 @@ class SpeciesConfig(ConfigBase):
     model: ModelConfig
     crop: CropConfig
     quality: QualityConfig
+    numbering: NumberingConfig
 
 
 def load_species_configs(directory: Path) -> dict[Species, SpeciesConfig]:
@@ -68,4 +74,6 @@ def load_species_configs(directory: Path) -> dict[Species, SpeciesConfig]:
         if config.species != species:
             raise ValueError(f"Species mismatch in {species.value}.yaml")
         configs[species] = config
+    if len({config.numbering.prefix for config in configs.values()}) != len(configs):
+        raise ValueError("Species numbering prefixes must be distinct")
     return configs

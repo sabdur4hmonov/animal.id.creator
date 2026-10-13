@@ -1,6 +1,9 @@
 species: sheep
 enabled: false
-config_version: 1
+config_version: 2
+numbering:
+  prefix: S
+  digits: 8
 model:
   checkpoint: models/sheep/yolov8n-muzzle.pt
   class_name: muzzle

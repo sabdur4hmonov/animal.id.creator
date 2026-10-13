@@ -23,6 +23,7 @@ from app.schemas.business import (
 from app.schemas.capture import CaptureResponse
 from app.services.integrity import verify_stored_image
 from app.services.registration import audit
+from app.services.registry import reserved_number
 
 router = APIRouter(prefix="/api/v1")
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -36,6 +37,8 @@ def enabled(request: Request, species: Species):
 @router.post("/animals", response_model=AnimalResponse, status_code=201)
 def register(data: AnimalRegistration, request: Request, session: SessionDep, principal: PrincipalDep):
     enabled(request, data.species)
+    if reserved_number(request.app.state.species_configs[data.species], data.animal_id):
+        raise HTTPException(409, "Numeric species IDs are issued by the registry; do not assign them manually")
     record = Animal(
         species=data.species,
         animal_id=data.animal_id,

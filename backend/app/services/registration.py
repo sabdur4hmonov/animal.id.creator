@@ -24,7 +24,11 @@ def audit(session: Session, species, animal_id, actor_id, action, details):
     )
 
 
-def ensure_animal(session: Session, metadata) -> None:
+def ensure_animal(session: Session, metadata, config=None) -> None:
+    if config is not None:
+        from app.services.registry import reserved_number
+        if reserved_number(config, metadata.animal_id) and session.get(Animal, (metadata.species, metadata.animal_id)) is None:
+            raise ValueError("Generate a species-prefixed numeric ID in the registry before uploading; use its exact spelling")
     # Unique composite key and conflict-safe insert handle simultaneous first scans.
     dialect = session.get_bind().dialect.name
     insert = pg_insert if dialect == "postgresql" else sqlite_insert

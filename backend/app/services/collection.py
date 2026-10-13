@@ -67,7 +67,7 @@ def collect_capture(
         received_at = datetime.now(UTC)
         fingerprint = hashlib.sha256(str(image.shape).encode() + image.tobytes()).hexdigest()
         matches = duplicate_candidates(session, metadata.species, fingerprint)
-        ensure_animal(session, metadata)
+        ensure_animal(session, metadata, config)
         previous = session.scalar(
             select(Capture)
             .where(

@@ -1,6 +1,9 @@
 species: cattle
 enabled: true
-config_version: 1
+config_version: 2
+numbering:
+  prefix: M
+  digits: 8
 model:
   checkpoint: models/cattle/yolov8n-muzzle.pt
   class_name: muzzle
