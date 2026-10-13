@@ -6,6 +6,7 @@ Cattle data collection API: native camera capture, image quality feedback, optio
 
 Offline collection/retries and backup/restore commands: [COLLECTION_RELIABILITY.md](docs/COLLECTION_RELIABILITY.md).
 Phone ZIP recovery, queue benchmark and dependency pins: [collection improvements](docs/COLLECTION_IMPROVEMENTS_2026-10-13.md).
+Mobile screen design, visual previews and UI checks: [MOBILE_DESIGN.md](docs/MOBILE_DESIGN.md).
 
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 

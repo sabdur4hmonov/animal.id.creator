@@ -10,6 +10,8 @@ Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Cod
 
 **Decisions to preserve:** use native widgets/system typography, no runtime font downloads or third-party brand assets. Public Herdwatch, Datamars Active Tag and CattleEye pages/image references informed the design; browser automation failed initialization, so no authenticated competitor-app walkthrough is claimed. Design/links/repeat checks: docs/MOBILE_DESIGN.md. Capture/tools use eager scrolling forms so off-screen validation remains mounted; Saved retains the existing 50-item pagination. Labels describe local/cached-rule state rather than inventing network connectivity. Guide boxes are positioning aids, not detections/crops/identity/liveness. QC metrics and immutable timestamp/request/receipt details remain reviewable; originals and metadata semantics are preserved. English UI retained.
 
+**Local design milestone:** 7b86d1c contains the tested native UI and progress update; documentation/previews follow.
+
 **Exact stop / next action:** design implementation and host verification are finished; commits local only. Test the new APK on a repaired/replacement device with README operator configuration: native preview/orientation, camera/GPS permissions, real keyboard, text scaling, offline restart/upload, receipt review and backup/share; also judge daylight/gloved usability. Phone availability and real animal/model/calibration data are still external blockers. No normal Docker stack, collection data or queue format was changed. One verification approval review timed out, then its explicitly permitted retry succeeded; no unresolved approval block.
 
 ## Collection enhancements — preceding 2026-10-13 milestone
@@ -60,9 +62,11 @@ Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Cod
 
 ## Live Git evidence from the D: project
 
-Checked live on 2026-10-13 after feature/pin/documentation milestones. Main at 1a511e4, working tree clean; cached origin/main comparison was 0 remote-only / 5 local-only commits above previously published eaaf857. No fetch/new remote verification or push in this enhancement task. This final memory update follows the snapshot. Refresh status/log on next entry.
+Checked live after the UI milestone at 7b86d1c, before the final design documentation/previews commit. The remaining changes were only design/README/validation documentation and three synthetic UI PNGs. No fetch or push in this design task; origin/main remains the previously verified publication, not a new live remote comparison. The final documentation commit follows this snapshot; refresh status/log on next entry.
 
 ```text
+7b86d1c Redesign field capture, saved originals and backup tools for mobile
+5c16b0c Refresh persistent progress with final runtime and git evidence
 1a511e4 Document verified collection enhancements and field recovery limits
 b6c4e0b Pin tested backend containers, CPU dependencies and Flutter SDK
 001b9a2 Respect Windows path casing when exporting phone evidence
@@ -81,8 +85,6 @@ d99c2f1 Persist camera captures offline with restart-safe upload retries
 c566a2c Add verified collection backups and isolated restore drills
 dba3ee6 Import reviewed crop annotations into validated research manifests
 e9b9642 Make authenticated capture retries idempotent across API workers
-2ae48b0 Clarify remaining data-independent collection improvements
-c47ad45 Document cattle field collection protocol and dataset handoff
 ```
 
 ```text

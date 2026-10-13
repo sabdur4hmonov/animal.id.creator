@@ -1,5 +1,16 @@
 # Phase 1 validation
 
+## Native mobile design refresh (2026-10-13, latest)
+
+68 Flutter host tests passed; final Flutter analyzer was clean. Capture/Saved/Tools,
+QC review, receipt cards, error feedback and backup/settings were rendered and
+visually inspected with real SDK fonts and mock camera/GPS/API boundaries. Checks
+include 320×720 at 200% text, visible invalid-ID feedback without taking a photo,
+failed upload/original retention, retake and Android touch targets on Capture/Tools.
+Final debug APK built in 26.0 seconds. Source, screenshot previews, APK hash,
+repeat commands and physical-device limits: [MOBILE_DESIGN.md](MOBILE_DESIGN.md).
+Backend/research were unchanged and not rerun for this UI milestone.
+
 ## Collection enhancements (2026-10-13)
 
 Phone ZIP export/verified recovery, a measured 1,800-capture host queue, pagination,
