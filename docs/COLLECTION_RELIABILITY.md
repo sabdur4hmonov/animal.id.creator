@@ -35,6 +35,12 @@ retained originals accumulate. Before a farm visit, prove: connected capture →
 capture/next → force-close/reopen → recover pending labels/image → reconnect/upload → check server
 UUID/file. Host tests and an APK build do not establish physical camera/plugin behavior.
 
+**Export phone backup** creates and verifies a ZIP of all local originals/journals/receipts
+before opening the share sheet. Save it outside the app; temporary exports are not a second
+durable copy. Tokens/settings are excluded; corrupt/partial files are retained as evidence.
+See [phone recovery and benchmarks](COLLECTION_IMPROVEMENTS_2026-10-13.md) for computer
+verification/extraction commands. Server backups below are still required separately.
+
 ## Backup — repository PowerShell terminal
 
 Use the project name shown by `docker compose ls` (normally `backend` for README setup) and its actual

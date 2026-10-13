@@ -1,5 +1,18 @@
 # Phase 1 validation
 
+## Collection enhancements (2026-10-13)
+
+Phone ZIP export/verified recovery, a measured 1,800-capture host queue, pagination,
+eight mocked CaptureScreen scenarios, pinned dependencies and exact decoded-pixel
+research duplicate rejection are complete. 161 distinct backend/tooling cases,
+48 research tests and 64 Flutter host tests passed (273 total). The backend run
+covered 157 cases before four extra archive-security regressions; all 10 backup
+tests then passed. Ruff/Flutter analyze, final debug APK and an isolated pinned
+Docker/PostgreSQL upload/concurrent-replay check passed. See
+[collection improvements](COLLECTION_IMPROVEMENTS_2026-10-13.md) for measurements,
+exact evidence, recovery commands, dependency policy and physical-device limits.
+Historical verification below describes earlier revisions.
+
 ## Audit repair verification (2026-10-13)
 
 All eight confirmed audit findings are repaired. Fresh checks: **151 backend/tooling,

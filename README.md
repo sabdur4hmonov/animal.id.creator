@@ -5,6 +5,7 @@ Cattle data collection API: native camera capture, image quality feedback, optio
 ## Run the backend
 
 Offline collection/retries and backup/restore commands: [COLLECTION_RELIABILITY.md](docs/COLLECTION_RELIABILITY.md).
+Phone ZIP recovery, queue benchmark and dependency pins: [collection improvements](docs/COLLECTION_IMPROVEMENTS_2026-10-13.md).
 
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 
@@ -26,11 +27,11 @@ Images persist in the repository's ignored `data/` folder. PostgreSQL persists i
 
 ## Run the mobile app
 
-Install stable Flutter (Dart 3.10+), Android Studio/Android SDK or Xcode for iOS, and confirm `flutter doctor`. The scaffold was generated for Android and iOS; gallery selection and desktop/web capture are intentionally absent. Android requires API 24+ and iOS 13+.
+Install Flutter 3.47.5 (Dart 3.13.4), Android Studio/Android SDK or Xcode for iOS, and confirm `flutter doctor`. The scaffold was generated for Android and iOS; gallery selection and desktop/web capture are intentionally absent. Android requires API 24+ and iOS 13+.
 
 ```powershell
 cd 'D:\Coding projects\moliddetector\mobile'
-flutter pub get
+flutter pub get --enforce-lockfile
 adb reverse tcp:8000 tcp:8000
 $localKeys = Get-Content '../backend/.secrets/tokens.json' -Raw | ConvertFrom-Json
 flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define="API_TOKEN=$($localKeys.operator.token)" --dart-define="OPERATOR_ID=$($localKeys.operator.operator_id)"
