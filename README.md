@@ -8,6 +8,7 @@ Offline collection/retries and backup/restore commands: [COLLECTION_RELIABILITY.
 Phone ZIP recovery, queue benchmark and dependency pins: [collection improvements](docs/COLLECTION_IMPROVEMENTS_2026-10-13.md).
 Mobile screen design, visual previews and UI checks: [MOBILE_DESIGN.md](docs/MOBILE_DESIGN.md).
 Permanent MAA-series issuance, ownership transfers, death/slaughter archives and report lookup: [ANIMAL_REGISTRY.md](docs/ANIMAL_REGISTRY.md).
+Latest completed fixes, verification and remaining data/device gates: [MVP completion audit](docs/MVP_COMPLETION_2026-10-14.md).
 
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 

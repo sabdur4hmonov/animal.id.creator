@@ -1,8 +1,8 @@
 # Field capture design — 2026-10-13
 
-**Latest numbering extension (2026-10-14):** 88 full Flutter host tests passed; analyzer clean.
-Final debug APK SHA-256 `29f37a78c3fe5c094bc1e68e5be988986b4706075da3eaa0013659b415dc0cd8`.
-Actual widget previews below are refreshed for four-tab navigation. Permanent-ID
+**Latest MVP completion audit (2026-10-14):** 93 full Flutter host tests passed; analyzer clean.
+Final debug APK SHA-256 `f174e598090052164af0be2746b029b60b56be672fbc9c5f32c3f29cf5669b77`.
+Actual widget previews below are refreshed for four-tab navigation. Refresh, paged history and optional uploaded UUID evidence are available. Permanent-ID
 dialogs and report previews: [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md). These use
 mock records and SDK fonts; physical-device operation remains unverified.
 

@@ -58,9 +58,13 @@ status remains separate; death/slaughter does not automatically settle a loan/po
   events. GPS is nullable and operator/device supplied, not independent location
   proof. Delayed uploads to an existing archived ID retain evidence without
   reactivating it; the normal registry capture selector offers active records only.
-- Optional API `capture_id` links a matching, permitted scan and stored image hash
-  to a terminal report. The mobile report form does not yet attach that UUID;
-  it records facility/notes/time/GPS. No image-based slaughter verdict is produced.
+- Optional `capture_id` links a matching, permitted scan and stored image hash
+  to a terminal report. In the phone form, paste the **Uploaded capture UUID**
+  from Saved upload receipts; leave blank if no uploaded frame is available.
+  A local request key is not a UUID. The phone validates the shape, normalizes
+  case and keeps that attachment unchanged on retry; the server verifies animal
+  and operator permission. Recorded UUID/hash are selectable in the archived
+  report. No image-based slaughter verdict is produced.
 - Phone ZIP backups include registry requests, acknowledgements and partial writes;
   protect them because owner names and report metadata are sensitive. Save a copy
   outside the app. Desktop recovery preserves evidence; it does not auto-replay
@@ -104,7 +108,7 @@ require `Idempotency-Key` (16–128 ASCII letters/digits/underscores/hyphens).
 | `GET /animals/cattle/{id}` | Current projection, owner, lifecycle and terminal record |
 | `POST /animals/cattle/{id}/owner` | New owner, expected_version, timezone-aware observed_at, nullable GPS, reason |
 | `POST /animals/cattle/{id}/retirement` | Same observation fields + lifecycle; facility_id required for slaughter; optional capture_id |
-| `GET /animals/cattle/{id}/history?limit=50&offset=0` | Immutable events; mobile displays latest 50; API supports paging |
+| `GET /animals/cattle/{id}/history?limit=50&offset=0` | Immutable events; mobile has previous/next pages of 50 |
 | `GET /animals/cattle/{id}/slaughter-check` | Registry report only; biometric/independent verification explicitly false |
 
 Before using new numbering, back up the existing backend using
@@ -114,6 +118,13 @@ only the isolated stack; it did not deploy to the normal collection stack.
 Rebuild the app with the existing README backend/operator defines.
 
 ## Verification — 2026-10-14 series extension
+
+The later [MVP completion audit](MVP_COMPLETION_2026-10-14.md) also repairs
+coherent registry reads, stale lookup cards, cross-instance phone journals,
+capture attachment, history paging and linked storage paths. Lists/details use
+one statement snapshot; a failed lookup clears the previous animal/report.
+**Refresh registry** retries lookup after reconnecting. Completed checks below
+describe the preceding numbering milestone; latest total is 339 passing tests.
 
 194 backend/tooling, 48 research and 88 Flutter host tests passed; Ruff and Flutter
 analysis clean. Cases cover AA/AB and AZ/BA carries, capacity/exhaustion, old config

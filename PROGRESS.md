@@ -12,7 +12,7 @@ Last live repository inspection: 2026-10-14, Asia/Tashkent. Project root: D:\Cod
 
 **Mobile artifact:** final debug APK built in 30.1 seconds after a preceding 34.7-second build, SHA-256 f174e598090052164af0be2746b029b60b56be672fbc9c5f32c3f29cf5669b77. Final brace/style correction passed analyze; no configured operator token. SDK 3.47.5 and kotlin.incremental=false unchanged. Journal guard is shared within the app's UI isolate; backend idempotency/counters remain authoritative across clients. Backup/link guards reduce accidental redirection, not protection against a privileged filesystem/database administrator.
 
-**Exact stop / next action:** defined data-independent MVP/groundwork and all confirmed findings from this pass are complete; local backend/mobile/docs milestones follow. Do not claim every future phase or 100% real-world reliability is finished. See docs/MVP_COMPLETION_2026-10-14.md. Before real new IDs, back up/review then rebuild normal backend/configs together and run the operator-configured app using README. Native phone camera/GPS/keyboard/storage/share/registry/history/attachment remains an external test blocker until repaired/replacement device; no device availability update received. Real reviewed identity sessions/muzzle checkpoint, genuine/attack videos, measured-animal geometry/weights and actual market observations gate production matching/liveness/weight/valuation confidence; sheep data/pilot remain disabled. Existing math, admin price/status/review endpoints and advisory spoof/GPS code are built, not calibrated proof. Corrected stale DATA_REQUIREMENTS statements about authentication and quote implementation. No unresolved routine architecture question or automatic push; resume empirical evaluation when inputs arrive.
+**Exact stop / next action:** defined data-independent MVP/groundwork and all confirmed findings from this pass are complete; local code milestones 5dd1274 (backend/storage) and 8d82675 (mobile); final documentation commit follows. Do not claim every future phase or 100% real-world reliability is finished. See docs/MVP_COMPLETION_2026-10-14.md. Before real new IDs, back up/review then rebuild normal backend/configs together and run the operator-configured app using README. Native phone camera/GPS/keyboard/storage/share/registry/history/attachment remains an external test blocker until repaired/replacement device; no device availability update received. Real reviewed identity sessions/muzzle checkpoint, genuine/attack videos, measured-animal geometry/weights and actual market observations gate production matching/liveness/weight/valuation confidence; sheep data/pilot remain disabled. Existing math, admin price/status/review endpoints and advisory spoof/GPS code are built, not calibrated proof. Corrected stale DATA_REQUIREMENTS statements about authentication and quote implementation. No unresolved routine architecture question or automatic push; resume empirical evaluation when inputs arrive.
 
 ## Previous letter-series milestone
 
@@ -45,13 +45,16 @@ Last live repository inspection: 2026-10-14, Asia/Tashkent. Project root: D:\Cod
 **Exact next action / external blockers:** before new real numbering, back up the normal backend, review then rebuild from backend/ with docker compose up --build -d (startup applies 0005). Rebuild/run the operator-configured app using README. On a repaired/replacement phone verify native camera/GPS/keyboard and registry creation/acknowledgement, offline restart/retry, owner changes, death/slaughter archive lookup and ZIP export/share on synthetic test records. Real phone remains unavailable/unverified; this is external, not a known code blocker. Real cattle dataset/checkpoint/calibration still gates biometric matching, actual slaughter/identity authenticity, liveness and weight accuracy. Guide now maps server IDs to separate farm cohort slots; preserve all existing labels. No routine architectural question is pending. Requested code work finished; no automatic push or new model work.
 
 
-## Git evidence — letter-series code milestones, before final documentation commit
+## Git evidence — MVP completion code milestones, before final documentation commit
 
-Live inspection: 2026-10-14. HEAD bba7a96; pending tracked changes are requested documentation/previews only. The final documentation commit follows this snapshot. Cached origin/main remote-only/local-only counts: 0/14; no new fetch or push. Inspect live status/log at the next session.
+Live inspection: 2026-10-14. HEAD 8d82675; pending tracked changes are the requested documentation/previews only. Final documentation commit follows. Cached origin/main remote-only/local-only counts: 0/17; no new fetch or push. Inspect live status/log next session.
 
 Real git log --oneline -20 output:
 
 ```text
+8d82675 Complete registry lookup, evidence attachment, history paging and phone journal guards
+5dd1274 Read coherent registry snapshots and prevent redirected capture writes
+3b18175 Document series rollover, legacy compatibility and verified recovery
 bba7a96 Display series IDs and preserve legacy mobile journals and cached rules
 35efa25 Allocate fixed-width animal letter series without resetting legacy counters
 2e2bd37 Record fixed-length letter series numbering proposal and current limits
@@ -69,9 +72,6 @@ fff4799 Reject exact decoded-pixel duplicates in reviewed research datasets
 eaaf857 Clarify published repair milestone status
 ad5f754 Record authorized GitHub publication of audit repairs
 b5da129 Record verified audit repairs and PostgreSQL recovery proof
-0ba8dd7 Measure mobile exposure before resizing and share clipping regression fixtures
-de5e76d Isolate corrupt offline journals and validate capture labels before saving
-8c722c2 Reject invalid contour geometry, truncated research pixels and unsafe UTC times
 ```
 
 Real git remote -v output:

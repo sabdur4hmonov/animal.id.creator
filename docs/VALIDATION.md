@@ -1,5 +1,16 @@
 # Phase 1 validation
 
+## MVP completion audit (2026-10-14, latest)
+
+198 backend/tooling + 48 research + 93 Flutter = 339 distinct cases passed.
+Ruff and Flutter analysis clean; final debug APK built. Regressions cover stale
+lookup clearing, coherent version/owner/lifecycle reads, shared phone journal
+guards, validated/replayed capture UUID attachment, paged history and actual
+Windows junction write rejection. Real PostgreSQL verified 200 concurrent reads
+during 30 owner updates, final pending_model upload/file/hash/terminal attachment,
+and complete isolated restore. Details, hashes, evidence, field limits and next
+actions: [MVP_COMPLETION_2026-10-14.md](MVP_COMPLETION_2026-10-14.md).
+
 ## Fixed-length letter-series numbering (2026-10-14, latest)
 
 194 backend/tooling, 48 research and 88 Flutter tests passed (330 distinct tests);
