@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import 'api_client.dart';
+import 'app_design.dart';
 import 'animal_id.dart';
 import 'capture_environment.dart';
 import 'offline_queue.dart';
@@ -37,14 +38,24 @@ class _CaptureScreenState extends State<CaptureScreen>
   List<String> _queueIssues = [];
   String get _backend => _environment.backend;
   int _queuePage = 0;
+  int _tab = 0;
+  bool _cachedSettings = false;
   static const _pageSize = 50;
   String? _message;
+  bool _messageError = false;
   String? _cameraError;
   bool _busy = false;
   bool _loading = true;
   bool _saved = false;
   bool _active = true;
   int _cameraGeneration = 0;
+
+  void _showMessage(String message, {bool error = false}) {
+    setState(() {
+      _message = message;
+      _messageError = error;
+    });
+  }
 
   @override
   void initState() {
@@ -81,6 +92,8 @@ class _CaptureScreenState extends State<CaptureScreen>
       setState(() {
         _configs = configs;
         _selected = configs.first;
+        _cachedSettings = cached;
+        _messageError = false;
         _message = cached
             ? 'Offline settings loaded. Save captures now; upload when the backend is available.'
             : null;
@@ -88,9 +101,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       await _refreshQueue();
     } catch (error) {
       if (mounted) {
-        setState(
-          () => _message =
-              'Connect to the backend once to cache settings, then retry. $error',
+        _showMessage(
+          'Connect to the backend once to cache settings, then retry. $error',
+          error: true,
         );
       }
     } finally {
@@ -138,14 +151,15 @@ class _CaptureScreenState extends State<CaptureScreen>
         setState(() {
           _message =
               'Uploaded $count queued captures. Local originals and receipts retained.';
+          _messageError = false;
           if (_queued != null) _saved = acknowledged;
         });
       }
     } catch (error) {
       if (mounted) {
-        setState(
-          () => _message =
-              'Queue paused: $error. Unsaved captures remain on this phone.',
+        _showMessage(
+          'Queue paused: $error. Pending captures remain on this phone.',
+          error: true,
         );
       }
     } finally {
@@ -168,18 +182,16 @@ class _CaptureScreenState extends State<CaptureScreen>
             content: SizedBox(
               width: 500,
               child: SingleChildScrollView(
-                child: SelectableText(
-                  saved.isEmpty
-                      ? 'No uploads acknowledged yet.'
-                      : saved
-                            .skip(page * _pageSize)
-                            .take(_pageSize)
-                            .map(
-                              (item) =>
-                                  '${item['animal_id']} · ${item['species']}\nRequest: ${item['request_key']}\n'
-                                  'Capture: ${item['id']}\nFile: ${item['file_path']}',
-                            )
-                            .join('\n\n'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (saved.isEmpty)
+                      const Text('No uploads acknowledged yet.')
+                    else
+                      for (final item
+                          in saved.skip(page * _pageSize).take(_pageSize))
+                        _receiptTile(item),
+                  ],
                 ),
               ),
             ),
@@ -209,9 +221,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       );
     } catch (error) {
       if (mounted) {
-        setState(
-          () =>
-              _message = 'Receipt review failed: $error. Local files retained.',
+        _showMessage(
+          'Receipt review failed: $error. Local files retained.',
+          error: true,
         );
       }
     }
@@ -222,6 +234,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     setState(() {
       _busy = true;
       _message = 'Preparing phone backup…';
+      _messageError = false;
     });
     try {
       final directory = await _environment.exportDirectory();
@@ -233,16 +246,15 @@ class _CaptureScreenState extends State<CaptureScreen>
       if (!mounted) return;
       await _environment.share(file, origin);
       if (mounted) {
-        setState(
-          () => _message =
-              'Verified backup of ${(manifest['files'] as Map).length} files. Save a copy outside this app. Originals retained.',
+        _showMessage(
+          'Verified backup of ${(manifest['files'] as Map).length} files. Save a copy outside this app. Originals retained.',
         );
       }
     } catch (error) {
       if (mounted) {
-        setState(
-          () => _message =
-              'Backup failed: $error. Originals retained on this phone.',
+        _showMessage(
+          'Backup failed: $error. Originals retained on this phone.',
+          error: true,
         );
       }
     } finally {
@@ -255,6 +267,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     final quality = entry.journal.quality;
     _animal.text = entry.metadata['animal_id'] as String;
     setState(() {
+      _tab = 0;
       _queued = entry;
       _photo = XFile(entry.imagePath);
       _metadata = entry.metadata;
@@ -264,6 +277,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         quality.reasons,
       );
       _saved = false;
+      _messageError = false;
       _message =
           'Recovered ${entry.metadata['animal_id']} from this phone. Labels/time preserved.';
     });
@@ -310,17 +324,28 @@ class _CaptureScreenState extends State<CaptureScreen>
   Future<void> _capture() async {
     final camera = _camera;
     final config = _selected;
-    if (_busy ||
-        camera == null ||
-        config == null ||
-        _queue == null ||
-        !_form.currentState!.validate()) {
+    if (_busy || camera == null || config == null || _queue == null) {
+      return;
+    }
+    if (!(_form.currentState?.validate() ?? false)) {
+      final formContext = _form.currentContext;
+      if (formContext != null) {
+        unawaited(
+          Scrollable.ensureVisible(
+            formContext,
+            duration: const Duration(milliseconds: 200),
+            alignment: 1,
+          ),
+        );
+      }
       return;
     }
     setState(() {
       _busy = true;
       _message = null;
+      _messageError = false;
     });
+    FocusScope.of(context).unfocus();
     XFile? photo;
     try {
       // Snapshot labels before asynchronous work; fields stay locked during capture.
@@ -359,14 +384,14 @@ class _CaptureScreenState extends State<CaptureScreen>
         _metadata = metadata;
         if (queued != null) {
           _message =
-              'Saved on this phone. Request ${queued.key}. Upload now or collect the next capture.';
+              'Saved on this phone. Upload now or collect the next capture.';
         }
       });
       if (queued != null) await _deletePhoto(photo);
       await _refreshQueue();
     } catch (error) {
       await _deletePhoto(photo);
-      if (mounted) setState(() => _message = 'Capture failed: $error');
+      if (mounted) _showMessage('Capture failed: $error', error: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -380,12 +405,18 @@ class _CaptureScreenState extends State<CaptureScreen>
       if (!mounted) return;
       setState(() {
         _saved = true;
+        _messageError = false;
         _message = result['crop_status'] == 'cropped'
             ? 'Saved original and muzzle crop. Capture ${result['id']}'
             : 'Saved original. Cropping is pending a trained model. Capture ${result['id']}';
       });
     } catch (error) {
-      if (mounted) setState(() => _message = '$error');
+      if (mounted) {
+        _showMessage(
+          'Upload failed: $error. Original retained on this phone.',
+          error: true,
+        );
+      }
     } finally {
       await _refreshQueue();
       if (mounted) setState(() => _busy = false);
@@ -430,13 +461,33 @@ class _CaptureScreenState extends State<CaptureScreen>
       return Image.file(File(_photo!.path), fit: BoxFit.contain);
     }
     if (_cameraError != null) {
-      return Center(
+      return Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_cameraError!, textAlign: TextAlign.center),
+            const Icon(
+              Icons.no_photography_outlined,
+              size: 34,
+              color: Colors.white70,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Camera unavailable',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Allow camera access in device settings, then try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70),
+            ),
             TextButton(
               onPressed: _openCamera,
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
               child: const Text('Retry camera'),
             ),
           ],
@@ -444,7 +495,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       );
     }
     if (_camera == null || !_camera!.initialized) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
     return Center(
       child: AspectRatio(
@@ -454,218 +507,854 @@ class _CaptureScreenState extends State<CaptureScreen>
     );
   }
 
-  Widget _qualityCard() {
-    final quality = _quality!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+  Widget _cameraCard() => ClipRRect(
+    borderRadius: BorderRadius.circular(24),
+    child: Container(
+      color: const Color(0xff162c23),
+      height: _photo == null ? 240 : 280,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _preview(),
+          if (_photo == null &&
+              _cameraError == null &&
+              _camera?.initialized == true) ...[
+            IgnorePointer(child: CustomPaint(painter: MuzzleGuide())),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 76,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0xcc000000)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 14,
+              left: 14,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .72),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.camera_alt_outlined,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'CAMERA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Positioned(
+              bottom: 14,
+              left: 16,
+              right: 16,
+              child: Text(
+                'Keep one muzzle fully inside the guide',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+
+  Widget _identityCard() {
+    final editable = !_busy && _photo == null;
+    return FieldCard(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _form,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              quality.passed ? 'Local quality check passed' : 'Please retake',
-              style: Theme.of(context).textTheme.titleMedium,
+            Row(
+              children: [
+                const Icon(
+                  Icons.sell_outlined,
+                  size: 18,
+                  color: FieldColors.green,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Animal details',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
             ),
-            Text(
-              'Sharpness: ${quality.blurVariance.toStringAsFixed(1)} · Brightness: ${quality.brightness.toStringAsFixed(1)}',
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: _animal,
+              enabled: editable,
+              validator: validateAnimalId,
+              autocorrect: false,
+              textCapitalization: TextCapitalization.characters,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+              decoration: const InputDecoration(
+                labelText: 'Animal ID',
+                hintText: 'e.g. F01-C001',
+                prefixIcon: Icon(Icons.tag_rounded),
+              ),
             ),
-            for (final reason in quality.reasons) Text(reason),
-            Text(
-              _metadata?['gps'] == null
-                  ? 'GPS unavailable — location will be saved as empty.'
-                  : 'GPS recorded.',
+            const SizedBox(height: 12),
+            if (_configs.isNotEmpty)
+              DropdownButtonFormField<SpeciesConfig>(
+                initialValue: _selected,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Species',
+                  prefixIcon: Icon(Icons.grass_rounded),
+                ),
+                items: _configs
+                    .map(
+                      (config) => DropdownMenuItem(
+                        value: config,
+                        child: Text(
+                          '${config.species.name[0].toUpperCase()}${config.species.name.substring(1)}',
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: editable
+                    ? (value) => setState(() => _selected = value)
+                    : null,
+              ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.badge_outlined,
+                  size: 14,
+                  color: FieldColors.muted,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Operator · ${_operator.text}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
             ),
-            const Text('The server makes the final quality and framing check.'),
+            if (_operator.text.trim().isEmpty)
+              const Text(
+                'Configure your operator credential before collecting.',
+                style: TextStyle(color: FieldColors.red),
+              ),
           ],
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final editable = !_busy && _photo == null;
-    return Scaffold(
-      appBar: AppBar(title: const Text('BioLivestock · Capture')),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                const Text('Phase 1 · Field data collection'),
-                const SizedBox(height: 12),
-                Form(
-                  key: _form,
-                  child: Column(
-                    children: [
-                      if (_configs.isNotEmpty)
-                        DropdownButtonFormField<SpeciesConfig>(
-                          initialValue: _selected,
-                          decoration: const InputDecoration(
-                            labelText: 'Species',
-                          ),
-                          items: _configs
-                              .map(
-                                (config) => DropdownMenuItem(
-                                  value: config,
-                                  child: Text(config.species.name),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: editable
-                              ? (value) => setState(() => _selected = value)
-                              : null,
-                        ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _animal,
-                        enabled: editable,
-                        decoration: const InputDecoration(
-                          labelText: 'Animal ID',
-                        ),
-                        validator: validateAnimalId,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _operator,
-                        enabled: false,
-                        maxLength: 100,
-                        decoration: const InputDecoration(
-                          labelText: 'Operator ID',
-                        ),
-                        validator: (value) =>
-                            value == null || value.trim().isEmpty
-                            ? 'Enter an operator ID'
-                            : null,
-                      ),
-                    ],
-                  ),
+  Widget _qualityCard() {
+    final quality = _quality!;
+    return FieldCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                quality.passed
+                    ? Icons.check_circle_rounded
+                    : Icons.error_outline_rounded,
+                color: quality.passed ? FieldColors.green : FieldColors.red,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  quality.passed
+                      ? 'Local quality check passed'
+                      : 'Please retake',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                if (_loading) const LinearProgressIndicator(),
-                if (!_loading && _configs.isEmpty)
-                  OutlinedButton(
-                    onPressed: _loadConfigs,
-                    child: const Text('Retry backend settings'),
-                  ),
-                Text(
-                  'Pending uploads: ${_pending.length}. Saved originals remain on this phone.',
-                ),
-                OutlinedButton(
-                  onPressed: !_busy && _pending.isNotEmpty ? _syncQueue : null,
-                  child: const Text('Upload pending captures'),
-                ),
-                TextButton(
-                  onPressed: !_busy && _queue != null ? _showReceipts : null,
-                  child: const Text('Review saved upload receipts'),
-                ),
-                Builder(
-                  builder: (buttonContext) => OutlinedButton.icon(
-                    onPressed: !_busy && _queue != null
-                        ? () {
-                            final box =
-                                buttonContext.findRenderObject() as RenderBox;
-                            unawaited(
-                              _exportBackup(
-                                box.localToGlobal(Offset.zero) & box.size,
-                              ),
-                            );
-                          }
-                        : null,
-                    icon: const Icon(Icons.save_alt),
-                    label: const Text('Export phone backup'),
-                  ),
-                ),
-                const Text(
-                  'Backup includes all local captures/operators. Originals stay on this phone.',
-                ),
-                for (final issue in _queueIssues) Text(issue),
-                if (_photo == null)
-                  for (final entry
-                      in _pending.skip(_queuePage * _pageSize).take(_pageSize))
-                    ListTile(
-                      title: Text(
-                        '${entry.metadata['animal_id']} · ${entry.metadata['species']}',
-                      ),
-                      subtitle: Text(
-                        '${entry.metadata['timestamp']} · ${entry.key}',
-                      ),
-                      onTap: _busy ? null : () => _openQueued(entry),
-                    ),
-                if (_photo == null && _pending.length > _pageSize)
-                  Wrap(
-                    children: [
-                      TextButton(
-                        onPressed: !_busy && _queuePage > 0
-                            ? () => setState(() => _queuePage--)
-                            : null,
-                        child: const Text('Previous captures'),
-                      ),
-                      Text(
-                        'Page ${_queuePage + 1} of ${(_pending.length + _pageSize - 1) ~/ _pageSize}',
-                      ),
-                      TextButton(
-                        onPressed:
-                            !_busy &&
-                                (_queuePage + 1) * _pageSize < _pending.length
-                            ? () => setState(() => _queuePage++)
-                            : null,
-                        child: const Text('Next captures'),
-                      ),
-                    ],
-                  ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Keep one muzzle fully visible. Move close, hold steady, and use even lighting.',
-                  ),
-                ),
-                SizedBox(
-                  height: 320,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: _preview(),
-                  ),
-                ),
-                if (_quality != null) _qualityCard(),
-                if (_message != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: SelectableText(_message!),
-                  ),
-                if (_busy) const LinearProgressIndicator(),
-                const SizedBox(height: 12),
-                if (_photo == null)
-                  FilledButton.icon(
-                    onPressed: !_busy && _camera != null && _selected != null
-                        ? _capture
-                        : null,
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text('Capture'),
-                  )
-                else ...[
-                  FilledButton.icon(
-                    onPressed: !_busy && !_saved && (_quality?.passed ?? false)
-                        ? _upload
-                        : null,
-                    icon: const Icon(Icons.cloud_upload_outlined),
-                    label: Text(_saved ? 'Uploaded' : 'Upload capture'),
-                  ),
-                  OutlinedButton(
-                    onPressed: _busy ? null : _retake,
-                    child: Text(
-                      _queued != null
-                          ? 'Next capture (saved locally)'
-                          : 'Retake',
-                    ),
-                  ),
-                ],
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 12),
+          for (final reason in quality.reasons)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                reason,
+                style: const TextStyle(color: FieldColors.red),
+              ),
+            ),
+          FieldTag(
+            _metadata?['gps'] == null ? 'GPS unavailable' : 'GPS recorded',
+            icon: _metadata?['gps'] == null
+                ? Icons.location_off_outlined
+                : Icons.location_on_outlined,
+            caution: _metadata?['gps'] == null,
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'The server makes the final quality and framing check.',
+            style: TextStyle(fontSize: 12),
+          ),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: const EdgeInsets.only(bottom: 8),
+            title: const Text(
+              'Capture details',
+              style: TextStyle(fontSize: 13),
+            ),
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SelectableText(
+                  'Sharpness: ${quality.blurVariance.toStringAsFixed(1)} · Brightness: ${quality.brightness.toStringAsFixed(1)}\n'
+                  '${_metadata?["timestamp"] ?? ""}${_queued == null ? "" : "\nRequest: ${_queued!.key}"}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              if (_metadata?['gps'] == null)
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Location is saved as empty; no GPS is invented.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
+
+  Widget _messageCard() => FieldCard(
+    color: _messageError
+        ? const Color(0xffffefed)
+        : _saved || _queued != null
+        ? FieldColors.mint
+        : FieldColors.cream,
+    padding: const EdgeInsets.all(16),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          _messageError
+              ? Icons.error_outline_rounded
+              : _saved
+              ? Icons.cloud_done_outlined
+              : Icons.info_outline,
+          size: 20,
+          color: _messageError ? FieldColors.red : FieldColors.forest,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: SelectableText(
+            _message!,
+            style: const TextStyle(fontSize: 13, color: FieldColors.ink),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _issuesCard() => FieldCard(
+    color: FieldColors.cream,
+    padding: const EdgeInsets.all(12),
+    child: ExpansionTile(
+      leading: const Icon(
+        Icons.warning_amber_rounded,
+        color: FieldColors.amber,
+      ),
+      title: Text(
+        '${_queueIssues.length} local items need review',
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+      subtitle: const Text(
+        'Files retained on this phone',
+        style: TextStyle(fontSize: 12),
+      ),
+      children: [
+        for (final issue in _queueIssues)
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: SelectableText(issue, style: const TextStyle(fontSize: 12)),
+          ),
+      ],
+    ),
+  );
+
+  List<Widget> _captureContent() => [
+    FieldHeading(
+      eyebrow: 'Field collection',
+      title: _photo == null ? 'One muzzle at a time.' : 'Review your capture.',
+      subtitle: _photo == null
+          ? 'Get close. Hold steady. Use even light.'
+          : '${_metadata?["animal_id"] ?? ""} · ${_metadata?["species"] ?? ""}',
+    ),
+    const SizedBox(height: 16),
+    _cameraCard(),
+    const SizedBox(height: 16),
+    if (_photo == null) _identityCard(),
+    if (_quality != null) _qualityCard(),
+    if (_loading)
+      const Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: LinearProgressIndicator(),
+      ),
+    if (!_loading && _configs.isEmpty)
+      Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: OutlinedButton.icon(
+          onPressed: _loadConfigs,
+          icon: const Icon(Icons.refresh),
+          label: const Text('Retry backend settings'),
+        ),
+      ),
+    if (_message != null) ...[const SizedBox(height: 16), _messageCard()],
+    if (_queueIssues.isNotEmpty) ...[const SizedBox(height: 16), _issuesCard()],
+    const SizedBox(height: 16),
+    Row(
+      children: [
+        const Icon(
+          Icons.phone_android_outlined,
+          size: 17,
+          color: FieldColors.green,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '${_pending.length} waiting to upload · originals stay on this phone',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+      ],
+    ),
+    TextButton(
+      onPressed: _busy ? null : () => setState(() => _tab = 1),
+      child: const Text('View saved captures'),
+    ),
+  ];
+
+  Widget _queuedTile(QueuedCapture entry) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: FieldCard(
+      padding: EdgeInsets.zero,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 42,
+          height: 46,
+          decoration: BoxDecoration(
+            color: FieldColors.mint,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(
+            Icons.photo_camera_outlined,
+            color: FieldColors.green,
+          ),
+        ),
+        title: Text(
+          '${entry.metadata["animal_id"]} · ${entry.metadata["species"]}',
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          '${entry.metadata["timestamp"]}',
+          style: const TextStyle(fontSize: 12),
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: _busy ? null : () => _openQueued(entry),
+      ),
+    ),
+  );
+
+  Widget _receiptTile(Map<String, dynamic> item) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: FieldCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${item["animal_id"]} · ${item["species"]}',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          const FieldTag(
+            'Upload acknowledged',
+            icon: Icons.cloud_done_outlined,
+          ),
+          const SizedBox(height: 10),
+          SelectableText(
+            'Capture: ${item["id"]}\nRequest: ${item["request_key"]}\nFile: ${item["file_path"]}',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  List<Widget> _savedContent() => [
+    const FieldHeading(
+      eyebrow: 'On this phone',
+      title: 'Saved captures.',
+      subtitle: 'Review originals, then upload when you are ready.',
+    ),
+    const SizedBox(height: 20),
+    FieldCard(
+      color: FieldColors.forest,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${_pending.length}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 42,
+              fontWeight: FontWeight.w600,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'captures waiting to upload',
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xffd4edbc),
+              foregroundColor: FieldColors.forest,
+              disabledBackgroundColor: Colors.white12,
+              disabledForegroundColor: Colors.white70,
+            ),
+            onPressed: !_busy && _pending.isNotEmpty ? _syncQueue : null,
+            icon: const Icon(Icons.cloud_upload_outlined),
+            label: const Text('Upload pending captures'),
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: 12),
+    OutlinedButton.icon(
+      onPressed: !_busy && _queue != null ? _showReceipts : null,
+      icon: const Icon(Icons.receipt_long_outlined),
+      label: const Text('Review saved upload receipts'),
+    ),
+    if (_message != null) ...[const SizedBox(height: 12), _messageCard()],
+    if (_queueIssues.isNotEmpty) ...[const SizedBox(height: 12), _issuesCard()],
+    const SizedBox(height: 20),
+    if (_photo != null)
+      FieldCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'A capture is open for review',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Finish or move to the next capture before opening another original.',
+            ),
+            TextButton(
+              onPressed: () => setState(() => _tab = 0),
+              child: const Text('Return to capture'),
+            ),
+          ],
+        ),
+      )
+    else if (_pending.isEmpty)
+      const FieldCard(
+        child: Column(
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 36,
+              color: FieldColors.green,
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Nothing waiting to upload',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: FieldColors.ink,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'New captures appear here after passing local quality checks.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      )
+    else ...[
+      Text('Pending originals', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 12),
+      for (final entry in _pending.skip(_queuePage * _pageSize).take(_pageSize))
+        _queuedTile(entry),
+      if (_pending.length > _pageSize)
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            TextButton(
+              onPressed: !_busy && _queuePage > 0
+                  ? () => setState(() => _queuePage--)
+                  : null,
+              child: const Text('Previous captures'),
+            ),
+            Text(
+              'Page ${_queuePage + 1} of ${(_pending.length + _pageSize - 1) ~/ _pageSize}',
+              style: const TextStyle(fontSize: 12),
+            ),
+            TextButton(
+              onPressed:
+                  !_busy && (_queuePage + 1) * _pageSize < _pending.length
+                  ? () => setState(() => _queuePage++)
+                  : null,
+              child: const Text('Next captures'),
+            ),
+          ],
+        ),
+    ],
+  ];
+
+  List<Widget> _toolsContent() => [
+    const FieldHeading(
+      eyebrow: 'Field essentials',
+      title: 'Keep your data safe.',
+      subtitle: 'Back up your phone and check collection settings.',
+    ),
+    const SizedBox(height: 20),
+    FieldCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: FieldColors.mint,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.save_alt_rounded, color: FieldColors.green),
+          ),
+          const SizedBox(height: 16),
+          Text('Phone backup', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          const Text(
+            'Export originals, capture details and upload receipts as a verified ZIP. Save a copy outside this app.',
+          ),
+          const SizedBox(height: 16),
+          Builder(
+            builder: (buttonContext) => SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: !_busy && _queue != null
+                    ? () {
+                        final box =
+                            buttonContext.findRenderObject() as RenderBox;
+                        unawaited(
+                          _exportBackup(
+                            box.localToGlobal(Offset.zero) & box.size,
+                          ),
+                        );
+                      }
+                    : null,
+                icon: const Icon(Icons.ios_share_rounded),
+                label: const Text('Export phone backup'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Includes all local captures/operators. Originals stay on this phone. Credentials are excluded.',
+            style: TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: 16),
+    FieldCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Collection settings',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          FieldTag(
+            _loading
+                ? 'Loading settings'
+                : _configs.isEmpty
+                ? 'Setup needed'
+                : _cachedSettings
+                ? 'Offline settings'
+                : 'Settings loaded',
+            icon: _cachedSettings
+                ? Icons.cloud_off_outlined
+                : Icons.tune_rounded,
+            caution: _cachedSettings || _configs.isEmpty,
+          ),
+          const SizedBox(height: 14),
+          SelectableText(
+            'Operator\n${_operator.text}',
+            minLines: 3,
+            style: const TextStyle(fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          SelectableText(
+            'Backend\n$_backend',
+            minLines: 3,
+            style: const TextStyle(fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: !_busy && !_loading && _photo == null
+                ? _loadConfigs
+                : null,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Refresh settings'),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Connect once to load capture rules. Cached rules let you collect offline.',
+            style: TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: 16),
+    const FieldCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Before you head to the farm',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: FieldColors.ink,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            '01  Check free space and battery.\n02  Keep one muzzle visible, close and sharp.\n03  Use even light; avoid glare and deep shade.\n04  Back up before clearing or uninstalling the app.',
+          ),
+        ],
+      ),
+    ),
+    if (_message != null) ...[const SizedBox(height: 16), _messageCard()],
+    if (_queueIssues.isNotEmpty) ...[const SizedBox(height: 16), _issuesCard()],
+  ];
+
+  Widget _captureActions() => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 660),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_photo == null)
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed:
+                    !_busy &&
+                        _camera?.initialized == true &&
+                        _selected != null &&
+                        _queue != null &&
+                        !_loading &&
+                        _operator.text.trim().isNotEmpty
+                    ? _capture
+                    : null,
+                icon: const Icon(Icons.camera_alt_rounded),
+                label: const Text('Capture'),
+              ),
+            )
+          else ...[
+            if (_quality?.passed ?? false)
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: !_busy && !_saved ? _upload : null,
+                  icon: Icon(
+                    _saved
+                        ? Icons.cloud_done_outlined
+                        : Icons.cloud_upload_outlined,
+                  ),
+                  label: Text(_saved ? 'Uploaded' : 'Upload capture'),
+                ),
+              ),
+            if (_quality?.passed ?? false) const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _busy ? null : _retake,
+                icon: const Icon(Icons.add_a_photo_outlined),
+                label: Text(
+                  _queued != null ? 'Next capture (saved locally)' : 'Retake',
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      titleSpacing: 20,
+      title: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: FieldColors.forest,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: const Icon(
+              Icons.center_focus_strong_rounded,
+              color: Color(0xffd4edbc),
+              size: 23,
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'BioLivestock',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        if (MediaQuery.sizeOf(context).width >= 360 &&
+            MediaQuery.textScalerOf(context).scale(12) <= 16)
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: FieldTag(
+              _cachedSettings ? 'Offline rules' : 'Local first',
+              icon: _cachedSettings
+                  ? Icons.cloud_off_outlined
+                  : Icons.phone_android_rounded,
+              caution: _cachedSettings,
+            ),
+          ),
+      ],
+    ),
+    body: SafeArea(
+      bottom: false,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: Column(
+            children: [
+              if (_busy) const LinearProgressIndicator(minHeight: 3),
+              Expanded(
+                child: _tab == 1
+                    ? ListView(
+                        key: PageStorageKey('field-tab-$_tab'),
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                        children: _savedContent(),
+                      )
+                    : SingleChildScrollView(
+                        key: PageStorageKey('field-tab-$_tab'),
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: _tab == 0
+                              ? _captureContent()
+                              : _toolsContent(),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+    bottomNavigationBar: Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: FieldColors.line)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_tab == 0) Center(child: _captureActions()),
+            NavigationBar(
+              selectedIndex: _tab,
+              onDestinationSelected: (value) {
+                FocusScope.of(context).unfocus();
+                setState(() => _tab = value);
+              },
+              destinations: [
+                const NavigationDestination(
+                  icon: Icon(Icons.camera_alt_outlined),
+                  selectedIcon: Icon(Icons.camera_alt_rounded),
+                  label: 'Capture',
+                ),
+                NavigationDestination(
+                  icon: Badge(
+                    isLabelVisible: _pending.isNotEmpty,
+                    label: Text('${_pending.length}'),
+                    child: const Icon(Icons.inventory_2_outlined),
+                  ),
+                  selectedIcon: const Icon(Icons.inventory_2_rounded),
+                  label: 'Saved',
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.tune_outlined),
+                  selectedIcon: Icon(Icons.tune_rounded),
+                  label: 'Tools',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

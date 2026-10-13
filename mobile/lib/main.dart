@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'capture_screen.dart';
+import 'app_design.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,12 +12,8 @@ class BioLivestockApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'BioLivestock Capture',
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff24634b)),
-      useMaterial3: true,
-      inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
-    ),
+    debugShowCheckedModeBanner: false,
+    theme: fieldTheme(),
     home: const CaptureScreen(),
   );
 }
-
