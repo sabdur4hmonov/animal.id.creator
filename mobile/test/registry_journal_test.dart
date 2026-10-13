@@ -14,6 +14,7 @@ class RegistryFake extends ApiClient {
   bool loseResponse = false;
   bool corruptResponse = false;
   int? reject;
+  bool legacyFormat = false;
   @override
   Future<Map<String, dynamic>> registryPost(
     String path,
@@ -30,8 +31,10 @@ class RegistryFake extends ApiClient {
       key,
       () => {
         'species': 'cattle',
-        'animal_id': 'M${(responses.length + 1).toString().padLeft(8, '0')}',
-        'numbered_id': 'M${(responses.length + 1).toString().padLeft(8, '0')}',
+        'animal_id':
+            '${legacyFormat ? 'M' : 'MAA'}${(responses.length + 1).toString().padLeft(8, '0')}',
+        'numbered_id':
+            '${legacyFormat ? 'M' : 'MAA'}${(responses.length + 1).toString().padLeft(8, '0')}',
         'version': 1,
         'owner': body['owner'],
         'lifecycle': 'active',
@@ -57,6 +60,29 @@ void main() {
   });
   tearDown(() async => root.delete(recursive: true));
   test(
+    'older issued ID survives restart and keeps its receipt while new IDs use letters',
+    () async {
+      api.legacyFormat = true;
+      final old = await journal.submit(registryRoot, body, api);
+      expect(old['animal_id'], 'M00000001');
+      api.legacyFormat = false;
+      journal = RegistryJournal(root, 'http://canonical', 'operator-1');
+      expect(
+        (await journal.submit(registryRoot, body, api))['animal_id'],
+        'M00000001',
+      );
+      await journal.confirmIssued(old['_request_key'] as String);
+      expect(
+        (await journal.submit(registryRoot, body, api))['animal_id'],
+        'MAA00000002',
+      );
+      expect(
+        (await journal.issued()).map((row) => row['animal_id']),
+        contains('M00000001'),
+      );
+    },
+  );
+  test(
     'mismatched acknowledgement is not recorded and the same request can recover',
     () async {
       api.corruptResponse = true;
@@ -67,7 +93,7 @@ void main() {
       expect((await journal.pending()).length, 1);
       expect(await journal.issued(), isEmpty);
       api.corruptResponse = false;
-      expect((await journal.retry(api)).single['animal_id'], 'M00000001');
+      expect((await journal.retry(api)).single['animal_id'], 'MAA00000001');
       expect(api.responses.length, 1);
     },
   );
@@ -80,7 +106,7 @@ void main() {
     final pending = (await journal.pending()).single;
     journal = RegistryJournal(root, 'http://canonical', 'operator-1');
     final replay = (await journal.retry(api)).single;
-    expect(replay['animal_id'], 'M00000001');
+    expect(replay['animal_id'], 'MAA00000001');
     expect(api.responses.length, 1);
     expect(api.requests.last['key'], pending.key);
     expect(api.requests.last['body'], pending.body);
@@ -107,7 +133,7 @@ void main() {
       await journal.confirmIssued(first['_request_key'] as String);
       expect(
         (await journal.submit(registryRoot, body, api))['animal_id'],
-        'M00000002',
+        'MAA00000002',
       );
     },
   );
@@ -193,7 +219,7 @@ void main() {
     await expectLater(journal.retry(api), throwsA(isA<FileSystemException>()));
     await target.delete();
     final replay = (await journal.retry(api)).single;
-    expect(replay['animal_id'], 'M00000001');
+    expect(replay['animal_id'], 'MAA00000001');
     expect(api.responses.length, 1);
   });
   test(
@@ -230,7 +256,7 @@ void main() {
         throwsFormatException,
       );
       await expectLater(
-        journal.submit('$registryRoot/cattle/M00000001/retirement', {
+        journal.submit('$registryRoot/cattle/MAA00000001/retirement', {
           'expected_version': 1,
           'observed_at': '2026-10-13T00:00:00Z',
           'reason': 'Synthetic',

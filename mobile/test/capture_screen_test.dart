@@ -24,13 +24,13 @@ class FakeApi extends ApiClient {
       'species': 'cattle',
       'enabled': true,
       'quality': <String, dynamic>{},
-      'numbering': {'prefix': 'M', 'digits': 8},
+      'numbering': {'prefix': 'M', 'digits': 8, 'series_letters': 2},
     }),
   ];
   final registryAnimal = <String, dynamic>{
     'species': 'cattle',
-    'animal_id': 'M00000001',
-    'numbered_id': 'M00000001',
+    'animal_id': 'MAA00000001',
+    'numbered_id': 'MAA00000001',
     'version': 1,
     'lifecycle': 'active',
     'status': 'open',
@@ -290,13 +290,13 @@ void main() {
             .widget<TextFormField>(find.byType(TextFormField).first)
             .controller!
             .text,
-        'M00000001',
+        'MAA00000001',
       );
       await capture(tester, 'LEGACY-001');
       await tester.tap(find.text('Animals'));
-      await waitFor(tester, find.text('M00000001'));
-      await tester.ensureVisible(find.text('M00000001'));
-      await tester.tap(find.text('M00000001'));
+      await waitFor(tester, find.text('MAA00000001'));
+      await tester.ensureVisible(find.text('MAA00000001'));
+      await tester.tap(find.text('MAA00000001'));
       await waitFor(tester, find.text('Capture with this ID'));
       await tester.ensureVisible(find.text('Capture with this ID'));
       await tester.tap(find.text('Capture with this ID'));

@@ -20,4 +20,24 @@ class SpeciesConfig {
     'quality': quality,
     if (numbering != null) 'numbering': numbering,
   };
+
+  /// Display guidance only; animal IDs are always allocated by the backend.
+  String? get numberingExample {
+    final rules = numbering;
+    if (rules == null) return null;
+    final prefix = rules['prefix'];
+    final digits = rules['digits'];
+    final letters = rules['series_letters'] ?? 0;
+    if (prefix is! String ||
+        !RegExp(r'^[A-Z]{1,8}$').hasMatch(prefix) ||
+        digits is! int ||
+        digits < 4 ||
+        digits > 12 ||
+        letters is! int ||
+        letters < 0 ||
+        letters > 2) {
+      return null;
+    }
+    return '$prefix${List.filled(letters, 'A').join()}${'1'.padLeft(digits, '0')}';
+  }
 }

@@ -97,7 +97,7 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
                         ),
                       ] else ...[
                         Text(
-                          'The backend issues ${config.numbering?['prefix'] ?? ''} IDs. Register each animal once; retries keep the same request.',
+                          'The backend issues IDs such as ${config.numberingExample ?? 'the configured species number'}. Register each animal once; retries keep the same request.',
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -788,9 +788,11 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
               TextField(
                 controller: lookup,
                 enabled: !busy,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Look up animal ID',
-                  hintText: 'Enter the ID from the tag or ledger',
+                  hintText: config.numberingExample == null
+                      ? 'Enter the ID from the tag or ledger'
+                      : 'e.g. ${config.numberingExample} or an existing ID',
                 ),
                 textCapitalization: TextCapitalization.characters,
               ),

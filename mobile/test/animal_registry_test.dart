@@ -15,13 +15,13 @@ final config = SpeciesConfig.fromJson({
   'species': 'cattle',
   'enabled': true,
   'quality': <String, dynamic>{},
-  'numbering': {'prefix': 'M', 'digits': 8},
+  'numbering': {'prefix': 'M', 'digits': 8, 'series_letters': 2},
 });
 
 class RegistryWidgetApi extends ApiClient {
   Map<String, dynamic> animal = {
-    'animal_id': 'M00000001',
-    'numbered_id': 'M00000001',
+    'animal_id': 'MAA00000001',
+    'numbered_id': 'MAA00000001',
     'species': 'cattle',
     'version': 1,
     'lifecycle': 'active',
@@ -220,7 +220,7 @@ void main() {
     'owner change and slaughter require notes/facility then archive keeps readable report',
     (tester) async {
       await screen(tester);
-      await tapVisible(tester, 'M00000001');
+      await tapVisible(tester, 'MAA00000001');
       await tapVisible(tester, 'Change owner');
       await tester.enterText(field('New owner reference'), 'OWNER-2');
       await tester.enterText(field('New owner name'), 'Synthetic Buyer');
@@ -253,7 +253,7 @@ void main() {
     'lost death reply retries immutable body/key and known conflict remains cancellable',
     (tester) async {
       await screen(tester);
-      await tapVisible(tester, 'M00000001');
+      await tapVisible(tester, 'MAA00000001');
       await tapVisible(tester, 'Record death');
       await tester.enterText(
         field('Reason / report notes'),
@@ -269,12 +269,12 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       api.animal = {
         ...api.animal,
-        'animal_id': 'M00000002',
-        'numbered_id': 'M00000002',
+        'animal_id': 'MAA00000002',
+        'numbered_id': 'MAA00000002',
         'lifecycle': 'active',
       };
       await screen(tester);
-      await tapVisible(tester, 'M00000002');
+      await tapVisible(tester, 'MAA00000002');
       await tapVisible(tester, 'Record death');
       await tester.enterText(field('Reason / report notes'), 'Stale report');
       api.reject = 409;
@@ -326,7 +326,7 @@ void main() {
       );
       await settleIO(tester);
       await tapVisible(tester, 'Include archived animals');
-      await tapVisible(tester, 'M00000001');
+      await tapVisible(tester, 'MAA00000001');
       await tapVisible(tester, 'Record death');
       expect(tester.takeException(), isNull);
       await tapVisible(tester, 'Cancel');
