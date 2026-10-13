@@ -1,5 +1,16 @@
 # Phase 1 validation
 
+## Audit repair verification (2026-10-13)
+
+All eight confirmed audit findings are repaired. Fresh checks: **151 backend/tooling,
+46 research and 53 Flutter tests passed**; Ruff and Flutter analysis passed. The Android
+debug APK built successfully. Real isolated PostgreSQL commit-acknowledgement fault/replay,
+four concurrent authenticated HTTP retries, Dart queue restart/HTTP integration and a full
+backup/isolated clone restore passed. All 47 runtime source/config hashes matched.
+See [AUDIT_REPAIRS_2026-10-13.md](AUDIT_REPAIRS_2026-10-13.md) for exact evidence, APK hash,
+local commits, repeat commands and physical-device/real-data limits. Older checks below
+are historical; do not treat them as this session's runtime proof.
+
 ## Collection reliability checks (2026-10-08)
 
 - 122 backend/tooling tests and 45 research tests passed; Ruff passed for backend/research/tools.

@@ -16,6 +16,12 @@ This yields 540 live kg by arithmetic and 270–313.2 carcass kg. Schoorl on 180
 
 The optional keypoint pipeline requires `coordinate_system: calibrated_3d`, a reference segment plus known cm length, body endpoints and an ordered closed chest contour. Closure is implicit: do not repeat its first point. Points have x/y/z and confidence. Scale is reference cm / reference coordinate distance; body length is scaled endpoint distance; girth is scaled closed-polyline length. Zero calibration, repeated/collinear contour points, low confidence and out-of-range measurements fail. Caller must supply a genuine complete 3D reconstruction: this service does not recover one from an ordinary photograph. Side-view width/height or unscaled pixels cannot establish girth. Synthetic square/segment tests verify arithmetic; contour ordering/completeness and anatomy remain field checks.
 
+Since the 2026-10-13 audit repair, a chest contour must also form a simple, planar
+cross-section. Self-intersections, overlapping/retraced edges and materially non-planar
+inputs are rejected. Planarity and numerical tolerances are in each species business config;
+points are never automatically reordered or replaced by a hull. Geometry validity does not
+establish anatomical completeness or measured animal accuracy.
+
 No market price is seeded. In Swagger Authorize with an admin key, then POST `/api/v1/admin/market-rates`:
 
 ```json

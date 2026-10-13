@@ -1,5 +1,10 @@
 # Code audit and repair plan — 2026-10-13
 
+**Repair follow-up:** all eight confirmed findings below are now implemented and verified.
+See [AUDIT_REPAIRS_2026-10-13.md](AUDIT_REPAIRS_2026-10-13.md) for current behavior,
+regression/integration evidence and remaining empirical limits. The observations, source
+line locations and diagnostic probes below describe the original audited revision.
+
 Audited application revision: `d99c2f1ab0b1821998bebbf11614b0959e948571`, branch `main`.
 The working tree was clean at entry. This review changes documentation and adds diagnostic
 reproductions only; **none of the application defects below has been fixed in this milestone**.
@@ -257,6 +262,7 @@ invalid inputs return serializable 422 without writing files or database rows.
 No paid service, new account, sheep-specific logic, biometric model training or breaking
 schema migration is required for these repairs. Scope for this turn was audit and plan;
 the next implementation task should start at milestone 1, not wait for animal photos.
+This original plan has since been completed in the linked repair follow-up.
 
 ## Reproduce the audit
 

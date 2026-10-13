@@ -19,6 +19,15 @@ review 409/413/422 conflicts/validation failures. Do not edit queued labels or i
 bypass conflicts; recapture unsuitable images. Other-backend/operator entries and corrupt/missing
 files remain visible as issues and are retained for review.
 
+Recovery validates each journal/receipt independently; a damaged entry cannot hide healthy
+captures or receipts. Invalid labels are rejected before capture/enqueue. Keep damaged files
+for review rather than silently rewriting their metadata or deleting their originals.
+
+After an attempted database COMMIT, the server retains images even if its acknowledgement
+is lost. Retry with the same key. A real rollback may leave retained orphan files for
+reconciliation. Receipt replay checks the original hash/crop availability and returns 503
+if evidence is missing or changed; restore evidence rather than accepting a false success.
+
 Record the request key for each offline shot. **Review saved upload receipts** shows its server UUID
 and path after upload; copy those to the ledger. Interrupted acknowledgement safely replays the same
 server receipt. Do not uninstall/clear storage while the phone holds the only copy. Check free space;
@@ -66,6 +75,10 @@ The drill checks file hashes, all table counts and capture-index equality. It re
 success/failure; it never switches live connection/mounts, overwrites existing storage or deletes data.
 Recovery cutover is a separate reviewed action. Keep the backup after a successful drill. Requirements:
 Python 3.12+, Docker Compose and the existing PostgreSQL 16 container; no host PostgreSQL/cloud account.
+
+Before reporting a verified restore, the destination inventory and **every copied file**
+must also match the bundle's `files/` hashes, including research labels, crops and retained
+orphans. This check is independent of legacy/crop hashes missing from the database.
 
 References: [application-support paths](https://pub.dev/packages/path_provider),
 [PostgreSQL custom dumps](https://www.postgresql.org/docs/16/app-pgdump.html),
