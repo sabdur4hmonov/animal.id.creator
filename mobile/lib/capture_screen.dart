@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'api_client.dart';
 import 'app_design.dart';
+import 'animal_registry.dart';
+import 'registry_journal.dart';
 import 'animal_id.dart';
 import 'capture_environment.dart';
 import 'offline_queue.dart';
@@ -397,6 +399,55 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
   }
 
+  Future<void> _newAnimal() async {
+    if (_busy || _photo != null || _queue == null || _selected == null) return;
+    setState(() => _busy = true);
+    try {
+      final animal = await issueAnimalDialog(
+        context,
+        _api,
+        RegistryJournal(_queue!.root, _backend, _environment.operatorId),
+        _selected!,
+      );
+      if (animal != null && mounted) {
+        if (animal['lifecycle'] != 'active') {
+          _showMessage(
+            'This ID is now archived. History retained; choose an active animal.',
+            error: true,
+          );
+          return;
+        }
+        _animal.text = animal['animal_id'] as String;
+        _showMessage(
+          'ID ${animal['animal_id']} is registered. Write it on the tag/ledger and keep using this ID.',
+        );
+      }
+    } catch (error) {
+      if (mounted) _showMessage('$error', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _useRegisteredAnimal(Map<String, dynamic> animal) {
+    if (_busy || _photo != null) {
+      setState(() => _tab = 0);
+      _showMessage(
+        'Finish the open capture before choosing another animal.',
+        error: true,
+      );
+      return;
+    }
+    _animal.text = animal['animal_id'] as String;
+    setState(() {
+      _selected = _configs.firstWhere(
+        (config) => config.species.name == animal['species'],
+      );
+      _tab = 0;
+      _message = null;
+    });
+  }
+
   Future<void> _upload() async {
     if (_queued == null || _queue == null || _busy || _saved) return;
     setState(() => _busy = true);
@@ -624,7 +675,7 @@ class _CaptureScreenState extends State<CaptureScreen>
               onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
               decoration: const InputDecoration(
                 labelText: 'Animal ID',
-                hintText: 'e.g. F01-C001',
+                hintText: 'Existing ID or issue a new one below',
                 prefixIcon: Icon(Icons.tag_rounded),
               ),
             ),
@@ -667,6 +718,17 @@ class _CaptureScreenState extends State<CaptureScreen>
                   ),
                 ),
               ],
+            ),
+            OutlinedButton.icon(
+              onPressed:
+                  editable &&
+                      !_loading &&
+                      _queue != null &&
+                      _selected?.numbering != null
+                  ? _newAnimal
+                  : null,
+              icon: const Icon(Icons.add),
+              label: const Text('New animal ID'),
             ),
             if (_operator.text.trim().isEmpty)
               const Text(
@@ -1291,7 +1353,20 @@ class _CaptureScreenState extends State<CaptureScreen>
             children: [
               if (_busy) const LinearProgressIndicator(minHeight: 3),
               Expanded(
-                child: _tab == 1
+                child: _tab == 2
+                    ? (_queue != null && _configs.isNotEmpty
+                          ? AnimalRegistryScreen(
+                              environment: _environment,
+                              queueRoot: _queue!.root,
+                              configs: _configs,
+                              onCapture: _useRegisteredAnimal,
+                            )
+                          : const Center(
+                              child: Text(
+                                'Load species settings and phone storage in Tools first.',
+                              ),
+                            ))
+                    : _tab == 1
                     ? ListView(
                         key: PageStorageKey('field-tab-$_tab'),
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -1344,6 +1419,11 @@ class _CaptureScreenState extends State<CaptureScreen>
                   ),
                   selectedIcon: const Icon(Icons.inventory_2_rounded),
                   label: 'Saved',
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.assignment_ind_outlined),
+                  selectedIcon: Icon(Icons.assignment_ind_rounded),
+                  label: 'Animals',
                 ),
                 const NavigationDestination(
                   icon: Icon(Icons.tune_outlined),

@@ -30,6 +30,18 @@ def test_verified_phone_backup_extracts_to_new_directory(tmp_path):
         phone_backup.extract(bundle, root)
 
 
+def test_registry_journals_and_partial_receipts_are_retained(tmp_path):
+    files = {
+        "queue/registry-" + "a" * 32 + ".json": b"original immutable operation",
+        "queue/registry-receipt-" + "a" * 32 + ".json.next": b"partial acknowledgement",
+    }
+    bundle = make_bundle(tmp_path / "registry.zip", files)
+    result = phone_backup.extract(bundle, tmp_path / "restored")
+    assert set(result["files"]) == set(files)
+    for name, content in files.items():
+        assert (tmp_path / "restored" / name).read_bytes() == content
+
+
 @pytest.mark.parametrize("path", ["../outside", "queue/../outside", "queue/C:/secret", "queue/tokens.json"])
 def test_phone_backup_rejects_unsafe_names(tmp_path, path):
     bundle = make_bundle(tmp_path / "backup.zip", {path: b"test"})

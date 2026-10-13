@@ -24,8 +24,34 @@ class FakeApi extends ApiClient {
       'species': 'cattle',
       'enabled': true,
       'quality': <String, dynamic>{},
+      'numbering': {'prefix': 'M', 'digits': 8},
     }),
   ];
+  final registryAnimal = <String, dynamic>{
+    'species': 'cattle',
+    'animal_id': 'M00000001',
+    'numbered_id': 'M00000001',
+    'version': 1,
+    'lifecycle': 'active',
+    'status': 'open',
+    'can_manage': true,
+    'owner': {'owner_id': 'OWNER-1', 'name': 'Synthetic Farmer'},
+    'created_at': '2026-10-13T00:00:00Z',
+    'terminal_record': null,
+  };
+  @override
+  Future<dynamic> registryGet(String path) async {
+    if (path.contains('history')) return [];
+    if (path.endsWith('slaughter-check')) return {'recorded_slaughter': false};
+    return path.contains('?') ? [registryAnimal] : registryAnimal;
+  }
+
+  @override
+  Future<Map<String, dynamic>> registryPost(
+    String path,
+    Map<String, dynamic> body,
+    String key,
+  ) async => {...registryAnimal, 'owner': body['owner']};
   @override
   Future<List<SpeciesConfig>> loadSpecies() async {
     if (offline) throw const SocketException('offline');
@@ -238,6 +264,56 @@ void main() {
     await waitFor(tester, find.textContaining('Saved on this phone.'));
     await waitIdle(tester);
   }
+
+  testWidgets(
+    'new permanent ID flows into the immutable capture and open review cannot be relabeled',
+    (tester) async {
+      await mount(tester);
+      await tester.ensureVisible(find.text('New animal ID'));
+      await tester.tap(find.text('New animal ID'));
+      await waitFor(tester, find.text('Register a new animal'));
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Owner reference'),
+        'OWNER-1',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Owner name'),
+        'Synthetic Farmer',
+      );
+      await tester.tap(find.text('Issue unique ID'));
+      await waitFor(tester, find.text('Your permanent animal ID'));
+      await tester.tap(find.text('Use this ID'));
+      await waitFor(tester, find.textContaining('is registered.'));
+      await waitIdle(tester);
+      expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField).first)
+            .controller!
+            .text,
+        'M00000001',
+      );
+      await capture(tester, 'LEGACY-001');
+      await tester.tap(find.text('Animals'));
+      await waitFor(tester, find.text('M00000001'));
+      await tester.ensureVisible(find.text('M00000001'));
+      await tester.tap(find.text('M00000001'));
+      await waitFor(tester, find.text('Capture with this ID'));
+      await tester.ensureVisible(find.text('Capture with this ID'));
+      await tester.tap(find.text('Capture with this ID'));
+      await waitFor(tester, find.textContaining('Finish the open capture'));
+      await tester.runAsync(() async {
+        expect(
+          (await queue.pending(
+            backend,
+            'operator-1',
+          )).single.metadata['animal_id'],
+          'LEGACY-001',
+        );
+      });
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   testWidgets('camera permission denial shows retry and no capture starts', (
     tester,

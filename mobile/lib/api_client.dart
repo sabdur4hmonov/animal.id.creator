@@ -14,6 +14,14 @@ const authenticatedOperatorId = String.fromEnvironment(
   defaultValue: 'operator-1',
 );
 
+class RegistryApiError implements Exception {
+  final int status;
+  final String message;
+  const RegistryApiError(this.status, this.message);
+  @override
+  String toString() => 'Registry request rejected ($status): $message';
+}
+
 class ApiClient {
   final http.Client _client;
   final String _token;
@@ -83,6 +91,38 @@ class ApiClient {
       throw Exception(
         'Upload rejected (${response.statusCode}): ${response.body}',
       );
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+  }
+
+  Future<dynamic> registryGet(String path) async {
+    final response = await _client
+        .get(endpoint(path), headers: _headers)
+        .timeout(const Duration(seconds: 20));
+    if (response.statusCode != 200) {
+      throw RegistryApiError(response.statusCode, response.body);
+    }
+    return jsonDecode(response.body);
+  }
+
+  Future<Map<String, dynamic>> registryPost(
+    String path,
+    Map<String, dynamic> body,
+    String key,
+  ) async {
+    final response = await _client
+        .post(
+          endpoint(path),
+          headers: {
+            ..._headers,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': key,
+          },
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 30));
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw RegistryApiError(response.statusCode, response.body);
     }
     return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
   }

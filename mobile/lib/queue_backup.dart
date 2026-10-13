@@ -4,7 +4,7 @@ import 'package:archive/archive_io.dart';
 import 'package:crypto/crypto.dart';
 
 final _evidenceName = RegExp(
-  r'^(?:[a-f0-9]{32}\.jpg|(?:entry|receipt)-[a-f0-9]{32}\.json)(?:\.next)?$',
+  r'^(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt)-[a-f0-9]{32}\.json)(?:\.next)?$',
 );
 
 Future<Map<String, dynamic>> exportPhoneQueue(List<String> paths) =>

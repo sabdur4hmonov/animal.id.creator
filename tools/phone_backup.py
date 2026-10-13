@@ -9,7 +9,7 @@ import stat
 from pathlib import Path
 from zipfile import ZipFile
 
-NAME = re.compile(r"^queue/(?:[a-f0-9]{32}\.jpg|(?:entry|receipt)-[a-f0-9]{32}\.json)(?:\.next)?$")
+NAME = re.compile(r"^queue/(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt)-[a-f0-9]{32}\.json)(?:\.next)?$")
 
 
 def verify(bundle: Path) -> dict:
