@@ -14,6 +14,8 @@ class WeightConfig(ConfigBase):
     carcass_yield_min: Decimal = Field(gt=0, le=1)
     carcass_yield_max: Decimal = Field(gt=0, le=1)
     min_keypoint_confidence: float = Field(gt=0, le=1)
+    contour_max_planarity_error_ratio: float = Field(default=0.01, gt=0, le=0.1)
+    contour_geometric_epsilon_ratio: float = Field(default=1e-6, gt=0, le=1e-3)
 
     @model_validator(mode="after")
     def valid_ranges(self):

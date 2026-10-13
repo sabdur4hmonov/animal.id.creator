@@ -7,6 +7,7 @@ import numpy as np
 
 from app.core.business_config import BusinessConfig
 from app.schemas.valuation import KeypointMeasurements, ValuationRequest
+from app.services.contour import validate_contour
 
 
 def distance(a, b):
@@ -32,8 +33,7 @@ def measure_keypoints(points: KeypointMeasurements, config: BusinessConfig):
     if len({(point.x, point.y, point.z) for point in contour}) != len(contour):
         raise ValueError("Chest contour needs distinct ordered points; closure is automatic")
     coordinates = np.array([(point.x, point.y, point.z) for point in contour])
-    if np.linalg.matrix_rank(coordinates - coordinates[0], tol=1e-6) < 2:
-        raise ValueError("Chest contour cannot be a line")
+    validate_contour(coordinates, config.weight)
     girth = (
         sum(distance(point, contour[(index + 1) % len(contour)]) for index, point in enumerate(contour))
         * scale

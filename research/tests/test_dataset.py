@@ -1,6 +1,9 @@
+import hashlib
 import json
+from io import BytesIO
 
 import pytest
+from PIL import Image
 from pydantic import ValidationError
 
 from app.core.species import Species
@@ -56,3 +59,15 @@ def test_blank_ground_truth_label_is_rejected(samples, field):
 def test_no_query_partition_is_rejected(samples, tmp_path):
     with pytest.raises(ValueError, match="gallery and query"):
         validate_samples(samples[:2], tmp_path, Species.cattle)
+
+
+def test_truncated_jpeg_pixels_cannot_enter_manifest(tmp_path):
+    buffer = BytesIO()
+    Image.new("RGB", (128, 128), (100, 150, 200)).save(buffer, format="JPEG")
+    path = tmp_path / "truncated.jpg"
+    path.write_bytes(buffer.getvalue()[:-100])
+    sample = Sample(sample_id="bad", species=Species.cattle, animal_id="A", session_id="S",
+                    split="train", role="train", image_path=path.name,
+                    sha256=hashlib.sha256(path.read_bytes()).hexdigest(), reviewed_muzzle=True)
+    with pytest.raises(ValueError, match="Undecodable.*bad"):
+        validate_samples([sample], tmp_path, Species.cattle)

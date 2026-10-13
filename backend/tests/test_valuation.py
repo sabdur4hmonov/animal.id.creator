@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
+import numpy as np
 import pytest
 from pydantic import ValidationError
 from sqlalchemy import func, select
@@ -96,6 +97,34 @@ def test_invalid_geometry(weight_config, keypoints, fault):
         keypoints["chest_contour"] = [point(x, 0) for x in (0, 10, 20, 30)]
     with pytest.raises(ValueError):
         measure_keypoints(KeypointMeasurements.model_validate(keypoints), weight_config)
+
+
+@pytest.mark.parametrize("corners", [
+    [(0, 0), (45, 45), (45, 0), (0, 45)],
+    [(0, 0), (45, 0), (20, 0), (45, 45), (0, 45)],
+    [(0, 0), (45, 0), (45, 45), (0, 45), (0, 20), (45, 20)],
+])
+def test_crossed_or_retraced_contour_is_rejected(weight_config, keypoints, corners):
+    keypoints["chest_contour"] = [point(*corner) for corner in corners]
+    with pytest.raises(ValueError, match="intersects|overlaps|retraces"):
+        measure_keypoints(KeypointMeasurements.model_validate(keypoints), weight_config)
+
+
+def test_nonplanar_contour_is_rejected(weight_config, keypoints):
+    keypoints["chest_contour"][0]["z"] = 20
+    with pytest.raises(ValueError, match="planar"):
+        measure_keypoints(KeypointMeasurements.model_validate(keypoints), weight_config)
+
+
+def test_valid_rotated_and_translated_contour_keeps_measurements(weight_config, keypoints):
+    rotation = np.array([[1, 0, 0], [0, 0.6, -0.8], [0, 0.8, 0.6]])
+    for p in [keypoints["reference_start"], keypoints["reference_end"],
+              keypoints["body_start"], keypoints["body_end"], *keypoints["chest_contour"]]:
+        values = rotation @ np.array([p["x"], p["y"], p["z"]]) + np.array([100, -200, 30])
+        p.update(dict(zip(("x", "y", "z"), values)))
+    girth, body = measure_keypoints(KeypointMeasurements.model_validate(keypoints), weight_config)
+    assert float(girth) == pytest.approx(180)
+    assert float(body) == pytest.approx(150)
 
 
 @pytest.mark.parametrize("value", [0, -1, float("nan"), float("inf"), "500.1"])

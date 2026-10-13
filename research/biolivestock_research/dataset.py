@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Literal
 
-from PIL import Image
+from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.species import Species
@@ -56,6 +56,12 @@ def validate_samples(samples: list[Sample], root: Path, species: Species) -> Non
             if image.format not in ("JPEG", "PNG") or image.width * image.height > 25_000_000:
                 raise ValueError("Expected a JPEG/PNG muzzle image within 25 million pixels")
             image.verify()
+        try:
+            # verify() checks structure; extraction also needs fully decodable pixels.
+            with Image.open(path) as image:
+                ImageOps.exif_transpose(image).convert("RGB").load()
+        except (OSError, ValueError) as exc:
+            raise ValueError(f"Undecodable image pixels: {sample.sample_id} ({sample.image_path})") from exc
 
 
 def validate_protocol(samples: list[Sample], species: Species) -> None:

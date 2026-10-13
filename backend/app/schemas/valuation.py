@@ -2,10 +2,10 @@ from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
-from pydantic import AwareDatetime, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from app.core.species import Species
-from app.schemas.common import StrictInput
+from app.schemas.common import SafeTimestamp, StrictInput
 
 
 class Point3D(StrictInput):
@@ -53,7 +53,7 @@ class MarketRateInput(StrictInput):
     currency: str = Field(pattern=r"^[A-Z]{3}$")
     basis: Literal["carcass"]
     price_per_kg: Decimal = Field(gt=0, le=1_000_000_000, max_digits=18, decimal_places=4)
-    observed_at: AwareDatetime
+    observed_at: SafeTimestamp
     source: str = Field(min_length=1, max_length=500)
     expected_latest_id: UUID | None = None
 

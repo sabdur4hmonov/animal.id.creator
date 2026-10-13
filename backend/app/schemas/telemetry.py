@@ -1,8 +1,8 @@
 from typing import Literal
 
-from pydantic import AwareDatetime, Field, StrictBool
+from pydantic import Field, StrictBool
 
-from app.schemas.common import StrictInput
+from app.schemas.common import SafeTimestamp, StrictInput
 
 
 class DeviceSignals(StrictInput):
@@ -15,4 +15,4 @@ class GPSEvidence(StrictInput):
     source: Literal["android_location", "ios_location", "unknown"]
     is_mock: StrictBool | None = None
     accuracy_m: float | None = Field(default=None, ge=0, le=100000)
-    observed_at: AwareDatetime | None = None
+    observed_at: SafeTimestamp | None = None

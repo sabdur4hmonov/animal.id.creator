@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.species import Species
+from app.schemas.common import SafeTimestamp
 from app.schemas.telemetry import DeviceSignals, GPSEvidence
 
 
@@ -18,7 +19,7 @@ class CaptureMetadata(BaseModel):
     animal_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
     species: Species
     gps: GPS | None = None
-    timestamp: AwareDatetime
+    timestamp: SafeTimestamp
     operator_id: str = Field(min_length=1, max_length=100)
     device_signals: DeviceSignals | None = None
     gps_evidence: GPSEvidence | None = None

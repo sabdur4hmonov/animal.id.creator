@@ -8,3 +8,6 @@ weight:
   carcass_yield_min: 0.50
   carcass_yield_max: 0.58
   min_keypoint_confidence: 0.8
+  # Geometry tolerances, not calibrated animal-accuracy thresholds.
+  contour_max_planarity_error_ratio: 0.01
+  contour_geometric_epsilon_ratio: 0.000001
