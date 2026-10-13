@@ -20,15 +20,47 @@ def utc(value):
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
 
-def registry_view(session, record, principal):
-    profile = session.get(AnimalProfile, (record.species, record.animal_id))
-    terminal = session.scalar(
-        select(AuditEvent).where(
-            AuditEvent.species == record.species,
-            AuditEvent.animal_id == record.animal_id,
-            AuditEvent.action.in_(["animal_deceased", "animal_slaughtered"]),
+def registry_query():
+    # Read version/owner/lifecycle/terminal evidence in one statement snapshot.
+    return (
+        select(Animal, AnimalProfile, AuditEvent)
+        .outerjoin(
+            AnimalProfile,
+            (Animal.species == AnimalProfile.species) & (Animal.animal_id == AnimalProfile.animal_id),
         )
+        .outerjoin(
+            AuditEvent,
+            (Animal.species == AuditEvent.species)
+            & (Animal.animal_id == AuditEvent.animal_id)
+            & AuditEvent.action.in_(["animal_deceased", "animal_slaughtered"]),
+        )
+        .execution_options(populate_existing=True)
     )
+
+
+def registry_view(session, record, principal):
+    snapshot = session.execute(
+        registry_query().where(
+            Animal.species == record.species,
+            Animal.animal_id == record.animal_id,
+        )
+    ).one()
+    return render_registry(*snapshot, principal)
+
+
+def registry_detail(session, species, animal_id, principal):
+    snapshot = session.execute(
+        registry_query().where(
+            Animal.species == species,
+            Animal.animal_id == animal_id,
+        )
+    ).one_or_none()
+    if snapshot is None:
+        raise HTTPException(404, "Animal registration not found")
+    return render_registry(*snapshot, principal)
+
+
+def render_registry(record, profile, terminal, principal):
     result = RegistryAnimal(
         species=record.species,
         animal_id=record.animal_id,

@@ -12,7 +12,9 @@ from app.schemas.registry import NumberedAnimal, OwnerChange, RegistryAnimal, Re
 from app.services.registry import (
     change_owner,
     issue_animal,
-    registry_view,
+    registry_detail,
+    registry_query,
+    render_registry,
     require_record,
     retire_animal,
     run_operation,
@@ -49,26 +51,19 @@ def list_records(
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
     enabled(request, species)
-    query = (
-        select(Animal)
-        .outerjoin(
-            AnimalProfile,
-            (Animal.species == AnimalProfile.species) & (Animal.animal_id == AnimalProfile.animal_id),
-        )
-        .where(Animal.species == species)
-    )
+    query = registry_query().where(Animal.species == species)
     if lifecycle != "all":
         query = query.where(func.coalesce(AnimalProfile.lifecycle, "active") == lifecycle)
-    records = session.scalars(
+    records = session.execute(
         query.order_by(Animal.created_at.desc(), Animal.animal_id).limit(limit).offset(offset)
     ).all()
-    return [registry_view(session, record, principal) for record in records]
+    return [render_registry(*snapshot, principal) for snapshot in records]
 
 
 @router.get("/animals/{species}/{animal_id}", response_model=RegistryAnimal)
 def detail(species: Species, animal_id: str, request: Request, session: SessionDep, principal: PrincipalDep):
     enabled(request, species)
-    return registry_view(session, require_record(session, species, animal_id), principal)
+    return registry_detail(session, species, animal_id, principal)
 
 
 @router.post("/animals/{species}/{animal_id}/owner", response_model=RegistryAnimal)

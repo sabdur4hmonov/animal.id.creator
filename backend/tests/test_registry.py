@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import event, func, select
 
 from app.core.species import Species
 from app.models.business import Animal
@@ -110,10 +110,13 @@ def test_archiving_retains_id_owner_and_scans_and_never_reuses_number(
     assert send(client).json()["animal_id"] == "MAA00000002"
 
 
-@pytest.mark.parametrize("seed,expected", [
-    (99_999_998, ["MAA99999999", "MAB00000001"]),
-    (26 * 99_999_999 - 1, ["MAZ99999999", "MBA00000001"]),
-])
+@pytest.mark.parametrize(
+    "seed,expected",
+    [
+        (99_999_998, ["MAA99999999", "MAB00000001"]),
+        (26 * 99_999_999 - 1, ["MAZ99999999", "MBA00000001"]),
+    ],
+)
 def test_api_rollover_advances_same_counter_without_reset(client, db_session, seed, expected):
     db_session.add(AnimalNumberCounter(prefix="M", last_number=seed))
     db_session.commit()
@@ -196,3 +199,67 @@ def test_credentials_and_request_key_are_required(client):
     )
     client.headers.pop("Authorization")
     assert send(client).status_code == 401
+
+
+def test_registry_page_and_detail_use_one_coherent_query(client, db_session):
+    first = send(client).json()
+    send(client)
+    route = f"/api/v1/registry/animals/cattle/{first['animal_id']}"
+    assert send(client, route + "/owner", {**observation(), "owner": NEW_OWNER}).status_code == 200
+    assert send(client, route + "/retirement", {**observation(2), "lifecycle": "deceased"}).status_code == 200
+    db_session.add(
+        Animal(
+            species="cattle",
+            animal_id="LEGACY-SNAPSHOT",
+            status="insured",
+            version=1,
+            registered_by="operator-1",
+            created_at=datetime.now(UTC),
+        )
+    )
+    db_session.commit()
+    selects = []
+
+    def record_sql(connection, cursor, statement, parameters, context, executemany):
+        if statement.lstrip().upper().startswith("SELECT"):
+            selects.append(statement)
+
+    engine = db_session.get_bind()
+    event.listen(engine, "before_cursor_execute", record_sql)
+    try:
+        result = client.get("/api/v1/registry/animals?species=cattle&lifecycle=all").json()
+        assert len(selects) == 1
+        by_id = {row["animal_id"]: row for row in result}
+        assert by_id[first["animal_id"]]["version"] == 3
+        assert by_id[first["animal_id"]]["owner"] == NEW_OWNER
+        assert by_id[first["animal_id"]]["lifecycle"] == "deceased"
+        assert by_id[first["animal_id"]]["terminal_record"]["owner_at_recording"] == NEW_OWNER
+        assert by_id["LEGACY-SNAPSHOT"]["lifecycle"] == "active"
+        assert by_id["LEGACY-SNAPSHOT"]["status"] == "insured"
+        selects.clear()
+        assert client.get(route + "/slaughter-check").json()["animal"]["version"] == 3
+        assert len(selects) == 1
+    finally:
+        event.remove(engine, "before_cursor_execute", record_sql)
+
+
+def test_capture_attachment_rejects_wrong_animal_and_permissions_without_closing(client, metadata, jpeg):
+    first = send(client).json()
+    second = send(client).json()
+    metadata["animal_id"] = second["animal_id"]
+    scan = post(client, metadata, jpeg).json()
+    route = f"/api/v1/registry/animals/cattle/{first['animal_id']}"
+    data = {**observation(), "lifecycle": "slaughtered", "facility_id": "SITE-1", "capture_id": scan["id"]}
+    assert send(client, route + "/retirement", data).status_code == 422
+    assert client.get(route).json()["version"] == 1
+    assert client.get(route).json()["lifecycle"] == "active"
+    metadata["animal_id"] = first["animal_id"]
+    metadata["operator_id"] = "admin-1"
+    client.headers["Authorization"] = "Bearer test-admin"
+    try:
+        scan = post(client, metadata, jpeg).json()
+    finally:
+        client.headers["Authorization"] = "Bearer test-operator"
+    assert send(client, route + "/retirement", {**data, "capture_id": scan["id"]}).status_code == 403
+    assert client.get(route).json()["version"] == 1
+    assert client.get(route).json()["lifecycle"] == "active"

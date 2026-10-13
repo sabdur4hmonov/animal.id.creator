@@ -45,11 +45,25 @@ def decode_image(content: bytes, max_pixels: int) -> np.ndarray:
         raise ValueError("Invalid or oversized image") from exc
 
 
+def capture_target(root: Path, relative: Path) -> Path:
+    root = root.resolve()
+    target = root / relative
+    for component in (target, *target.parents):
+        if component == root:
+            break
+        if component.is_symlink() or component.is_junction():
+            raise OSError("Linked capture directories/files are unsupported")
+    if not target.resolve().is_relative_to(root):
+        raise OSError("Capture path escapes configured storage")
+    return target
+
+
 def write_image(root: Path, metadata: CaptureMetadata, capture_id: str, kind: str, image: np.ndarray) -> str:
     date = metadata.timestamp.astimezone(UTC).date().isoformat()
     relative = Path(metadata.species.value) / metadata.animal_id / date / f"{capture_id}_{kind}.jpg"
-    target = root / relative
+    target = capture_target(root, relative)
     target.parent.mkdir(parents=True, exist_ok=True)
+    capture_target(root, relative)
     ok, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 95])
     if not ok:
         raise OSError("JPEG encoding failed")
