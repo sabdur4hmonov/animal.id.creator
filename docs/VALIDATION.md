@@ -1,5 +1,18 @@
 # Phase 1 validation
 
+## Fixed-length letter-series numbering (2026-10-14, latest)
+
+194 backend/tooling, 48 research and 88 Flutter tests passed (330 distinct tests);
+Ruff and Flutter analysis clean. Real PostgreSQL HTTP requests crossed AA/AB and
+AZ/BA under eight-way concurrency, replayed each same-key request once, reached
+MZZ99999999 and returned 503 afterward without wrapping. Old numeric M IDs,
+captures/owners/audit/receipts matched the prior restored clone and replayed
+unchanged. New and mixed-format stores both passed full isolated backup/restore.
+Android debug APK built; MAA widget previews were rendered and inspected. All
+verification containers stopped with volumes/evidence retained. No schema/data
+rewrite, sheep enablement, normal-stack deployment or push. See
+[ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md) for evidence and compatibility decisions.
+
 ## Permanent numbering, ownership and lifecycle registry (2026-10-13, latest)
 
 171 backend/tooling and 48 research tests passed; the full mobile suite passed

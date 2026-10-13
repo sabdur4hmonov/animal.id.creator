@@ -7,7 +7,7 @@ Cattle data collection API: native camera capture, image quality feedback, optio
 Offline collection/retries and backup/restore commands: [COLLECTION_RELIABILITY.md](docs/COLLECTION_RELIABILITY.md).
 Phone ZIP recovery, queue benchmark and dependency pins: [collection improvements](docs/COLLECTION_IMPROVEMENTS_2026-10-13.md).
 Mobile screen design, visual previews and UI checks: [MOBILE_DESIGN.md](docs/MOBILE_DESIGN.md).
-Permanent M-number issuance, ownership transfers, death/slaughter archives and report lookup: [ANIMAL_REGISTRY.md](docs/ANIMAL_REGISTRY.md).
+Permanent MAA-series issuance, ownership transfers, death/slaughter archives and report lookup: [ANIMAL_REGISTRY.md](docs/ANIMAL_REGISTRY.md).
 
 Install Docker Desktop and start its Linux container engine. From PowerShell:
 
@@ -46,9 +46,9 @@ Enter the animal ID, position one muzzle fully within the frame, and tap Capture
 ## Models and species configuration
 
 For a new animal, connect once and choose **New animal ID** (or Animals →
-**Register new animal**), enter its owner and use the server-issued `M00000001`
+**Register new animal**), enter its owner and use the server-issued `MAA00000001`
 style number. Keep that number on the tag/ledger and use it for every photo and
-owner change. Existing legacy IDs remain valid; never invent an M-number.
+owner change. Existing legacy IDs remain valid; never invent an M/MAA-series number.
 Animals offers owner transfers and death/slaughter reports, retained archives and
 abattoir record lookup. A recorded slaughter report is not physical/biometric proof.
 Back up before upgrading the backend; startup applies additive Alembic 0005.

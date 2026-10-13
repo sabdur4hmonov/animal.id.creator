@@ -5,7 +5,7 @@
 1. Connect to the **same canonical backend**. In Capture choose **New animal ID**,
    or Animals → **Register new animal**. Enter a stable owner reference
    (e.g. `OWNER-001`) and name. Register each physical animal only once.
-2. The server allocates `M00000001`, `M00000002`, etc. Write the complete number
+2. The server allocates `MAA00000001`, `MAA00000002`, etc. Write the complete number
    on its tag and ledger, then press **Use this ID**. The display uses tabular
    digits for readability. These are internal IDs, not official government tags.
 3. Every later photo/session/device uses that same animal ID. Keep the permanent
@@ -33,9 +33,11 @@ status remains separate; death/slaughter does not automatically settle a loan/po
 
 ## Reliability and compatibility
 
-- Per-species `numbering` lives in YAML: cattle `M`, eight digits; sheep `S`, eight
-  digits, **disabled**. No sheep model/crop logic was added. Freeze prefix/width
-  after real numbering starts. Numbers may have gaps; never reset the counter.
+- Per-species `numbering` lives in YAML: cattle `M`, two series letters, eight
+  digits; sheep uses the same structure with `S` and stays **disabled**. Config
+  version 3 adds `series_letters: 2`; old configs default to zero letters. No
+  sheep model/crop logic was added. After this approved transition, freeze the
+  prefix/width/series size. Numbers may have gaps; never reset the counter.
 - PostgreSQL allocates numbers atomically. Global numbered-ID uniqueness and
   forward-only counter/retained-profile triggers guard against reuse. This guarantee
   is for **one authoritative database**, not independently writable installations.
@@ -70,6 +72,28 @@ Biometric duplicate/identity validation still needs the real labeled dataset.
 
 ## API and local rollout
 
+### Fixed-length series — active since the 2026-10-14 code milestone
+
+```text
+MAA00000001 ... MAA99999999
+MAB00000001 ... MAZ99999999
+MBA00000001 ... MZZ99999999
+```
+
+Each series contains 99,999,999 numbers (00000000 is not issued). The two A-Z
+letters carry AA → AB and AZ → BA automatically; every new cattle ID remains
+11 characters. Full configured capacity is 67,599,999,324 IDs. After MZZ99999999,
+new issuance returns 503; it never wraps, reuses an ID or silently grows its width.
+
+The same existing `M` counter is a forward-only ordinal across all series. If it
+was already 20, the next issued ID is MAA00000021, preserving gaps rather than
+resetting it. Old M00000001-style IDs and their immutable receipts/paths/owners
+remain valid and are never renamed; an old request retry returns its original ID.
+Both old numeric and new series namespaces are reserved against manual allocation.
+Existing BigInteger storage supports the range; schema remains 0005, with no
+additional migration or data rewrite. Back up and rebuild the backend/configs
+together; keep a single authoritative allocator and avoid rolling mixed versions.
+
 Bearer authentication is required for every route below. Mutating routes additionally
 require `Idempotency-Key` (16–128 ASCII letters/digits/underscores/hyphens).
 
@@ -89,7 +113,37 @@ Before using new numbering, back up the existing backend using
 only the isolated stack; it did not deploy to the normal collection stack.
 Rebuild the app with the existing README backend/operator defines.
 
-## Verification — 2026-10-13
+## Verification — 2026-10-14 series extension
+
+194 backend/tooling, 48 research and 88 Flutter host tests passed; Ruff and Flutter
+analysis clean. Cases cover AA/AB and AZ/BA carries, capacity/exhaustion, old config
+defaults, case-insensitive collision skipping, old ID/capture/ownership and receipt
+replay, mobile cached-rule examples and legacy journal recovery. A fresh isolated
+biolivestock-numbering stack on 18002 verified eight parallel HTTP allocations
+crossing each boundary and four concurrent same-key retries, MZZ99999999/503,
+unchanged receipt replay after exhaustion, and a synthetic pending_model upload.
+All backend/config hashes matched the running image.
+
+Final debug APK built in 41.7 seconds; SHA-256
+`29f37a78c3fe5c094bc1e68e5be988986b4706075da3eaa0013659b415dc0cd8`.
+No API token configured. Four real-font widget tests passed again while rendering
+the refreshed MAA previews above. All four test containers stopped with exit 0;
+volumes/clones/fixtures retained. The boundary database is intentionally exhausted.
+
+The existing reliability stack on 18001 continued the old counter under the new
+format. Its 20 numeric-ID animal/profile rows, 27 audit events, two captures and
+24 receipts match yesterday's restored database; old M00000001 issuance replayed
+unchanged. Evidence: data/reliability/evidence/{registry-series,legacy-series}-20261014.json
+and data/numbering/evidence/rollover-20261014.json. Boundary seeding advanced only
+the new empty synthetic numbering test database, never existing/live counters.
+
+Both updated stores backed up/restored to new isolated clones using bundles
+data/backups/series-20261014 and data/backups/numbering-20261014. All registry,
+animal and audit rows matched exactly, including mixed old/new IDs and the final
+64-bit ordinal. Capture/file reconciliation was healthy. Historical proofs below
+refer to the preceding nine-character numbering implementation.
+
+## Verification — 2026-10-13 (historical)
 
 171 backend/tooling, 48 research and 84 Flutter host tests passed; Ruff and Flutter
 analysis clean. Journal tests cover restart/lost responses, changed payload/scopes,

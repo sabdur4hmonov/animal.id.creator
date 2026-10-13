@@ -12,8 +12,8 @@
 ## 2. Fixed cohort and capture recipe
 
 For new cattle, use the canonical backend's **Register new animal** once per animal,
-record its issued `M00000001` style ID on the tag/ledger and press **Use this ID**.
-Never invent or reissue an M-number. Keep farm cohort labels `F01-C001`…`F01-C050`
+record its issued `MAA00000001` style ID on the tag/ledger and press **Use this ID**.
+Never invent or reissue a number; AA/AB series changes are automatic. Keep farm cohort labels `F01-C001`…`F01-C050`
 and `F02-C001`…`F02-C050` in a separate `cohort_slot` ledger column; the table below
 uses those slots, not allocated number ranges. Shuffle slots independently of
 breed/age, then map each slot to its permanent server `animal_id`. Existing legacy
@@ -44,16 +44,16 @@ The API accepts animal ID, species, timezone-aware timestamp, authenticated oper
 
 ```text
 Server originals (leave names/files unchanged):
-data/cattle/M00000021/<UTC-date>/<capture-uuid>_original.jpg
+data/cattle/MAA00000021/<UTC-date>/<capture-uuid>_original.jpg
 
 Separate research copies after manual nose review/cropping:
-data/research/crops/cattle/M00000021/F01-20261008-V1/01-front.jpg
+data/research/crops/cattle/MAA00000021/F01-20261008-V1/01-front.jpg
 
 Ledger + identity references (outside crops/):
 data/research/field/roster.csv
 data/research/field/scans.csv
-data/research/field/references/M00000021/F01-20261008-V1/tag.jpg
-data/research/field/references/M00000021/F01-20261008-V1/body.jpg
+data/research/field/references/MAA00000021/F01-20261008-V1/tag.jpg
+data/research/field/references/MAA00000021/F01-20261008-V1/body.jpg
 ```
 
 Research shot names: `01-front.jpg`, `02-front.jpg`, `03-left15.jpg`, `04-left15.jpg`, `05-right15.jpg`, `06-right15.jpg` (the animal's left/right). UTC date may differ from local date; session comes from the ledger. Never rename server evidence. Back up ledger, originals and database before leaving; verify 6 saved UUIDs per animal/visit.

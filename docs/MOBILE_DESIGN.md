@@ -1,7 +1,7 @@
 # Field capture design — 2026-10-13
 
-**Latest registry extension:** 84 full Flutter host tests passed; analyzer clean.
-Final debug APK SHA-256 `998d45179dada676d1dc1eca2313a38ae25cc108654899fb0ee58e25e488191e`.
+**Latest numbering extension (2026-10-14):** 88 full Flutter host tests passed; analyzer clean.
+Final debug APK SHA-256 `29f37a78c3fe5c094bc1e68e5be988986b4706075da3eaa0013659b415dc0cd8`.
 Actual widget previews below are refreshed for four-tab navigation. Permanent-ID
 dialogs and report previews: [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md). These use
 mock records and SDK fonts; physical-device operation remains unverified.
@@ -40,7 +40,7 @@ in `mobile/lib/app_design.dart`; capture logic remains species/config driven.
 | Capture | Visible preview, visual positioning guide, animal ID/species, configured operator, fixed capture action. Invalid input is brought into view before taking a photo. |
 | Review | Full original preview, local QC result, explicit GPS absence, expandable measurements/timestamp/request key. Failed QC offers retake; accepted captures offer upload or next capture. |
 | Saved | Pending capture count, explicit manual batch upload, original review, existing 50-item pagination, receipt review. Counts are captures, not verified animal identities. |
-| Animals | Server-issued permanent M IDs with readable tabular digits; owner transfers, death/slaughter archives, paginated records and report/history lookup. Financial status is explicitly separate. |
+| Animals | Server-issued permanent MAA-series IDs with readable tabular digits; owner transfers, death/slaughter archives, paginated records and report/history lookup. Financial status is explicitly separate. |
 | Receipts | Readable acknowledgement cards, selectable UUID/request/path, existing pagination and close action. |
 | Tools | Verified ZIP backup/share, scope/retention explanation, cached-rule status, configured operator/backend, refresh and field checklist. |
 | Errors | Separate error icon/color plus text; uploads/backup failures retain local evidence. Permission failure offers retry. |
