@@ -124,3 +124,39 @@ def test_wrong_project_storage_pair_is_rejected(tmp_path, monkeypatch):
     storage.validate_storage_mount("test", tmp_path / "correct")
     with pytest.raises(ValueError, match="does not match"):
         storage.validate_storage_mount("test", tmp_path / "wrong")
+
+
+@pytest.mark.parametrize("name", ["crop.jpg", "scans.csv", "original.jpg"])
+@pytest.mark.parametrize("fault", ["changed", "missing", "extra"])
+def test_restore_checks_every_copied_file(tmp_path, monkeypatch, name, fault, capsys):
+    bundle = tmp_path / "bundle"
+    files = bundle / "files"
+    files.mkdir(parents=True)
+    for relative in ("crop.jpg", "scans.csv", "original.jpg"):
+        (files / relative).write_bytes(relative.encode())
+    (bundle / "database.dump").write_bytes(b"synthetic dump")
+    (bundle / "capture_index.json").write_text("[]", "utf-8")
+    manifest = {"version": 1, "table_counts": {}, "files": {
+        file.relative_to(bundle).as_posix(): storage.digest(file)
+        for file in bundle.rglob("*") if file.is_file()}}
+    (bundle / "manifest.json").write_text(json.dumps(manifest), "utf-8")
+    copy = storage.copy_tree
+
+    def bad_copy(source, target):
+        copy(source, target)
+        if fault == "missing":
+            (target / name).unlink()
+        elif fault == "changed":
+            (target / name).write_bytes(b"changed")
+        else:
+            (target / "unexpected.txt").write_bytes(b"extra")
+
+    monkeypatch.setattr(storage, "copy_tree", bad_copy)
+    monkeypatch.setattr(storage, "query", lambda *_: "")
+    monkeypatch.setattr(storage, "run", lambda *_, **__: None)
+    monkeypatch.setattr(storage, "counts", lambda *_: {})
+    monkeypatch.setattr(storage, "capture_index", lambda *_: [])
+    with pytest.raises(ValueError, match="Restored"):
+        storage.restore(Namespace(bundle=bundle, project="test", target_database="biolivestock_restore_test",
+                                  target_storage=tmp_path / "restored"))
+    assert "Verified isolated restore" not in capsys.readouterr().out

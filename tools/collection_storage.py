@@ -136,6 +136,19 @@ def copy_tree(source, destination):
     shutil.copytree(source, destination)
 
 
+def verify_restored_files(destination, manifest):
+    """Check every copied byte, including crops, research labels and retained orphans."""
+    expected = {name.removeprefix("files/"): sha
+                for name, sha in manifest["files"].items() if name.startswith("files/")}
+    actual = {file.relative_to(destination).as_posix()
+              for file in destination.rglob("*") if file.is_file()}
+    if actual != set(expected):
+        raise ValueError("Restored file inventory differs; clone retained for inspection")
+    for relative, sha in expected.items():
+        if digest(contained(destination, relative)) != sha:
+            raise ValueError(f"Restored checksum mismatch: {relative}; clone retained for inspection")
+
+
 def backup(args):
     source = args.storage_root.resolve()
     if not source.is_dir():
@@ -197,6 +210,7 @@ def restore(args):
         run(args.project, "exec", "-T", "db", "pg_restore", "-U", "biolivestock", "-d", name,
             "--no-owner", "--no-acl", "--exit-on-error", stdin=stream, stdout=subprocess.PIPE)
     copy_tree(args.bundle / "files", args.target_storage)
+    verify_restored_files(args.target_storage, manifest)
     if counts(args.project, name) != manifest["table_counts"]:
         raise ValueError("Restored table counts differ; clone retained for inspection")
     records = capture_index(args.project, name)
