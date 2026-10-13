@@ -62,8 +62,11 @@ Future<Map<String, dynamic>> createPhoneBackup(
   final source = await root.resolveSymbolicLinks();
   await output.parent.create(recursive: true);
   final parent = await output.parent.resolveSymbolicLinks();
-  if (parent == source ||
-      parent.startsWith('$source${Platform.pathSeparator}')) {
+  // NTFS normally compares paths without case sensitivity, including drive letters.
+  final sourceKey = Platform.isWindows ? source.toLowerCase() : source;
+  final parentKey = Platform.isWindows ? parent.toLowerCase() : parent;
+  if (parentKey == sourceKey ||
+      parentKey.startsWith('$sourceKey${Platform.pathSeparator}')) {
     throw ArgumentError('Backup must be outside the queue directory');
   }
   // Reserve the exact destination without replacing an earlier backup.

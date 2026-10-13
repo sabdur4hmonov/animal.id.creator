@@ -62,5 +62,12 @@ void main() {
       throwsArgumentError,
     );
     expect(await File('${queue.path}/bad.zip').exists(), isFalse);
+    if (Platform.isWindows) {
+      await expectLater(
+        createPhoneBackup(queue.path, '${queue.path.toUpperCase()}/bad.zip'),
+        throwsArgumentError,
+      );
+      expect(await File('${queue.path}/bad.zip').exists(), isFalse);
+    }
   });
 }
