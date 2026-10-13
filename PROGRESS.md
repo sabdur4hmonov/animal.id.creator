@@ -1,8 +1,20 @@
 # BioLivestock AI — project progress
 
-Last live repository inspection: 2026-10-08, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks from Sardorbek's reports.
+Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks from Sardorbek's reports.
 
 ## Current stop point
+
+**Code audit completed on 2026-10-13; repairs are NOT implemented.** Sardorbek requested a full code review, concrete bugs, suggestions and a repair plan. See [CODE_AUDIT_2026-10-13.md](docs/CODE_AUDIT_2026-10-13.md) and the committed diagnostic probes in docs/audits/2026-10-13/. Application revision audited: d99c2f1ab0b1821998bebbf11614b0959e948571, main, clean at entry. This milestone changes audit documentation/probes only. No push, application-source changes, normal Docker deployment, schema changes or collection-data deletion.
+
+**Do not conclude that all remaining work needs animal data or a phone.** Eight actionable findings were reproduced: F1/P1 uncertain COMMIT cleanup deletes committed image files and retry returns 201 with a missing image; F2/P2 malformed queue metadata or JSON blocks healthy pending items/receipt review; F3/P2 restore does not hash-check copied crops/research files; F4/P2 mobile exposure histogram hides clipping during resize (previously documented mismatch, now reproduced on the same JPEG); F5/P2 manifest validation accepts truncated JPEG data; F6/P2 crossed chest contours inflate accepted measurements; F7/P2 mobile accepts Windows-reserved animal IDs that API rejects; F8/P3 UTC conversion overflows on extreme aware timestamps. Each finding has source locations, reproduction conditions and acceptance tests in the report.
+
+**Fresh verification:** 122 backend/tooling + 45 research tests passed; Ruff passed on backend/research/tools. Flutter analyze had no issues and 17 host tests passed. Initial sandbox runs failed on temp/SDK access; authorized reruns succeeded, so those were environment issues. Additional probes reproduced the defects with synthetic data. COMMIT-loss proof uses a real SQLite transaction with injected DBAPI failure after commit; restore-copy proof mocks Docker and injects destination corruption. These are NOT real PostgreSQL network-fault/restore tests. Existing isolated Docker containers were inspected stopped and left stopped; no fresh APK build or physical-device check. Runtime probe files/results remain under ignored work/audit_20261013/; committed scripts can regenerate them.
+
+**Next coding action:** follow the report's milestone order: F1 evidence-preserving commit handling first; F2/F7 typed queue and label validation; F4 shared exposure behavior; F3 complete destination backup-hash verification; F5/F6/F8 input validation. Add tests for repaired behavior, verify relevant cases on isolated PostgreSQL, update this file and commit each milestone locally. Preserve append-only evidence and species configs; no paid dependencies, new account, breaking schema change or sheep/model work is needed. This turn deliberately stopped at the requested audit/plan rather than applying fixes. No unresolved product decision blocks the proposed first repairs.
+
+**External limits remain:** no cattle muzzle checkpoint (confirmed absent), sheep disabled, physical phone/plugin flow unverified, and no empirical identity/liveness/weight accuracy claim. Do not confuse the previous successful host/Docker milestones with physical farm validation. The Kotlin cross-drive flag remains present. The user's most recent phone availability has not been re-established.
+
+## Collection-reliability milestone — 2026-10-08 history
 
 **All four authorized collection-reliability improvements are complete (2026-10-08).** Durable offline phone capture, authenticated idempotent uploads, reviewed CSV-to-manifest import and verified backup/isolated restore/read-only reconciliation are built and tested. Local milestone commits: e9b9642 (upload receipts), dba3ee6 (CSV importer), c566a2c (backup/recovery), followed by the final mobile/reliability commit containing this update. No push and no new embedding/matching or sheep-specific model work.
 
@@ -18,9 +30,10 @@ Last live repository inspection: 2026-10-08, Asia/Tashkent. Project root: D:\Cod
 
 ## Live Git evidence from the D: project
 
-Checked 2026-10-08 before the final mobile/reliability commit. Session entry was clean at 2ae48b0; the following snapshot contains the first three milestones. The final commit contains this update, so refresh status/log next session; final clean status is verified after committing. No push.
+Checked live on 2026-10-13 before the audit documentation commit. Session entry git status --short was empty on main. The following is the complete git log --oneline -20 output (14 existing commits). This audit's own commit follows this snapshot; refresh status/log next session. No push.
 
 ```text
+d99c2f1 Persist camera captures offline with restart-safe upload retries
 c566a2c Add verified collection backups and isolated restore drills
 dba3ee6 Import reviewed crop annotations into validated research manifests
 e9b9642 Make authenticated capture retries idempotent across API workers
@@ -74,7 +87,7 @@ Initial commit and correct origin are present; do not reinitialize or import the
 
 ## Settled decisions and next check
 
-Phase 1 collects cattle camera images and structured metadata. The latest mandate authorizes later roadmap phases where data/device prerequisites permit; do not build sheep models/crop branches, push, spend money, or use external credentials without approval. Server QC is authoritative; mobile QC is advisory. GPS can be null. Animal IDs are operator-supplied labels. Uploads are not automatically retried or deduplicated. Research results must not be treated as validated identity/liveness/weight evidence.
+Phase 1 collects cattle camera images and structured metadata. The latest mandate authorizes later roadmap phases where data/device prerequisites permit; do not build sheep models/crop branches, push, spend money, or use external credentials without approval. Server QC is authoritative; mobile QC is advisory. GPS can be null. Animal IDs are operator-supplied labels. Uploads remain manually initiated; since 2026-10-08, requests with an operator-scoped idempotency key replay the committed response, while legacy keyless uploads do not. The 2026-10-13 audit identifies the unresolved commit-cleanup defect in that path. Research results must not be treated as validated identity/liveness/weight evidence.
 
 Backend upload verification is complete. The separate project volume and `data/verification` keep samples apart from normal collection. Capture/evidence UUID: `24510aa3-f88a-43d8-aeeb-46efa72e4d19`. Evidence JSON: `data/verification/evidence/24510aa3-f88a-43d8-aeeb-46efa72e4d19.json`. HTTP 201/QC score 0.8008, 2816×2120 JPEG, matching host/container hash, PostgreSQL pending_model row; blurry/NaN requests 422 with no extra persistence. Samples/evidence and the database volume are retained. Verification containers were stopped after testing to free resources. Reproducible script: tools/verify_docker_upload.py; commands/attribution: docs/VALIDATION.md and docs/SAMPLE_MEDIA.md. Optional API_PORT/STORAGE_DIRECTORY support isolation; defaults remain 8000/data. The normal backend was subsequently rebuilt, returned HTTP 200 database ok, and its source hashes matched current backend code; normal collection data/volumes were preserved.
 
