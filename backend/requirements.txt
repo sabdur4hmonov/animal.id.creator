@@ -1,13 +1,14 @@
-fastapi>=0.115,<1
-uvicorn[standard]>=0.34,<1
-python-multipart>=0.0.22,<1
-pydantic>=2.10,<3
-pydantic-settings>=2.7,<3
-SQLAlchemy>=2.0.38,<2.1
-psycopg[binary]>=3.2,<4
-alembic>=1.14,<2
-PyYAML>=6.0.2,<7
-numpy>=2.0,<3
-opencv-python-headless>=4.11,<5
-Pillow>=11.1,<13
-ultralytics>=8.3,<9
+# Direct runtime versions; full Linux/CPU closure is requirements-docker.lock.
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+pydantic==2.14.1
+pydantic-settings==2.15.0
+SQLAlchemy==2.0.54
+psycopg[binary]==3.3.6
+alembic==1.20.0
+PyYAML==6.0.3
+numpy==2.5.2
+opencv-python==5.0.0.93
+pillow==12.3.0
+ultralytics==8.4.176
