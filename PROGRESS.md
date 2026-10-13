@@ -4,27 +4,29 @@ Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
-**All five requested collection enhancements are implemented and verified (2026-10-13).** Phone ZIP export/recovery, measured 1,800+ queue performance with 50-item pagination, mocked CaptureScreen scenarios, dependency/container pins, and exact decoded-pixel research duplicate checks are complete. Entry eaaf857 was clean. Local-only milestones: fff4799 (research), 183341b (phone export/scale/screen tests), 001b9a2 (Windows path guard); dependency pins and final evidence documentation follow. No new GitHub push is authorized. No new models, sheep logic, paid services or schema changes.
+**All five requested collection enhancements are implemented and verified (2026-10-13).** Phone ZIP export/recovery, measured 1,800+ queue performance with 50-item pagination, mocked CaptureScreen scenarios, dependency/container pins, and exact decoded-pixel research duplicate checks are complete. Entry eaaf857 was clean. Local-only milestones: fff4799 (research), 183341b (phone export/scale/screen tests), 001b9a2 (Windows path guard); b6c4e0b (tested dependency/container pins), 1a511e4 (final evidence and recovery documentation). No new GitHub push is authorized. No new models, sheep logic, paid services or schema changes.
 
 **Direct checks:** 161 distinct backend/tooling cases passed (157-suite plus four added archive-security guards; all 10 backup tests passed), 48 research and 64 Flutter host tests passed: 273 total. Python Ruff and Flutter analyze passed; the final Windows case-insensitive export containment regression passed. Final Android debug APK built in 73.2 seconds after the first share-plugin build took 417.3 seconds; SHA-256 8d016a2caf30ef612c7be228dd7c120e8bb470473738b0c6925ae123e1d703d0. No API token configured in the APK. No physical camera/GPS/share-sheet verification.
 
 **Scale and recovery proof:** 1,800 synthetic 64 KiB originals plus journals exported as a verified 3,600-file ZIP. Python independently verified and extracted the Dart ZIP into new data/restores/phone-queue-20261013. Queue warm median fell from 2,110 to 1,052 ms, cold 2,924 to 1,556 ms. Peak process RSS increased; do not claim memory reduction or phone speed. Compiled-host ZIP export: 119,642,784 bytes, 29,081 ms, peak RSS 140,767,232 bytes. Raw measurements: data/benchmarks/*-20261013 and export-verification-20261013.json. Source data and backups retained.
 
-**Pinned runtime proof:** isolated biolivestock-reliability stack on 18001 built successfully; both services healthy, pip check passed, all 63 Python and 40 apt pins plus image identity matched (data/reliability/evidence/runtime-pins-20261013.json). Only opencv-python installed, cv2 5.0.0 and torch 2.14.1+cpu imported. All 47 runtime source/config hashes matched. JPEG upload UUID 2d0d8a0a-3850-4dc9-b27e-d87203d4b380 passed server QC, persisted file/metadata with pending_model and rejected blur/invalid GPS without extra rows/files. Four concurrent retries created one capture/receipt and passed later replay plus 401/403/409 checks: idempotency-pins-20261013.json. Read-only reconciliation healthy: reconcile-pins-20261013.json. Normal collection stack/data untouched. Isolated test services are being stopped, preserving volumes and evidence.
+**Pinned runtime proof:** isolated biolivestock-reliability stack on 18001 built successfully; both services healthy, pip check passed, all 63 Python and 40 apt pins plus image identity matched (data/reliability/evidence/runtime-pins-20261013.json). Only opencv-python installed, cv2 5.0.0 and torch 2.14.1+cpu imported. All 47 runtime source/config hashes matched. JPEG upload UUID 2d0d8a0a-3850-4dc9-b27e-d87203d4b380 passed server QC, persisted file/metadata with pending_model and rejected blur/invalid GPS without extra rows/files. Four concurrent retries created one capture/receipt and passed later replay plus 401/403/409 checks: idempotency-pins-20261013.json. Read-only reconciliation healthy: reconcile-pins-20261013.json. Normal collection stack/data untouched. Both isolated test services are stopped (verified); volumes and all evidence retained. Reconciliation covered 7 captures with no missing, mismatched, unsafe or orphan files.
 
 **Decisions/config to preserve:** backup is all local operators/backends, original/journal/receipt evidence including corruption/orphans/partial files; tokens/settings excluded. User must save the ZIP outside the app via the share sheet; temporary app exports are not a second durable copy. Never overwrite an export or live recovery destination. Extraction is evidence-only, not auto upload/relabel/phone reimport. Queue reads use bounded 32-file concurrency and a fresh inventory, no persistent metadata cache; pending/receipt views paginate 50 records. Exact decoded oriented RGB reuse is rejected in reviewed datasets but this is not near-duplicate or biometric matching. Docker pins base digests, apt versions and complete Linux/CPU dependencies; direct Python/dev/pub dependencies are pinned too. Flutter 3.47.5/Dart 3.13.4 and kotlin.incremental=false remain. Missing upstream pinned artifacts fail rather than upgrade; builds are not claimed bit-for-bit deterministic. Details: docs/COLLECTION_IMPROVEMENTS_2026-10-13.md.
 
 **Next action / genuine blockers:** code work requested in this milestone is done. On a repaired/replacement phone, use README operator configuration and prove native camera/permissions/GPS, offline restart and upload, then export/share a ZIP with realistic photo sizes and verify it on the computer before a farm visit. Phone availability remains external/indefinite; host mocks do not resolve it. Real detector/matching, liveness and weight calibration still need reviewed animal/session/measurement data. Continue collection per DATA_COLLECTION_GUIDE.md; sheep stays disabled and no muzzle checkpoint exists, so accepted originals remain pending_model. No routine architectural question needs Sardorbek now. Rebuild the normal backend after review; do not deploy to it or push automatically.
 
+## Published audit repairs — earlier 2026-10-13 milestone
+
 **GitHub publication verified (2026-10-13).** Sardorbek explicitly authorized pushing in this session, superseding the earlier hold for these commits. Fetched origin first: remote-only/local-only counts were 0/20, with no uncommitted work or tracked local secret/data/build files. Normal `git push origin main` advanced origin/main from f2b8698 to b5da129b50233eca536f25227f67b30a3886a8a4; `git ls-remote origin refs/heads/main` returned that exact SHA. This progress/README publication-status commit follows the application revision. No force push. Future pushes still require an explicit user request; do not interpret this one publication as a recurring autopush mandate.
 
 **All eight confirmed audit defects are implemented and verified (2026-10-13).** Sardorbek asked to fix the complete audit. See docs/AUDIT_REPAIRS_2026-10-13.md for the repair mapping, evidence and repeat commands. Local milestones: d3704e5 (F1 commit evidence), 4ac39d8 (F3 complete restore checks), 8c722c2 (F5/F6/F8 validation), de5e76d (F2/F7 journal/ID), 0ba8dd7 (F4 exposure), followed by b5da129 (verification/documentation). These milestones were subsequently published as recorded above. No breaking schema change or normal-stack deployment; existing collection data was preserved.
 
-**Fresh checks:** 151 backend/tooling + 46 research + 53 Flutter host tests passed (250 total); Ruff and Flutter analyze passed. Android debug APK built successfully in 294 seconds; SHA-256 4f339a1cdcaaba5fb735a2c8cb5880aabbb3438557f84b0d27413556cc38045c. No API token configured in that APK. SDK remains C:\src\flutter and kotlin.incremental=false. No physical-camera/GPS/plugin test was performed.
+**Repair checks (before collection enhancements):** 151 backend/tooling + 46 research + 53 Flutter host tests passed (250 total); Ruff and Flutter analyze passed. Android debug APK built successfully in 294 seconds; SHA-256 4f339a1cdcaaba5fb735a2c8cb5880aabbb3438557f84b0d27413556cc38045c. No API token configured in that APK. SDK remains C:\src\flutter and kotlin.incremental=false. No physical-camera/GPS/plugin test was performed.
 
-**Fresh runtime proof:** isolated biolivestock-reliability stack on port 18001 was healthy; all 47 backend/migration/config hashes matched source (data/reliability/evidence/source-hashes-20261013.json). A real PostgreSQL commit followed by injected driver acknowledgement failure retained the original and replayed capture 2cffb976-5575-44b2-969b-502c4c6ccb1f; evidence commit-recovery-20261013.json. Four concurrent authenticated retries created one capture/receipt, with changed-payload 409 and auth/operator checks (idempotency-20261013.json). Actual Dart local QC/filesystem/HTTP simulated response loss, reopened the queue and replayed UUID 3b4ae812-b25c-4538-89a7-0d2a554efeec; journal/receipt directory data/reliability/mobile-queue-20261013. These are synthetic checks, not actual network outage or animal accuracy evidence.
+**Repair runtime proof:** isolated biolivestock-reliability stack on port 18001 was healthy; all 47 backend/migration/config hashes matched source (data/reliability/evidence/source-hashes-20261013.json). A real PostgreSQL commit followed by injected driver acknowledgement failure retained the original and replayed capture 2cffb976-5575-44b2-969b-502c4c6ccb1f; evidence commit-recovery-20261013.json. Four concurrent authenticated retries created one capture/receipt, with changed-payload 409 and auth/operator checks (idempotency-20261013.json). Actual Dart local QC/filesystem/HTTP simulated response loss, reopened the queue and replayed UUID 3b4ae812-b25c-4538-89a7-0d2a554efeec; journal/receipt directory data/reliability/mobile-queue-20261013. These are synthetic checks, not actual network outage or animal accuracy evidence.
 
-**Fresh recovery proof:** backup data/backups/reliability-repairs-20261013 restored to new biolivestock_restore_repairs_20261013 and data/restores/reliability-repairs-20261013. Source/clone each have 5 captures, 5 receipts, 5 animals, 5 audit events; revision 0004; no market/duplicate rows. Every copied file matched its manifest hash, including explicitly synthetic research labels/JPEG, and capture index/table counts agreed. Reconciliation healthy: data/reliability/evidence/reconcile-repairs-20261013.json. Both test containers are stopped; all volumes, clones, files and evidence retained. Normal stack/data were not deployed to or modified. During intermediate edits an old image rejected newly mounted geometry config; rebuilding completed source resolved that mismatch before final checks.
+**Repair recovery proof:** backup data/backups/reliability-repairs-20261013 restored to new biolivestock_restore_repairs_20261013 and data/restores/reliability-repairs-20261013. Source/clone each have 5 captures, 5 receipts, 5 animals, 5 audit events; revision 0004; no market/duplicate rows. Every copied file matched its manifest hash, including explicitly synthetic research labels/JPEG, and capture index/table counts agreed. Reconciliation healthy: data/reliability/evidence/reconcile-repairs-20261013.json. Both test containers are stopped; all volumes, clones, files and evidence retained. Normal stack/data were not deployed to or modified. During intermediate edits an old image rejected newly mounted geometry config; rebuilding completed source resolved that mismatch before final checks.
 
 **Decisions to preserve:** after COMMIT is attempted, never delete uncertain image evidence; replay checks original hash/crop existence and returns 503 for unavailable/changed evidence. Pre-commit SQL/write failures still clean up new files. File fsync precedes COMMIT; Linux also fsyncs directory entries. A true rollback at the uncertain boundary may leave retained orphans for reconciliation. Typed version-1 journals isolate bad files, preserve original labels/keys/timezone offsets and expose issues; healthy items remain usable. Both exposure histograms use original oriented pixels, with only blur resized; no QC thresholds changed. Chest contours are validated as planar/simple without reordering or hull substitution; per-species engineering tolerances are 1% relative planarity and 1e-6 geometry epsilon, not animal calibration. SafeTimestamp rejects UTC overflow for capture/GPS/price observations. Research imports fully decode pixels before accepting crops. Sheep stays disabled, no muzzle checkpoint exists, accepted originals remain pending_model.
 
@@ -48,9 +50,17 @@ Last live repository inspection: 2026-10-13, Asia/Tashkent. Project root: D:\Cod
 
 ## Live Git evidence from the D: project
 
-Checked live on 2026-10-13 before the final repair verification/documentation commit. Repair-session entry was clean on main at 27c1e85. The following is the real git log --oneline -20 output; the final documentation/probe commit follows this snapshot. Refresh status/log next session. No push.
+Checked live on 2026-10-13 after feature/pin/documentation milestones. Main at 1a511e4, working tree clean; cached origin/main comparison was 0 remote-only / 5 local-only commits above previously published eaaf857. No fetch/new remote verification or push in this enhancement task. This final memory update follows the snapshot. Refresh status/log on next entry.
 
 ```text
+1a511e4 Document verified collection enhancements and field recovery limits
+b6c4e0b Pin tested backend containers, CPU dependencies and Flutter SDK
+001b9a2 Respect Windows path casing when exporting phone evidence
+183341b Export verified phone evidence and scale restart-safe capture queues
+fff4799 Reject exact decoded-pixel duplicates in reviewed research datasets
+eaaf857 Clarify published repair milestone status
+ad5f754 Record authorized GitHub publication of audit repairs
+b5da129 Record verified audit repairs and PostgreSQL recovery proof
 0ba8dd7 Measure mobile exposure before resizing and share clipping regression fixtures
 de5e76d Isolate corrupt offline journals and validate capture labels before saving
 8c722c2 Reject invalid contour geometry, truncated research pixels and unsafe UTC times
@@ -63,24 +73,12 @@ dba3ee6 Import reviewed crop annotations into validated research manifests
 e9b9642 Make authenticated capture retries idempotent across API workers
 2ae48b0 Clarify remaining data-independent collection improvements
 c47ad45 Document cattle field collection protocol and dataset handoff
-cfeeb83 Add advisory spoof signals and verify authenticated stack and Android build
-5e01b0a Add formula weight estimates and versioned carcass market rates
-1ba94d8 Add authenticated animal registry and immutable scan controls
-65cb0a9 Add offline cattle embedding evaluation and data protocols
-3516f85 Verify real image upload through Docker and PostgreSQL
-60ee807 Harden capture validation and exposure checks while mobile testing is paused
-28ec11d Document project state and Windows Kotlin build fix
-f2b8698 Initial commit: Phase 1 scaffold
 ```
-
-`git remote -v`:
 
 ```text
 origin	https://github.com/sabdur4hmonov/animal.id.creator.git (fetch)
 origin	https://github.com/sabdur4hmonov/animal.id.creator.git (push)
 ```
-
-Initial commit and correct origin are present; do not reinitialize or import the separate recovery bundle.
 
 ## Earlier implementation and verification (2026-10-01 history)
 
