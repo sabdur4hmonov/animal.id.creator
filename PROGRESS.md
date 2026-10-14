@@ -10,7 +10,7 @@ Last live repository inspection: 2026-10-14, Asia/Tashkent. Project root: D:\Cod
 
 **Runtime/artifact:** rebuilt only isolated biolivestock-reliability on 18001; both services healthy. Source hashes, parallel numbering/idempotency, owner race, synthetic JPEG/QC/pending_model, PostgreSQL row/file/hash and terminal capture link verified (registry-i18n-20261014.json). Four-script Unicode owners/reasons retained in authenticated HTTP, idempotent replay, history and actual PostgreSQL UTF-8 (unicode-20261014.json); all synthetic. Final debug APK built in 50.3s, SHA-256 a4012b93d54f4f980680d9c1fcdf58836d7d91f2d41b7dc07a0202dddd966a3f; all four embedded catalogs byte-match source. Previous builds: 63.3s before final uncached startup fix, and 144.8s before final date/plural changes. No operator token configured. Existing Gradle native-access warning only, Kotlin cross-drive flag/SDK 3.47.5 unchanged. Actual SDK-font four-language widgets rendered/inspected; examples in docs/design/language-*-tools.png are host mocks. Native keyboard/permissions follow OS language; iOS build/native plugins unverified on Windows.
 
-**Recovery / next action:** new data/backups/i18n-20261014 verified and restored into new biolivestock_restore_i18n_20261014 and data/restores/i18n-20261014. Manifest: 65 profiles, 72 animals, 140 audit events, 111 registry receipts, 13 captures/12 upload receipts, one counter; reconciliation healthy, copied file hashes/capture index/table counts verified. Full row comparison/stop evidence recorded at session end below. Previous bundles/clones retained; normal collection data untouched. Detector fix local milestone 9339d2a; multilingual implementation 0895f84; final documentation milestone follows. Requested confirmed code defects and language implementation are complete; don't claim all future phases or absolute reliability. Read docs/LANGUAGES.md. Next: after review rebuild normal backend plus operator-configured phone app per README, then verify language restart, real keyboard names/notes, native capture/GPS, offline queue/registry/history/UUID attachment and backup sharing on a repaired/replacement phone. Phone and real labeled cattle/checkpoint/calibration inputs remain external gates. No routine architecture question pending; no automatic push.
+**Recovery / next action:** new data/backups/i18n-20261014 verified and restored into new biolivestock_restore_i18n_20261014 and data/restores/i18n-20261014. Manifest: 65 profiles, 72 animals, 140 audit events, 111 registry receipts, 13 captures/12 upload receipts, one counter; reconciliation healthy, copied file hashes/capture index/table counts verified. Full row comparison/stop evidence recorded at session end below. Previous bundles/clones retained; normal collection data untouched. Detector fix local milestone 9339d2a; multilingual implementation 0895f84; uncached startup guidance 6298ddc; final documentation milestone follows. Requested confirmed code defects and language implementation are complete; don't claim all future phases or absolute reliability. Read docs/LANGUAGES.md. Next: after review rebuild normal backend plus operator-configured phone app per README, then verify language restart, real keyboard names/notes, native capture/GPS, offline queue/registry/history/UUID attachment and backup sharing on a repaired/replacement phone. Phone and real labeled cattle/checkpoint/calibration inputs remain external gates. No routine architecture question pending; no automatic push.
 
 **Final startup review:** without cached rules, the species loader previously replaced the initial authentication/network failure with a misleading no-species error. Retain/rethrow the original error when the cache is empty; a Russian startup widget case proves useful 401 guidance and disabled capture. Cached/offline collection behavior is unchanged. Full Flutter suite now 109 passed (16 locale cases), total 361 distinct tests; final artifact/analyzer refreshed below.
 
@@ -61,11 +61,12 @@ Last live repository inspection: 2026-10-14, Asia/Tashkent. Project root: D:\Cod
 
 ## Git evidence — multilingual code milestones, before final documentation commit
 
-Live inspection: 2026-10-14. HEAD 0895f84. Pending changes are requested README/docs/previews only; final documentation commit follows. Cached origin/main remote-only/local-only counts: 0/20; no fresh fetch or push. Inspect live status/log next session.
+Live inspection: 2026-10-14. HEAD 6298ddc. Pending changes are requested README/docs/previews only; final documentation commit follows. Cached origin/main remote-only/local-only counts: 0/21; no fresh fetch or push. Inspect live status/log next session.
 
 Real git log --oneline -20:
 
 ```text
+6298ddc Preserve authentication guidance when capture settings have no offline cache
 0895f84 Add persisted Uzbek Latin and Cyrillic, Russian and English mobile UI
 9339d2a Keep detector checkpoint provenance consistent and bound replacement cache
 c93e34e Record completed MVP audit, recovery evidence and remaining field data gates
@@ -85,7 +86,6 @@ b9a34a4 Add permanent species-configured animal numbers and audited ownership li
 b6c4e0b Pin tested backend containers, CPU dependencies and Flutter SDK
 001b9a2 Respect Windows path casing when exporting phone evidence
 183341b Export verified phone evidence and scale restart-safe capture queues
-fff4799 Reject exact decoded-pixel duplicates in reviewed research datasets
 ```
 
 Real git remote -v:

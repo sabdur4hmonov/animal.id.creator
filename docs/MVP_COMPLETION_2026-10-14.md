@@ -1,5 +1,7 @@
 # Data-independent MVP completion audit
 
+Subsequent multilingual/code review: four offline UI languages/scripts, retained Unicode evidence, detector load/digest and cache repairs, and preserved uncached authentication guidance. 361 distinct tests passed (204 backend/tooling + 48 research + 109 Flutter); final APK/analyzer/Docker/recovery evidence is in root PROGRESS.md and [LANGUAGES.md](LANGUAGES.md). The baseline audit and earlier artifact/counts below remain historical.
+
 Reviewed the live roadmap, persistent progress and backend/mobile collection,
 quality, detection, authentication, provenance, registry and recovery code. The
 review found specific remaining registry/storage defects and workflow gaps; these

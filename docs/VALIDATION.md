@@ -1,5 +1,7 @@
 # Phase 1 validation
 
+Latest multilingual/checkpoint review (2026-10-14): 252 full Python tests (204 backend/tooling + 48 research), 109 Flutter tests; Ruff and Flutter analyzer clean. Actual isolated Docker/PostgreSQL owner/report Unicode, immutable replay/history and JPEG/QC/file/hash/pending_model/source checks passed. See [LANGUAGES.md](LANGUAGES.md) and root PROGRESS.md for final artifact/recovery evidence; earlier counts below are historical.
+
 ## MVP completion audit (2026-10-14, latest)
 
 198 backend/tooling + 48 research + 93 Flutter = 339 distinct cases passed.

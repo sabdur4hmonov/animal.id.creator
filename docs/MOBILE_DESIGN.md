@@ -1,6 +1,8 @@
 # Field capture design — 2026-10-13
 
-**Latest MVP completion audit (2026-10-14):** 93 full Flutter host tests passed; analyzer clean.
+**Multilingual update (2026-10-14):** four persisted offline UI variants, Cyrillic system labels, Unicode fields and responsive headings. 109 Flutter tests passed; see [languages and previews](LANGUAGES.md). The prior artifact/test evidence below is historical.
+
+**Previous MVP completion audit (2026-10-14):** 93 full Flutter host tests passed; analyzer clean.
 Final debug APK SHA-256 `f174e598090052164af0be2746b029b60b56be672fbc9c5f32c3f29cf5669b77`.
 Actual widget previews below are refreshed for four-tab navigation. Refresh, paged history and optional uploaded UUID evidence are available. Permanent-ID
 dialogs and report previews: [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md). These use
