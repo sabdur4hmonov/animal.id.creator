@@ -58,6 +58,24 @@ class NoseDetector:
             raise ValueError("Model checkpoint must be within model_root")
         return path
 
+    @staticmethod
+    def _fingerprint(path: Path) -> tuple:
+        stat = path.stat()
+        return (str(path), stat.st_mtime_ns, stat.st_ctime_ns, stat.st_size, stat.st_ino)
+
+    def _load(self, path: Path, key: tuple):
+        from ultralytics import YOLO
+
+        # Hash both sides of deserialization: the recorded digest must describe loaded weights.
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        model = YOLO(str(path), task="detect")
+        if self._fingerprint(path) != key or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            raise DetectionUnavailable("Checkpoint changed while loading; retry after installation completes")
+        # Replacing weights must not retain every historical model in process memory.
+        self._models = {old_key: value for old_key, value in self._models.items() if old_key[0] != str(path)}
+        self._models[key] = (model, digest)
+        return model, digest
+
     def detect(self, image: np.ndarray, config: SpeciesConfig) -> DetectionResult | None:
         path = self.checkpoint(config)
         if not path.is_file():
@@ -65,13 +83,9 @@ class NoseDetector:
         # Ultralytics predictor instances are stateful; serialize model access.
         with self._lock:
             try:
-                key = (str(path), path.stat().st_mtime_ns, path.stat().st_size)
+                key = self._fingerprint(path)
                 if key not in self._models:
-                    from ultralytics import YOLO
-
-                    model = YOLO(str(path), task="detect")
-                    digest = hashlib.sha256(path.read_bytes()).hexdigest()
-                    self._models[key] = (model, digest)
+                    self._load(path, key)
                 model, digest = self._models[key]
                 matches = [i for i, name in model.names.items() if name == config.model.class_name]
                 if len(matches) != 1:
