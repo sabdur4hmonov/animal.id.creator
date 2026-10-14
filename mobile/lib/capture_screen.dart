@@ -92,6 +92,8 @@ class _CaptureScreenState extends State<CaptureScreen>
         configs = (await _queue!.cachedSettings(
           _backend,
         )).map(SpeciesConfig.fromJson).where((item) => item.enabled).toList();
+        // Without cached rules, retain the original auth/network error for useful guidance.
+        if (configs.isEmpty) rethrow;
         cached = true;
       }
       if (configs.isEmpty) {

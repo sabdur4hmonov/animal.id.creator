@@ -255,6 +255,44 @@ void main() {
     },
   );
 
+  testWidgets('uncached startup retains translated authentication guidance', (
+    tester,
+  ) async {
+    final api = ApiClient(
+      token: 'synthetic',
+      client: MockClient(
+        (_) async => http.Response('{"detail":"unauthorized"}', 401),
+      ),
+    );
+    final settings = controller(initial: AppLanguage.russian);
+    final environment = CaptureEnvironment(
+      api: api,
+      backend: 'http://language-test.invalid',
+      operatorId: 'operator-1',
+      openQueue: () async => OfflineQueue(Directory('${root.path}/queue')),
+      openCamera: () async => FakeCamera(root),
+      gps: () async => null,
+      deviceSignals: () async => {},
+      quality: (_, _) async => const LocalQuality(200, 128, []),
+      exportDirectory: () async => root,
+      share: (_, _) async {},
+    );
+    await tester.pumpWidget(
+      BioLivestockApp(language: settings, environment: environment),
+    );
+    await waitFor(tester, find.textContaining('Ключ доступа отсутствует'));
+    await waitIdle(tester);
+    expect(find.textContaining('No species is enabled'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Снять'))
+          .onPressed,
+      isNull,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+    settings.dispose();
+  });
+
   for (final language in AppLanguage.values) {
     testWidgets(
       '${language.code}: camera, saved and tools localize while open original and request survive switching',
