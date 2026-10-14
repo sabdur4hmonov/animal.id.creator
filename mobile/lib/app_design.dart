@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'localization.dart';
 
 class FieldColors {
   static const forest = Color(0xff183f32);
@@ -144,7 +145,7 @@ class FieldCard extends StatelessWidget {
 }
 
 class FieldTag extends StatelessWidget {
-  final String label;
+  final Object label;
   final IconData icon;
   final bool caution;
   const FieldTag(
@@ -170,7 +171,7 @@ class FieldTag extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Flexible(
-          child: Text(
+          child: FieldText(
             label,
             style: TextStyle(
               fontSize: 12,
@@ -185,7 +186,7 @@ class FieldTag extends StatelessWidget {
 }
 
 class FieldHeading extends StatelessWidget {
-  final String eyebrow, title, subtitle;
+  final Object eyebrow, title, subtitle;
   const FieldHeading({
     super.key,
     required this.eyebrow,
@@ -197,7 +198,7 @@ class FieldHeading extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        eyebrow.toUpperCase(),
+        FieldLocalizations.of(context).resolve(eyebrow).toUpperCase(),
         style: const TextStyle(
           fontSize: 11,
           letterSpacing: 1.8,
@@ -206,9 +207,9 @@ class FieldHeading extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 8),
-      Text(title, style: Theme.of(context).textTheme.headlineMedium),
+      FieldText(title, style: Theme.of(context).textTheme.headlineMedium),
       const SizedBox(height: 8),
-      Text(subtitle),
+      FieldText(subtitle),
     ],
   );
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'api_client.dart';
+import 'localization.dart';
 import 'animal_id.dart';
 import 'app_design.dart';
 import 'capture_environment.dart';
@@ -50,7 +51,7 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
   );
   final form = GlobalKey<FormState>();
   var busy = false;
-  String? error;
+  Object? error;
   Future<void> useId(BuildContext context, Map<String, dynamic> item) async {
     final current = Map<String, dynamic>.from(
       await api.registryGet(
@@ -70,12 +71,12 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
         builder: (context, refresh) => PopScope(
           canPop: !busy,
           child: AlertDialog(
-            title: Text(
+            title: FieldText(
               assigned != null
-                  ? 'Your permanent animal ID'
+                  ? UiText("Your permanent animal ID")
                   : pending == null
-                  ? 'Register a new animal'
-                  : 'Retry pending registration',
+                  ? UiText("Register a new animal")
+                  : UiText("Retry pending registration"),
             ),
             content: SizedBox(
               width: 460,
@@ -87,34 +88,47 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (assigned != null) ...[
-                        Text(
+                        FieldText(
                           assigned!['animal_id'] as String,
                           style: _numberStyle,
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          'Owner at registration: ${assigned!['owner']['name']} · ${assigned!['owner']['owner_id']}',
+                        FieldText(
+                          UiText("Owner at registration: {0} · {1}", [
+                            assigned!['owner']['name'],
+                            assigned!['owner']['owner_id'],
+                          ]),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
-                          'This number has been issued. Write it on the animal tag/ledger. Use this same ID for every future capture; reconnect to confirm it if needed.',
+                        const FieldText(
+                          UiText(
+                            "This number has been issued. Write it on the animal tag/ledger. Use this same ID for every future capture; reconnect to confirm it if needed.",
+                          ),
                         ),
                       ] else ...[
-                        Text(
-                          'The backend issues IDs such as ${config.numberingExample ?? 'the configured species number'}. Register each animal once; retries keep the same request.',
+                        FieldText(
+                          UiText(
+                            "The backend issues IDs such as {0}. Register each animal once; retries keep the same request.",
+                            [
+                              config.numberingExample ??
+                                  const UiText('the configured species number'),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: ownerId,
                           enabled: !busy && pending == null,
                           decoration: const InputDecoration(
-                            labelText: 'Owner reference',
-                            hintText: 'e.g. OWNER-001',
+                            label: FieldText(UiText("Owner reference")),
+                            hint: FieldText(UiText("e.g. OWNER-001")),
                           ),
                           validator: (value) =>
                               validOwnerReference(value?.trim())
                               ? null
-                              : 'Use 1–64 letters, digits, underscores or hyphens',
+                              : UiText(
+                                  "Use 1–64 letters, digits, underscores or hyphens",
+                                ).resolve(context),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -122,18 +136,20 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
                           enabled: !busy && pending == null,
                           maxLength: 120,
                           decoration: const InputDecoration(
-                            labelText: 'Owner name',
+                            label: FieldText(UiText("Owner name")),
                           ),
                           validator: (value) => (value?.trim().isEmpty ?? true)
-                              ? 'Enter an owner name'
+                              ? UiText("Enter an owner name").resolve(context)
                               : null,
                         ),
                       ],
                       if (previous.isNotEmpty &&
                           pending == null &&
                           assigned == null) ...[
-                        const Text(
-                          'Already registered? Reuse a recent ID instead.',
+                        const FieldText(
+                          UiText(
+                            "Already registered? Reuse a recent ID instead.",
+                          ),
                           style: TextStyle(fontSize: 12),
                         ),
                         for (final item in previous.take(5))
@@ -148,12 +164,12 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
                                       if (context.mounted) {
                                         refresh(() {
                                           busy = false;
-                                          error = '$value';
+                                          error = userError(value);
                                         });
                                       }
                                     }
                                   },
-                            child: Text(
+                            child: FieldText(
                               item['animal_id'] as String,
                               style: _numberStyle,
                             ),
@@ -162,7 +178,7 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
                       if (error != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
-                          child: Text(
+                          child: FieldText(
                             error!,
                             style: const TextStyle(color: FieldColors.red),
                           ),
@@ -176,7 +192,7 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
             actions: [
               TextButton(
                 onPressed: busy ? null : () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: const FieldText(UiText("Cancel")),
               ),
               FilledButton(
                 onPressed: busy
@@ -219,18 +235,20 @@ Future<Map<String, dynamic>?> issueAnimalDialog(
                           if (context.mounted) {
                             refresh(() {
                               busy = false;
-                              error =
-                                  '$value. Retry uses the same registration.';
+                              error = UiText(
+                                "{0}. Retry uses the same registration.",
+                                [userError(value)],
+                              );
                             });
                           }
                         }
                       },
-                child: Text(
+                child: FieldText(
                   assigned != null
-                      ? 'Use this ID'
+                      ? UiText("Use this ID")
                       : pending == null
-                      ? 'Issue unique ID'
-                      : 'Retry same request',
+                      ? UiText("Issue unique ID")
+                      : UiText("Retry same request"),
                 ),
               ),
             ],
@@ -273,7 +291,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
   int offset = 0;
   int historyOffset = 0;
   bool historyExpanded = false;
-  String? message;
+  Object? message;
   @override
   void initState() {
     super.initState();
@@ -317,8 +335,10 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
           selected = null;
           slaughterCheck = null;
           history = [];
-          message =
-              '$error. Registry lookup needs the backend; saved captures stay on this phone.';
+          message = UiText(
+            "{0}. Registry lookup needs the backend; saved captures stay on this phone.",
+            [userError(error)],
+          );
         });
       }
     } finally {
@@ -365,7 +385,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
         });
       }
     } catch (error) {
-      if (mounted) setState(() => message = '$error');
+      if (mounted) setState(() => message = userError(error));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -391,8 +411,10 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
     } catch (error) {
       if (mounted) {
         setState(
-          () => message =
-              'History page unavailable: $error. Showing the previous page.',
+          () => message = UiText(
+            "History page unavailable: {0}. Showing the previous page.",
+            [userError(error)],
+          ),
         );
       }
     } finally {
@@ -413,7 +435,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
         await open(animal['animal_id'] as String);
       }
     } catch (error) {
-      if (mounted) setState(() => message = '$error');
+      if (mounted) setState(() => message = userError(error));
     }
   }
 
@@ -424,14 +446,18 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       final results = await journal.retry(widget.environment.api);
       if (mounted) {
         setState(
-          () => message = '${results.length} registry changes acknowledged.',
+          () => message = UiText("{0} registry changes acknowledged.", [
+            results.length,
+          ]),
         );
       }
     } catch (error) {
       if (mounted) {
         setState(
-          () => message =
-              '$error. Uncertain requests keep the same key; rejected changes require a fresh review.',
+          () => message = UiText(
+            "{0}. Uncertain requests keep the same key; rejected changes require a fresh review.",
+            [userError(error)],
+          ),
         );
       }
     } finally {
@@ -457,7 +483,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
         );
       }
     } catch (error) {
-      if (mounted) setState(() => message = '$error');
+      if (mounted) setState(() => message = userError(error));
       return;
     }
     if (!mounted) return;
@@ -479,7 +505,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
     final form = GlobalKey<FormState>();
     var saving = false;
     var rejected = false;
-    String? error;
+    Object? error;
     try {
       await showDialog<bool>(
         context: context,
@@ -488,12 +514,12 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
           builder: (context, refresh) => PopScope(
             canPop: !saving,
             child: AlertDialog(
-              title: Text(
+              title: FieldText(
                 kind == 'owner'
-                    ? 'Change owner'
+                    ? UiText("Change owner")
                     : kind == 'deceased'
-                    ? 'Record death'
-                    : 'Record slaughter',
+                    ? UiText("Record death")
+                    : UiText("Record slaughter"),
               ),
               content: SizedBox(
                 width: 460,
@@ -504,20 +530,26 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        FieldText(
                           animal['animal_id'] as String,
                           style: _numberStyle,
                         ),
                         const SizedBox(height: 12),
-                        Text(
+                        FieldText(
                           kind == 'owner'
-                              ? 'The animal keeps its ID and complete ownership history.'
-                              : 'Removes this animal from the active list. Its ID and evidence remain permanently reserved. This records your report, not independent proof of physical identity/slaughter.',
+                              ? UiText(
+                                  "The animal keeps its ID and complete ownership history.",
+                                )
+                              : UiText(
+                                  "Removes this animal from the active list. Its ID and evidence remain permanently reserved. This records your report, not independent proof of physical identity/slaughter.",
+                                ),
                         ),
                         const SizedBox(height: 16),
                         if (waiting != null)
-                          const Text(
-                            'A pending request already exists. Retry its original details.',
+                          const FieldText(
+                            UiText(
+                              "A pending request already exists. Retry its original details.",
+                            ),
                             style: TextStyle(color: FieldColors.amber),
                           ),
                         if (kind == 'owner') ...[
@@ -525,12 +557,14 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                             controller: ownerId,
                             enabled: !saving && waiting == null,
                             decoration: const InputDecoration(
-                              labelText: 'New owner reference',
+                              label: FieldText(UiText("New owner reference")),
                             ),
                             validator: (value) =>
                                 validOwnerReference(value?.trim())
                                 ? null
-                                : 'Enter a valid owner reference',
+                                : UiText(
+                                    "Enter a valid owner reference",
+                                  ).resolve(context),
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
@@ -538,11 +572,11 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                             enabled: !saving && waiting == null,
                             maxLength: 120,
                             decoration: const InputDecoration(
-                              labelText: 'New owner name',
+                              label: FieldText(UiText("New owner name")),
                             ),
                             validator: (value) =>
                                 (value?.trim().isEmpty ?? true)
-                                ? 'Enter a name'
+                                ? UiText("Enter a name").resolve(context)
                                 : null,
                           ),
                         ],
@@ -551,12 +585,14 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                             controller: facility,
                             enabled: !saving && waiting == null,
                             decoration: const InputDecoration(
-                              labelText: 'Slaughter facility ID',
+                              label: FieldText(UiText("Slaughter facility ID")),
                             ),
                             validator: (value) =>
                                 validOwnerReference(value?.trim())
                                 ? null
-                                : 'Enter a facility reference',
+                                : UiText(
+                                    "Enter a facility reference",
+                                  ).resolve(context),
                           ),
                           const SizedBox(height: 12),
                         ],
@@ -567,10 +603,10 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                           minLines: 2,
                           maxLines: 4,
                           decoration: const InputDecoration(
-                            labelText: 'Reason / report notes',
+                            label: FieldText(UiText("Reason / report notes")),
                           ),
                           validator: (value) => (value?.trim().isEmpty ?? true)
-                              ? 'A reason is required'
+                              ? UiText("A reason is required").resolve(context)
                               : null,
                         ),
                         if (kind != 'owner') ...[
@@ -579,20 +615,27 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                             controller: captureId,
                             enabled: !saving && waiting == null,
                             decoration: const InputDecoration(
-                              labelText: 'Uploaded capture UUID (optional)',
-                              helperText:
-                                  'Copy from Saved upload receipts. Must belong to this animal; a local request key is not a capture UUID.',
+                              label: FieldText(
+                                UiText("Uploaded capture UUID (optional)"),
+                              ),
+                              helper: FieldText(
+                                UiText(
+                                  "Copy from Saved upload receipts. Must belong to this animal; a local request key is not a capture UUID.",
+                                ),
+                              ),
                               helperMaxLines: 4,
                             ),
                             validator: (value) =>
                                 value!.trim().isEmpty ||
                                     validCaptureReference(value.trim())
                                 ? null
-                                : 'Enter a valid uploaded capture UUID or leave blank',
+                                : UiText(
+                                    "Enter a valid uploaded capture UUID or leave blank",
+                                  ).resolve(context),
                           ),
                         ],
                         if (error != null)
-                          Text(
+                          FieldText(
                             error!,
                             style: const TextStyle(color: FieldColors.red),
                           ),
@@ -607,7 +650,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                   onPressed: saving
                       ? null
                       : () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+                  child: const FieldText(UiText("Cancel")),
                 ),
                 FilledButton(
                   onPressed: saving || rejected
@@ -661,8 +704,10 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                                 refresh(() {
                                   saving = false;
                                   rejected = true;
-                                  error =
-                                      '$value. Not applied; cancel and reload before submitting a corrected change.';
+                                  error = UiText(
+                                    "{0}. Not applied; cancel and reload before submitting a corrected change.",
+                                    [userError(value)],
+                                  );
                                 });
                               } else {
                                 try {
@@ -671,20 +716,24 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                                 if (context.mounted) {
                                   refresh(() {
                                     saving = false;
-                                    error =
-                                        '$value. Retry keeps the original recorded details.';
+                                    error = UiText(
+                                      "{0}. Retry keeps the original recorded details.",
+                                      [userError(value)],
+                                    );
                                   });
                                 }
                               }
                             }
                           }
                         },
-                  child: Text(
+                  child: FieldText(
                     waiting != null
-                        ? 'Retry same request'
+                        ? UiText("Retry same request")
                         : kind == 'owner'
-                        ? 'Confirm owner change'
-                        : 'Confirm ${kind == 'deceased' ? 'death' : 'slaughter'} report',
+                        ? UiText("Confirm owner change")
+                        : kind == 'deceased'
+                        ? const UiText('Confirm death report')
+                        : const UiText('Confirm slaughter report'),
                   ),
                 ),
               ],
@@ -714,53 +763,73 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(animal['animal_id'] as String, style: _numberStyle),
+          FieldText(animal['animal_id'] as String, style: _numberStyle),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               FieldTag(
-                animal['lifecycle'] as String,
+                statusLabel(animal['lifecycle'] as String),
                 icon: active ? Icons.grass : Icons.archive_outlined,
                 caution: !active,
               ),
               FieldTag(
-                'Financial: ${animal['status']}',
+                UiText("Financial: {0}", [
+                  statusLabel(animal['status'] as String),
+                ]),
                 icon: Icons.description_outlined,
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text('Owner', style: Theme.of(context).textTheme.titleMedium),
-          Text(
+          FieldText(
+            UiText("Owner"),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          FieldText(
             animal['owner'] == null
-                ? 'Not recorded'
+                ? UiText("Not recorded")
                 : '${animal['owner']['name']} · ${animal['owner']['owner_id']}',
           ),
           const SizedBox(height: 16),
-          Text(
+          FieldText(
             slaughterCheck?['recorded_slaughter'] == true
-                ? 'Slaughter report on file'
-                : 'No slaughter report on file',
+                ? UiText("Slaughter report on file")
+                : UiText("No slaughter report on file"),
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const Text(
-            'Registry record only. Physical slaughter and biometric identity are not independently verified.',
+          const FieldText(
+            UiText(
+              "Registry record only. Physical slaughter and biometric identity are not independently verified.",
+            ),
             style: TextStyle(fontSize: 12),
           ),
           if (terminal != null) ...[
             const SizedBox(height: 12),
-            Text(
-              'Facility: ${terminal['facility_id'] ?? 'Not applicable'}\nRecorded by: ${terminal['actor_id']}\nReported time: ${terminal['observed_at']}\nReceived: ${terminal['received_at']}\nReason: ${terminal['reason']}',
+            FieldText(
+              UiText(
+                "Facility: {0}\nRecorded by: {1}\nReported time: {2}\nReceived: {3}\nReason: {4}",
+                [
+                  terminal['facility_id'] ?? const UiText('Not applicable'),
+                  terminal['actor_id'],
+                  terminal['observed_at'],
+                  terminal['received_at'],
+                  terminal['reason'],
+                ],
+              ),
             ),
             const SizedBox(height: 8),
-            SelectableText(
-              'Capture evidence: ${terminal['capture_id'] ?? 'Not attached'}',
+            FieldSelectableText(
+              UiText("Capture evidence: {0}", [
+                terminal['capture_id'] ?? const UiText('Not attached'),
+              ]),
             ),
             if (terminal['capture_stored_sha256'] != null)
-              SelectableText(
-                'Stored image SHA-256: ${terminal['capture_stored_sha256']}',
+              FieldSelectableText(
+                UiText("Stored image SHA-256: {0}", [
+                  terminal['capture_stored_sha256'],
+                ]),
               ),
           ],
           const SizedBox(height: 16),
@@ -768,14 +837,16 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
             OutlinedButton.icon(
               onPressed: busy ? null : () => widget.onCapture(animal),
               icon: const Icon(Icons.camera_alt_outlined),
-              label: const Text('Capture with this ID'),
+              label: const FieldText(UiText("Capture with this ID")),
             ),
           if (manage) ...[
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: busy ? null : () => change('owner'),
-              child: Text(
-                animal['owner'] == null ? 'Record owner' : 'Change owner',
+              child: FieldText(
+                animal['owner'] == null
+                    ? UiText("Record owner")
+                    : UiText("Change owner"),
               ),
             ),
             const SizedBox(height: 8),
@@ -785,11 +856,11 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
               children: [
                 OutlinedButton(
                   onPressed: busy ? null : () => change('deceased'),
-                  child: const Text('Record death'),
+                  child: const FieldText(UiText("Record death")),
                 ),
                 OutlinedButton(
                   onPressed: busy ? null : () => change('slaughtered'),
-                  child: const Text('Record slaughter'),
+                  child: const FieldText(UiText("Record slaughter")),
                 ),
               ],
             ),
@@ -797,8 +868,10 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
           if (!active)
             const Padding(
               padding: EdgeInsets.only(top: 12),
-              child: Text(
-                'Archived. History retained; this ID will never be reassigned.',
+              child: FieldText(
+                UiText(
+                  "Archived. History retained; this ID will never be reassigned.",
+                ),
               ),
             ),
           const SizedBox(height: 16),
@@ -807,13 +880,13 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
             initiallyExpanded: historyExpanded,
             onExpansionChanged: (value) => historyExpanded = value,
             tilePadding: EdgeInsets.zero,
-            title: const Text('Ownership & event history'),
+            title: const FieldText(UiText("Ownership & event history")),
             children: [
               for (final event in history)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(event['action'] as String),
-                  subtitle: Text(
+                  title: FieldText(statusLabel(event['action'] as String)),
+                  subtitle: FieldText(
                     '${event['actor_id']} · ${event['received_at']}\n${event['details']}',
                   ),
                 ),
@@ -825,14 +898,16 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                     onPressed: busy || historyOffset == 0
                         ? null
                         : () => historyPage(historyOffset - 50),
-                    child: const Text('Previous history'),
+                    child: const FieldText(UiText("Previous history")),
                   ),
-                  Text('History page ${historyOffset ~/ 50 + 1}'),
+                  FieldText(
+                    UiText("History page {0}", [historyOffset ~/ 50 + 1]),
+                  ),
                   TextButton(
                     onPressed: busy || history.length < 50
                         ? null
                         : () => historyPage(historyOffset + 50),
-                    child: const Text('Next history'),
+                    child: const FieldText(UiText("Next history")),
                   ),
                 ],
               ),
@@ -844,7 +919,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
               slaughterCheck = null;
               history = [];
             }),
-            child: const Text('Back to animals'),
+            child: const FieldText(UiText("Back to animals")),
           ),
         ],
       ),
@@ -858,20 +933,22 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const FieldHeading(
-          eyebrow: 'Animal registry',
-          title: 'An ID for life.',
-          subtitle: 'Owners change. Animal numbers stay the same.',
+          eyebrow: UiText("Animal registry"),
+          title: UiText("An ID for life."),
+          subtitle: UiText("Owners change. Animal numbers stay the same."),
         ),
         const SizedBox(height: 16),
         if (widget.configs.length > 1)
           DropdownButtonFormField<SpeciesConfig>(
             initialValue: config,
-            decoration: const InputDecoration(labelText: 'Species'),
+            decoration: const InputDecoration(
+              label: FieldText(UiText("Species")),
+            ),
             items: widget.configs
                 .map(
                   (item) => DropdownMenuItem(
                     value: item,
-                    child: Text(item.species.name),
+                    child: FieldText(speciesLabel(item.species.name)),
                   ),
                 )
                 .toList(),
@@ -896,10 +973,14 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                 controller: lookup,
                 enabled: !busy,
                 decoration: InputDecoration(
-                  labelText: 'Look up animal ID',
-                  hintText: config.numberingExample == null
-                      ? 'Enter the ID from the tag or ledger'
-                      : 'e.g. ${config.numberingExample} or an existing ID',
+                  label: FieldText(UiText("Look up animal ID")),
+                  hint: FieldText(
+                    config.numberingExample == null
+                        ? UiText("Enter the ID from the tag or ledger")
+                        : UiText("e.g. {0} or an existing ID", [
+                            config.numberingExample,
+                          ]),
+                  ),
                 ),
                 textCapitalization: TextCapitalization.characters,
               ),
@@ -910,19 +991,23 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                     : () {
                         final id = lookup.text.trim();
                         if (validateAnimalId(id) != null) {
-                          setState(() => message = 'Enter a valid animal ID');
+                          setState(
+                            () => message = UiText("Enter a valid animal ID"),
+                          );
                           return;
                         }
                         open(id);
                       },
                 icon: const Icon(Icons.search),
-                label: const Text('Check animal / slaughter record'),
+                label: const FieldText(
+                  UiText("Check animal / slaughter record"),
+                ),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: busy || config.numbering == null ? null : newAnimal,
                 icon: const Icon(Icons.add),
-                label: const Text('Register new animal'),
+                label: const FieldText(UiText("Register new animal")),
               ),
               TextButton.icon(
                 onPressed: busy
@@ -935,7 +1020,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                         }
                       },
                 icon: const Icon(Icons.refresh),
-                label: const Text('Refresh registry'),
+                label: const FieldText(UiText("Refresh registry")),
               ),
             ],
           ),
@@ -945,7 +1030,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
         if (message != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text(
+            child: FieldText(
               message!,
               style: const TextStyle(color: FieldColors.amber),
             ),
@@ -956,24 +1041,28 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  '${pending.length} registry changes waiting for acknowledgement',
+                FieldText(
+                  UiText("{0} registry changes waiting for acknowledgement", [
+                    pending.length,
+                  ]),
                 ),
                 TextButton(
                   onPressed: busy ? null : retry,
-                  child: const Text('Retry pending registry changes'),
+                  child: const FieldText(
+                    UiText("Retry pending registry changes"),
+                  ),
                 ),
               ],
             ),
           ),
         for (final issue in journal.issues)
-          Text(issue, style: const TextStyle(color: FieldColors.red)),
+          FieldText(issue, style: const TextStyle(color: FieldColors.red)),
         if (selected != null)
           detail()
         else ...[
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Include archived animals'),
+            title: const FieldText(UiText("Include archived animals")),
             value: archived,
             onChanged: busy
                 ? null
@@ -987,8 +1076,10 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
           ),
           if (animals.isEmpty && !busy && message == null)
             const FieldCard(
-              child: Text(
-                'No animals in this view. Connect to the backend to review the registry.',
+              child: FieldText(
+                UiText(
+                  "No animals in this view. Connect to the backend to review the registry.",
+                ),
               ),
             ),
           for (final animal in animals)
@@ -997,12 +1088,16 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
               child: FieldCard(
                 padding: EdgeInsets.zero,
                 child: ListTile(
-                  title: Text(
+                  title: FieldText(
                     animal['animal_id'] as String,
                     style: _numberStyle,
                   ),
-                  subtitle: Text(
-                    '${animal['owner']?['name'] ?? 'Owner not recorded'} · ${animal['lifecycle']}',
+                  subtitle: FieldText(
+                    UiText('{0} · {1}', [
+                      animal['owner']?['name'] ??
+                          const UiText('Owner not recorded'),
+                      statusLabel(animal['lifecycle'] as String),
+                    ]),
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: busy
@@ -1022,9 +1117,9 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                         setState(() => offset -= 50);
                         reload();
                       },
-                child: const Text('Previous animals'),
+                child: const FieldText(UiText("Previous animals")),
               ),
-              Text('Page ${offset ~/ 50 + 1}'),
+              FieldText(UiText("Page {0}", [offset ~/ 50 + 1])),
               TextButton(
                 onPressed: busy || animals.length < 50
                     ? null
@@ -1032,7 +1127,7 @@ class _AnimalRegistryState extends State<AnimalRegistryScreen> {
                         setState(() => offset += 50);
                         reload();
                       },
-                child: const Text('Next animals'),
+                child: const FieldText(UiText("Next animals")),
               ),
             ],
           ),

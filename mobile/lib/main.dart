@@ -1,19 +1,55 @@
 import 'package:flutter/material.dart';
 import 'capture_screen.dart';
 import 'app_design.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'capture_environment.dart';
+import 'localization.dart';
+import 'uzbek_cyrillic_material.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const BioLivestockApp());
+  final language = LanguageController();
+  await language.load();
+  runApp(BioLivestockApp(language: language));
 }
 
-class BioLivestockApp extends StatelessWidget {
-  const BioLivestockApp({super.key});
+class BioLivestockApp extends StatefulWidget {
+  const BioLivestockApp({super.key, this.language, this.environment});
+  final LanguageController? language;
+  final CaptureEnvironment? environment;
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'BioLivestock Capture',
-    debugShowCheckedModeBanner: false,
-    theme: fieldTheme(),
-    home: const CaptureScreen(),
+  State<BioLivestockApp> createState() => _BioLivestockAppState();
+}
+
+class _BioLivestockAppState extends State<BioLivestockApp> {
+  late final language = widget.language ?? LanguageController();
+  @override
+  void dispose() {
+    if (widget.language == null) language.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => LanguageScope(
+    controller: language,
+    child: ListenableBuilder(
+      listenable: language,
+      builder: (context, _) => MaterialApp(
+        title: 'BioLivestock Capture',
+        debugShowCheckedModeBanner: false,
+        theme: fieldTheme(),
+        locale: language.language.locale,
+        supportedLocales: [for (final item in AppLanguage.values) item.locale],
+        localizationsDelegates: const [
+          FieldLocalizations.delegate,
+          UzbekCyrillicMaterialDelegate(),
+          UzbekCyrillicCupertinoDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: CaptureScreen(environment: widget.environment),
+      ),
+    ),
   );
 }

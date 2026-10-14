@@ -47,7 +47,9 @@ def synthetic_model():
         def __len__(self):
             return 1
 
-    return SimpleNamespace(names={0: "muzzle"}, predict=lambda *args, **kwargs: [SimpleNamespace(boxes=Boxes())])
+    return SimpleNamespace(
+        names={0: "muzzle"}, predict=lambda *args, **kwargs: [SimpleNamespace(boxes=Boxes())]
+    )
 
 
 def test_checkpoint_changed_during_load_is_not_cached(tmp_path, sharp, config, monkeypatch):
@@ -65,12 +67,16 @@ def test_checkpoint_changed_during_load_is_not_cached(tmp_path, sharp, config, m
     with pytest.raises(DetectionUnavailable, match="changed while loading"):
         detector.detect(sharp, config)
     assert detector._models == {}
-    monkeypatch.setitem(sys.modules, "ultralytics", SimpleNamespace(YOLO=lambda *args, **kwargs: synthetic_model()))
+    monkeypatch.setitem(
+        sys.modules, "ultralytics", SimpleNamespace(YOLO=lambda *args, **kwargs: synthetic_model())
+    )
     result = detector.detect(sharp, config)
     assert result.metadata["checkpoint_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_checkpoint_replacements_evict_old_weights_and_record_loaded_digest(tmp_path, sharp, config, monkeypatch):
+def test_checkpoint_replacements_evict_old_weights_and_record_loaded_digest(
+    tmp_path, sharp, config, monkeypatch
+):
     path = tmp_path / config.model.checkpoint
     path.parent.mkdir(parents=True)
     calls = []

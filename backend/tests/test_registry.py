@@ -30,6 +30,28 @@ def observation(version=1):
     }
 
 
+@pytest.mark.parametrize("name", ["O‘ktam G‘ulomov", "Ўктам Ғуломов", "Иван Петров", "Sardor Farmer"])
+def test_unicode_owner_notes_and_immutable_receipt_replay(client, name):
+    owner = {"owner_id": "OWNER-UTF8", "name": name}
+    key = uuid4().hex
+    animal = send(client, body={"species": "cattle", "owner": owner}, key=key).json()
+    assert animal["owner"] == owner
+    assert send(client, body={"species": "cattle", "owner": owner}, key=key).json() == animal
+    route = f"/api/v1/registry/animals/cattle/{animal['animal_id']}"
+    reason = f"{name} — So‘yildi / Сўйилди / Убой / slaughter {{0}}"
+    body = {**observation(), "lifecycle": "slaughtered", "facility_id": "FACILITY-UTF8", "reason": reason}
+    terminal_key = uuid4().hex
+    response = send(client, route + "/retirement", body, terminal_key)
+    assert response.status_code == 200, response.text
+    assert response.json()["terminal_record"]["reason"] == reason
+    assert send(client, route + "/retirement", body, terminal_key).json() == response.json()
+    assert client.get(route).json()["owner"] == owner
+    event = next(
+        item for item in client.get(route + "/history").json() if item["action"] == "animal_slaughtered"
+    )
+    assert event["details"]["reason"] == reason
+
+
 def test_unique_numbering_replay_and_conflicting_payload(client, db_session):
     key = uuid4().hex
     first = send(client, key=key)

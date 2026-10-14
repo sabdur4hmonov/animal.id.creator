@@ -373,8 +373,8 @@ void main() {
       await mount(tester);
       await tester.tap(find.text('Saved'));
       await tester.pump();
-      await waitFor(tester, find.text('F01-C002 · cattle'));
-      await tester.tap(find.text('F01-C002 · cattle'));
+      await waitFor(tester, find.text('F01-C002 · Cattle'));
+      await tester.tap(find.text('F01-C002 · Cattle'));
       await tester.pump();
       expect(find.textContaining('Recovered F01-C002'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
@@ -455,7 +455,7 @@ void main() {
     await mount(tester);
     await tester.tap(find.text('Saved'));
     await tester.pump();
-    await waitFor(tester, find.text('PAGE-000 · cattle'));
+    await waitFor(tester, find.text('PAGE-000 · Cattle'));
     await tester.scrollUntilVisible(
       find.text('Next captures'),
       600,
@@ -471,7 +471,7 @@ void main() {
     await tester.tap(find.text('Next captures'));
     await tester.pump();
     await tester.scrollUntilVisible(
-      find.text('PAGE-050 · cattle'),
+      find.text('PAGE-050 · Cattle'),
       -600,
       maxScrolls: 100,
       scrollable: find
@@ -481,7 +481,7 @@ void main() {
           )
           .first,
     );
-    expect(find.text('PAGE-050 · cattle'), findsOneWidget);
+    expect(find.text('PAGE-050 · Cattle'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
   testWidgets('small phone and large text keep navigation and capture usable', (

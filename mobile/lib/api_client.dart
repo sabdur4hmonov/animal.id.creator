@@ -22,6 +22,14 @@ class RegistryApiError implements Exception {
   String toString() => 'Registry request rejected ($status): $message';
 }
 
+class ApiError implements Exception {
+  final int status;
+  final String message;
+  const ApiError(this.status, this.message);
+  @override
+  String toString() => message;
+}
+
 class ApiClient {
   final http.Client _client;
   final String _token;
@@ -48,11 +56,12 @@ class ApiClient {
         .get(endpoint('/api/v1/species'), headers: _headers)
         .timeout(const Duration(seconds: 15));
     if (response.statusCode != 200) {
-      throw Exception(
+      throw ApiError(
+        response.statusCode,
         'Unable to load species settings: ${response.statusCode}',
       );
     }
-    final items = jsonDecode(response.body) as List;
+    final items = jsonDecode(utf8.decode(response.bodyBytes)) as List;
     return items
         .map(
           (item) =>
@@ -72,10 +81,11 @@ class ApiClient {
         .get(endpoint('/health'), headers: headers)
         .timeout(const Duration(seconds: 15));
     if (health.statusCode != 200 ||
-        (jsonDecode(health.body)
+        (jsonDecode(utf8.decode(health.bodyBytes))
                 as Map)['capabilities']?['idempotent_capture_uploads'] !=
             true) {
-      throw Exception(
+      throw ApiError(
+        health.statusCode,
         'Update the backend before queued uploads: safe upload retries are unavailable.',
       );
     }
@@ -88,11 +98,14 @@ class ApiClient {
       return http.Response.fromStream(await _client.send(request));
     })().timeout(const Duration(seconds: 90));
     if (response.statusCode != 201) {
-      throw Exception(
-        'Upload rejected (${response.statusCode}): ${response.body}',
+      throw ApiError(
+        response.statusCode,
+        'Upload rejected (${response.statusCode}): ${utf8.decode(response.bodyBytes)}',
       );
     }
-    return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+    return Map<String, dynamic>.from(
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map,
+    );
   }
 
   Future<dynamic> registryGet(String path) async {
@@ -100,9 +113,12 @@ class ApiClient {
         .get(endpoint(path), headers: _headers)
         .timeout(const Duration(seconds: 20));
     if (response.statusCode != 200) {
-      throw RegistryApiError(response.statusCode, response.body);
+      throw RegistryApiError(
+        response.statusCode,
+        utf8.decode(response.bodyBytes),
+      );
     }
-    return jsonDecode(response.body);
+    return jsonDecode(utf8.decode(response.bodyBytes));
   }
 
   Future<Map<String, dynamic>> registryPost(
@@ -122,9 +138,14 @@ class ApiClient {
         )
         .timeout(const Duration(seconds: 30));
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw RegistryApiError(response.statusCode, response.body);
+      throw RegistryApiError(
+        response.statusCode,
+        utf8.decode(response.bodyBytes),
+      );
     }
-    return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+    return Map<String, dynamic>.from(
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map,
+    );
   }
 
   void close() => _client.close();

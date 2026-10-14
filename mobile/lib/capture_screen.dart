@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import 'api_client.dart';
+import 'localization.dart';
 import 'app_design.dart';
 import 'animal_registry.dart';
 import 'registry_journal.dart';
@@ -37,13 +38,13 @@ class _CaptureScreenState extends State<CaptureScreen>
   OfflineQueue? _queue;
   QueuedCapture? _queued;
   List<QueuedCapture> _pending = [];
-  List<String> _queueIssues = [];
+  List<Object> _queueIssues = [];
   String get _backend => _environment.backend;
   int _queuePage = 0;
   int _tab = 0;
   bool _cachedSettings = false;
   static const _pageSize = 50;
-  String? _message;
+  Object? _message;
   bool _messageError = false;
   String? _cameraError;
   bool _busy = false;
@@ -52,7 +53,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   bool _active = true;
   int _cameraGeneration = 0;
 
-  void _showMessage(String message, {bool error = false}) {
+  void _showMessage(Object message, {bool error = false}) {
     setState(() {
       _message = message;
       _messageError = error;
@@ -62,7 +63,13 @@ class _CaptureScreenState extends State<CaptureScreen>
   @override
   void initState() {
     super.initState();
-    _environment = widget.environment ?? CaptureEnvironment.native();
+    _environment =
+        widget.environment ??
+        CaptureEnvironment.native(
+          backupShareText: () => const UiText(
+            'BioLivestock phone backup — save a copy outside this app.',
+          ).resolve(context),
+        );
     _operator.text = _environment.operatorId;
     WidgetsBinding.instance.addObserver(this);
     unawaited(_loadConfigs());
@@ -97,14 +104,19 @@ class _CaptureScreenState extends State<CaptureScreen>
         _cachedSettings = cached;
         _messageError = false;
         _message = cached
-            ? 'Offline settings loaded. Save captures now; upload when the backend is available.'
+            ? UiText(
+                "Offline settings loaded. Save captures now; upload when the backend is available.",
+              )
             : null;
       });
       await _refreshQueue();
     } catch (error) {
       if (mounted) {
         _showMessage(
-          'Connect to the backend once to cache settings, then retry. $error',
+          UiText(
+            "Connect to the backend once to cache settings, then retry. {0}",
+            [userError(error)],
+          ),
           error: true,
         );
       }
@@ -131,7 +143,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       if (mounted) {
         setState(
           () => _queueIssues = [
-            'Queue review failed: $error. Local files retained.',
+            UiText("Queue review failed: {0}. Local files retained.", [
+              userError(error),
+            ]),
           ],
         );
       }
@@ -151,8 +165,10 @@ class _CaptureScreenState extends State<CaptureScreen>
           _queued != null && await _queue!.acknowledged(_queued!);
       if (mounted) {
         setState(() {
-          _message =
-              'Uploaded $count queued captures. Local originals and receipts retained.';
+          _message = UiText(
+            "Uploaded {0} queued captures. Local originals and receipts retained.",
+            [count],
+          );
           _messageError = false;
           if (_queued != null) _saved = acknowledged;
         });
@@ -160,7 +176,9 @@ class _CaptureScreenState extends State<CaptureScreen>
     } catch (error) {
       if (mounted) {
         _showMessage(
-          'Queue paused: $error. Pending captures remain on this phone.',
+          UiText("Queue paused: {0}. Pending captures remain on this phone.", [
+            userError(error),
+          ]),
           error: true,
         );
       }
@@ -180,7 +198,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         context: context,
         builder: (context) => StatefulBuilder(
           builder: (context, update) => AlertDialog(
-            title: const Text('Saved upload receipts'),
+            title: const FieldText(UiText("Saved upload receipts")),
             content: SizedBox(
               width: 500,
               child: SingleChildScrollView(
@@ -188,7 +206,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (saved.isEmpty)
-                      const Text('No uploads acknowledged yet.')
+                      const FieldText(UiText("No uploads acknowledged yet."))
                     else
                       for (final item
                           in saved.skip(page * _pageSize).take(_pageSize))
@@ -201,21 +219,24 @@ class _CaptureScreenState extends State<CaptureScreen>
               if (saved.length > _pageSize) ...[
                 TextButton(
                   onPressed: page > 0 ? () => update(() => page--) : null,
-                  child: const Text('Previous receipts'),
+                  child: const FieldText(UiText("Previous receipts")),
                 ),
-                Text(
-                  'Page ${page + 1} of ${(saved.length + _pageSize - 1) ~/ _pageSize}',
+                FieldText(
+                  UiText("Page {0} of {1}", [
+                    page + 1,
+                    (saved.length + _pageSize - 1) ~/ _pageSize,
+                  ]),
                 ),
                 TextButton(
                   onPressed: (page + 1) * _pageSize < saved.length
                       ? () => update(() => page++)
                       : null,
-                  child: const Text('Next receipts'),
+                  child: const FieldText(UiText("Next receipts")),
                 ),
               ],
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
+                child: const FieldText(UiText("Close")),
               ),
             ],
           ),
@@ -224,7 +245,9 @@ class _CaptureScreenState extends State<CaptureScreen>
     } catch (error) {
       if (mounted) {
         _showMessage(
-          'Receipt review failed: $error. Local files retained.',
+          UiText("Receipt review failed: {0}. Local files retained.", [
+            userError(error),
+          ]),
           error: true,
         );
       }
@@ -235,7 +258,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     if (_busy || _queue == null) return;
     setState(() {
       _busy = true;
-      _message = 'Preparing phone backup…';
+      _message = UiText("Preparing phone backup…");
       _messageError = false;
     });
     try {
@@ -249,13 +272,18 @@ class _CaptureScreenState extends State<CaptureScreen>
       await _environment.share(file, origin);
       if (mounted) {
         _showMessage(
-          'Verified backup of ${(manifest['files'] as Map).length} files. Save a copy outside this app. Originals retained.',
+          UiText(
+            "Verified backup of {0} files. Save a copy outside this app. Originals retained.",
+            [(manifest['files'] as Map).length],
+          ),
         );
       }
     } catch (error) {
       if (mounted) {
         _showMessage(
-          'Backup failed: $error. Originals retained on this phone.',
+          UiText("Backup failed: {0}. Originals retained on this phone.", [
+            userError(error),
+          ]),
           error: true,
         );
       }
@@ -280,8 +308,10 @@ class _CaptureScreenState extends State<CaptureScreen>
       );
       _saved = false;
       _messageError = false;
-      _message =
-          'Recovered ${entry.metadata['animal_id']} from this phone. Labels/time preserved.';
+      _message = UiText(
+        "Recovered {0} from this phone. Labels/time preserved.",
+        [entry.metadata['animal_id']],
+      );
     });
   }
 
@@ -385,15 +415,21 @@ class _CaptureScreenState extends State<CaptureScreen>
         _saved = false;
         _metadata = metadata;
         if (queued != null) {
-          _message =
-              'Saved on this phone. Upload now or collect the next capture.';
+          _message = UiText(
+            "Saved on this phone. Upload now or collect the next capture.",
+          );
         }
       });
       if (queued != null) await _deletePhoto(photo);
       await _refreshQueue();
     } catch (error) {
       await _deletePhoto(photo);
-      if (mounted) _showMessage('Capture failed: $error', error: true);
+      if (mounted) {
+        _showMessage(
+          UiText("Capture failed: {0}", [userError(error)]),
+          error: true,
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -412,18 +448,23 @@ class _CaptureScreenState extends State<CaptureScreen>
       if (animal != null && mounted) {
         if (animal['lifecycle'] != 'active') {
           _showMessage(
-            'This ID is now archived. History retained; choose an active animal.',
+            UiText(
+              "This ID is now archived. History retained; choose an active animal.",
+            ),
             error: true,
           );
           return;
         }
         _animal.text = animal['animal_id'] as String;
         _showMessage(
-          'ID ${animal['animal_id']} is registered. Write it on the tag/ledger and keep using this ID.',
+          UiText(
+            "ID {0} is registered. Write it on the tag/ledger and keep using this ID.",
+            [animal['animal_id']],
+          ),
         );
       }
     } catch (error) {
-      if (mounted) _showMessage('$error', error: true);
+      if (mounted) _showMessage(userError(error), error: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -433,7 +474,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     if (_busy || _photo != null) {
       setState(() => _tab = 0);
       _showMessage(
-        'Finish the open capture before choosing another animal.',
+        UiText("Finish the open capture before choosing another animal."),
         error: true,
       );
       return;
@@ -458,13 +499,20 @@ class _CaptureScreenState extends State<CaptureScreen>
         _saved = true;
         _messageError = false;
         _message = result['crop_status'] == 'cropped'
-            ? 'Saved original and muzzle crop. Capture ${result['id']}'
-            : 'Saved original. Cropping is pending a trained model. Capture ${result['id']}';
+            ? UiText("Saved original and muzzle crop. Capture {0}", [
+                result['id'],
+              ])
+            : UiText(
+                "Saved original. Cropping is pending a trained model. Capture {0}",
+                [result['id']],
+              );
       });
     } catch (error) {
       if (mounted) {
         _showMessage(
-          'Upload failed: $error. Original retained on this phone.',
+          UiText("Upload failed: {0}. Original retained on this phone.", [
+            userError(error),
+          ]),
           error: true,
         );
       }
@@ -523,23 +571,23 @@ class _CaptureScreenState extends State<CaptureScreen>
               color: Colors.white70,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Camera unavailable',
+            const FieldText(
+              UiText("Camera unavailable"),
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Allow camera access in device settings, then try again.',
+            const FieldText(
+              UiText("Allow camera access in device settings, then try again."),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white70),
             ),
             TextButton(
               onPressed: _openCamera,
               style: TextButton.styleFrom(foregroundColor: Colors.white),
-              child: const Text('Retry camera'),
+              child: const FieldText(UiText("Retry camera")),
             ),
           ],
         ),
@@ -609,8 +657,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                       color: Colors.white,
                     ),
                     SizedBox(width: 6),
-                    Text(
-                      'CAMERA',
+                    FieldText(
+                      UiText("CAMERA"),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -625,8 +673,8 @@ class _CaptureScreenState extends State<CaptureScreen>
               bottom: 14,
               left: 16,
               right: 16,
-              child: Text(
-                'Keep one muzzle fully inside the guide',
+              child: FieldText(
+                UiText("Keep one muzzle fully inside the guide"),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -658,9 +706,11 @@ class _CaptureScreenState extends State<CaptureScreen>
                   color: FieldColors.green,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Animal details',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Expanded(
+                  child: FieldText(
+                    UiText("Animal details"),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -668,14 +718,15 @@ class _CaptureScreenState extends State<CaptureScreen>
             TextFormField(
               controller: _animal,
               enabled: editable,
-              validator: validateAnimalId,
+              validator: (value) =>
+                  animalValidation(context, validateAnimalId(value)),
               autocorrect: false,
               textCapitalization: TextCapitalization.characters,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
               decoration: const InputDecoration(
-                labelText: 'Animal ID',
-                hintText: 'Existing ID or issue a new one below',
+                label: FieldText(UiText("Animal ID")),
+                hint: FieldText(UiText("Existing ID or issue a new one below")),
                 prefixIcon: Icon(Icons.tag_rounded),
               ),
             ),
@@ -685,16 +736,14 @@ class _CaptureScreenState extends State<CaptureScreen>
                 initialValue: _selected,
                 isExpanded: true,
                 decoration: const InputDecoration(
-                  labelText: 'Species',
+                  label: FieldText(UiText("Species")),
                   prefixIcon: Icon(Icons.grass_rounded),
                 ),
                 items: _configs
                     .map(
                       (config) => DropdownMenuItem(
                         value: config,
-                        child: Text(
-                          '${config.species.name[0].toUpperCase()}${config.species.name.substring(1)}',
-                        ),
+                        child: FieldText(speciesLabel(config.species.name)),
                       ),
                     )
                     .toList(),
@@ -712,8 +761,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                 ),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text(
-                    'Operator · ${_operator.text}',
+                  child: FieldText(
+                    UiText("Operator · {0}", [_operator.text]),
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),
@@ -728,11 +777,11 @@ class _CaptureScreenState extends State<CaptureScreen>
                   ? _newAnimal
                   : null,
               icon: const Icon(Icons.add),
-              label: const Text('New animal ID'),
+              label: const FieldText(UiText("New animal ID")),
             ),
             if (_operator.text.trim().isEmpty)
-              const Text(
-                'Configure your operator credential before collecting.',
+              const FieldText(
+                UiText("Configure your operator credential before collecting."),
                 style: TextStyle(color: FieldColors.red),
               ),
           ],
@@ -758,10 +807,10 @@ class _CaptureScreenState extends State<CaptureScreen>
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
+                child: FieldText(
                   quality.passed
-                      ? 'Local quality check passed'
-                      : 'Please retake',
+                      ? UiText("Local quality check passed")
+                      : UiText("Please retake"),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -771,44 +820,54 @@ class _CaptureScreenState extends State<CaptureScreen>
           for (final reason in quality.reasons)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                reason,
+              child: FieldText(
+                qualityReason(reason),
                 style: const TextStyle(color: FieldColors.red),
               ),
             ),
           FieldTag(
-            _metadata?['gps'] == null ? 'GPS unavailable' : 'GPS recorded',
+            _metadata?['gps'] == null
+                ? UiText("GPS unavailable")
+                : UiText("GPS recorded"),
             icon: _metadata?['gps'] == null
                 ? Icons.location_off_outlined
                 : Icons.location_on_outlined,
             caution: _metadata?['gps'] == null,
           ),
           const SizedBox(height: 10),
-          const Text(
-            'The server makes the final quality and framing check.',
+          const FieldText(
+            UiText("The server makes the final quality and framing check."),
             style: TextStyle(fontSize: 12),
           ),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
             childrenPadding: const EdgeInsets.only(bottom: 8),
-            title: const Text(
-              'Capture details',
+            title: const FieldText(
+              UiText("Capture details"),
               style: TextStyle(fontSize: 13),
             ),
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: SelectableText(
-                  'Sharpness: ${quality.blurVariance.toStringAsFixed(1)} · Brightness: ${quality.brightness.toStringAsFixed(1)}\n'
-                  '${_metadata?["timestamp"] ?? ""}${_queued == null ? "" : "\nRequest: ${_queued!.key}"}',
+                child: FieldSelectableText(
+                  UiText('Sharpness: {0} · Brightness: {1}\n{2}', [
+                    quality.blurVariance.toStringAsFixed(1),
+                    quality.brightness.toStringAsFixed(1),
+                    UiText('{0}\n{1}', [
+                      _metadata?['timestamp'] ?? '',
+                      _queued == null
+                          ? ''
+                          : UiText('Request: {0}', [_queued!.key]),
+                    ]),
+                  ]),
                   style: const TextStyle(fontSize: 12),
                 ),
               ),
               if (_metadata?['gps'] == null)
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Location is saved as empty; no GPS is invented.',
+                  child: FieldText(
+                    UiText("Location is saved as empty; no GPS is invented."),
                     style: TextStyle(fontSize: 12),
                   ),
                 ),
@@ -840,7 +899,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: SelectableText(
+          child: FieldSelectableText(
             _message!,
             style: const TextStyle(fontSize: 13, color: FieldColors.ink),
           ),
@@ -857,19 +916,22 @@ class _CaptureScreenState extends State<CaptureScreen>
         Icons.warning_amber_rounded,
         color: FieldColors.amber,
       ),
-      title: Text(
-        '${_queueIssues.length} local items need review',
+      title: FieldText(
+        UiText("{0} local items need review", [_queueIssues.length]),
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
-      subtitle: const Text(
-        'Files retained on this phone',
+      subtitle: const FieldText(
+        UiText("Files retained on this phone"),
         style: TextStyle(fontSize: 12),
       ),
       children: [
         for (final issue in _queueIssues)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: SelectableText(issue, style: const TextStyle(fontSize: 12)),
+            child: FieldSelectableText(
+              issue,
+              style: const TextStyle(fontSize: 12),
+            ),
           ),
       ],
     ),
@@ -877,11 +939,16 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   List<Widget> _captureContent() => [
     FieldHeading(
-      eyebrow: 'Field collection',
-      title: _photo == null ? 'One muzzle at a time.' : 'Review your capture.',
+      eyebrow: UiText("Field collection"),
+      title: _photo == null
+          ? UiText("One muzzle at a time.")
+          : UiText("Review your capture."),
       subtitle: _photo == null
-          ? 'Get close. Hold steady. Use even light.'
-          : '${_metadata?["animal_id"] ?? ""} · ${_metadata?["species"] ?? ""}',
+          ? UiText("Get close. Hold steady. Use even light.")
+          : UiText('{0} · {1}', [
+              _metadata?['animal_id'] ?? '',
+              speciesLabel(_metadata?['species'] as String? ?? ''),
+            ]),
     ),
     const SizedBox(height: 16),
     _cameraCard(),
@@ -899,7 +966,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         child: OutlinedButton.icon(
           onPressed: _loadConfigs,
           icon: const Icon(Icons.refresh),
-          label: const Text('Retry backend settings'),
+          label: const FieldText(UiText("Retry backend settings")),
         ),
       ),
     if (_message != null) ...[const SizedBox(height: 16), _messageCard()],
@@ -914,8 +981,10 @@ class _CaptureScreenState extends State<CaptureScreen>
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            '${_pending.length} waiting to upload · originals stay on this phone',
+          child: FieldText(
+            UiText("{0} waiting to upload · originals stay on this phone", [
+              _pending.length,
+            ]),
             style: const TextStyle(fontSize: 12),
           ),
         ),
@@ -923,7 +992,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     ),
     TextButton(
       onPressed: _busy ? null : () => setState(() => _tab = 1),
-      child: const Text('View saved captures'),
+      child: const FieldText(UiText("View saved captures")),
     ),
   ];
 
@@ -945,11 +1014,14 @@ class _CaptureScreenState extends State<CaptureScreen>
             color: FieldColors.green,
           ),
         ),
-        title: Text(
-          '${entry.metadata["animal_id"]} · ${entry.metadata["species"]}',
+        title: FieldText(
+          UiText('{0} · {1}', [
+            entry.metadata['animal_id'],
+            speciesLabel(entry.metadata['species'] as String),
+          ]),
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
-        subtitle: Text(
+        subtitle: FieldText(
           '${entry.metadata["timestamp"]}',
           style: const TextStyle(fontSize: 12),
         ),
@@ -966,18 +1038,25 @@ class _CaptureScreenState extends State<CaptureScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${item["animal_id"]} · ${item["species"]}',
+          FieldText(
+            UiText('{0} · {1}', [
+              item['animal_id'],
+              speciesLabel(item['species'] as String),
+            ]),
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           const FieldTag(
-            'Upload acknowledged',
+            UiText("Upload acknowledged"),
             icon: Icons.cloud_done_outlined,
           ),
           const SizedBox(height: 10),
-          SelectableText(
-            'Capture: ${item["id"]}\nRequest: ${item["request_key"]}\nFile: ${item["file_path"]}',
+          FieldSelectableText(
+            UiText("Capture: {0}\nRequest: {1}\nFile: {2}", [
+              item["id"],
+              item["request_key"],
+              item["file_path"],
+            ]),
             style: const TextStyle(fontSize: 12),
           ),
         ],
@@ -987,9 +1066,9 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   List<Widget> _savedContent() => [
     const FieldHeading(
-      eyebrow: 'On this phone',
-      title: 'Saved captures.',
-      subtitle: 'Review originals, then upload when you are ready.',
+      eyebrow: UiText("On this phone"),
+      title: UiText("Saved captures."),
+      subtitle: UiText("Review originals, then upload when you are ready."),
     ),
     const SizedBox(height: 20),
     FieldCard(
@@ -997,7 +1076,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          FieldText(
             '${_pending.length}',
             style: const TextStyle(
               color: Colors.white,
@@ -1007,8 +1086,8 @@ class _CaptureScreenState extends State<CaptureScreen>
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'captures waiting to upload',
+          const FieldText(
+            UiText("captures waiting to upload"),
             style: TextStyle(color: Colors.white, fontSize: 14),
           ),
           const SizedBox(height: 16),
@@ -1021,7 +1100,7 @@ class _CaptureScreenState extends State<CaptureScreen>
             ),
             onPressed: !_busy && _pending.isNotEmpty ? _syncQueue : null,
             icon: const Icon(Icons.cloud_upload_outlined),
-            label: const Text('Upload pending captures'),
+            label: const FieldText(UiText("Upload pending captures")),
           ),
         ],
       ),
@@ -1030,7 +1109,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     OutlinedButton.icon(
       onPressed: !_busy && _queue != null ? _showReceipts : null,
       icon: const Icon(Icons.receipt_long_outlined),
-      label: const Text('Review saved upload receipts'),
+      label: const FieldText(UiText("Review saved upload receipts")),
     ),
     if (_message != null) ...[const SizedBox(height: 12), _messageCard()],
     if (_queueIssues.isNotEmpty) ...[const SizedBox(height: 12), _issuesCard()],
@@ -1040,17 +1119,19 @@ class _CaptureScreenState extends State<CaptureScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'A capture is open for review',
+            FieldText(
+              UiText("A capture is open for review"),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Finish or move to the next capture before opening another original.',
+            const FieldText(
+              UiText(
+                "Finish or move to the next capture before opening another original.",
+              ),
             ),
             TextButton(
               onPressed: () => setState(() => _tab = 0),
-              child: const Text('Return to capture'),
+              child: const FieldText(UiText("Return to capture")),
             ),
           ],
         ),
@@ -1065,23 +1146,28 @@ class _CaptureScreenState extends State<CaptureScreen>
               color: FieldColors.green,
             ),
             SizedBox(height: 12),
-            Text(
-              'Nothing waiting to upload',
+            FieldText(
+              UiText("Nothing waiting to upload"),
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: FieldColors.ink,
               ),
             ),
             SizedBox(height: 6),
-            Text(
-              'New captures appear here after passing local quality checks.',
+            FieldText(
+              UiText(
+                "New captures appear here after passing local quality checks.",
+              ),
               textAlign: TextAlign.center,
             ),
           ],
         ),
       )
     else ...[
-      Text('Pending originals', style: Theme.of(context).textTheme.titleMedium),
+      FieldText(
+        UiText("Pending originals"),
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
       const SizedBox(height: 12),
       for (final entry in _pending.skip(_queuePage * _pageSize).take(_pageSize))
         _queuedTile(entry),
@@ -1094,10 +1180,13 @@ class _CaptureScreenState extends State<CaptureScreen>
               onPressed: !_busy && _queuePage > 0
                   ? () => setState(() => _queuePage--)
                   : null,
-              child: const Text('Previous captures'),
+              child: const FieldText(UiText("Previous captures")),
             ),
-            Text(
-              'Page ${_queuePage + 1} of ${(_pending.length + _pageSize - 1) ~/ _pageSize}',
+            FieldText(
+              UiText("Page {0} of {1}", [
+                _queuePage + 1,
+                (_pending.length + _pageSize - 1) ~/ _pageSize,
+              ]),
               style: const TextStyle(fontSize: 12),
             ),
             TextButton(
@@ -1105,7 +1194,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                   !_busy && (_queuePage + 1) * _pageSize < _pending.length
                   ? () => setState(() => _queuePage++)
                   : null,
-              child: const Text('Next captures'),
+              child: const FieldText(UiText("Next captures")),
             ),
           ],
         ),
@@ -1113,10 +1202,12 @@ class _CaptureScreenState extends State<CaptureScreen>
   ];
 
   List<Widget> _toolsContent() => [
+    const FieldCard(child: LanguageSettings()),
+    const SizedBox(height: 16),
     const FieldHeading(
-      eyebrow: 'Field essentials',
-      title: 'Keep your data safe.',
-      subtitle: 'Back up your phone and check collection settings.',
+      eyebrow: UiText("Field essentials"),
+      title: UiText("Keep your data safe."),
+      subtitle: UiText("Back up your phone and check collection settings."),
     ),
     const SizedBox(height: 20),
     FieldCard(
@@ -1132,10 +1223,15 @@ class _CaptureScreenState extends State<CaptureScreen>
             child: const Icon(Icons.save_alt_rounded, color: FieldColors.green),
           ),
           const SizedBox(height: 16),
-          Text('Phone backup', style: Theme.of(context).textTheme.titleLarge),
+          FieldText(
+            UiText("Phone backup"),
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
-          const Text(
-            'Export originals, capture details and upload receipts as a verified ZIP. Save a copy outside this app.',
+          const FieldText(
+            UiText(
+              "Export originals, capture details and upload receipts as a verified ZIP. Save a copy outside this app.",
+            ),
           ),
           const SizedBox(height: 16),
           Builder(
@@ -1154,13 +1250,15 @@ class _CaptureScreenState extends State<CaptureScreen>
                       }
                     : null,
                 icon: const Icon(Icons.ios_share_rounded),
-                label: const Text('Export phone backup'),
+                label: const FieldText(UiText("Export phone backup")),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Includes all local captures/operators. Originals stay on this phone. Credentials are excluded.',
+          const FieldText(
+            UiText(
+              "Includes all local captures/operators. Originals stay on this phone. Credentials are excluded.",
+            ),
             style: TextStyle(fontSize: 12),
           ),
         ],
@@ -1171,33 +1269,33 @@ class _CaptureScreenState extends State<CaptureScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Collection settings',
+          FieldText(
+            UiText("Collection settings"),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
           FieldTag(
             _loading
-                ? 'Loading settings'
+                ? UiText("Loading settings")
                 : _configs.isEmpty
-                ? 'Setup needed'
+                ? UiText("Setup needed")
                 : _cachedSettings
-                ? 'Offline settings'
-                : 'Settings loaded',
+                ? UiText("Offline settings")
+                : UiText("Settings loaded"),
             icon: _cachedSettings
                 ? Icons.cloud_off_outlined
                 : Icons.tune_rounded,
             caution: _cachedSettings || _configs.isEmpty,
           ),
           const SizedBox(height: 14),
-          SelectableText(
-            'Operator\n${_operator.text}',
+          FieldSelectableText(
+            UiText("Operator\n{0}", [_operator.text]),
             minLines: 3,
             style: const TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 12),
-          SelectableText(
-            'Backend\n$_backend',
+          FieldSelectableText(
+            UiText("Backend\n{0}", [_backend]),
             minLines: 3,
             style: const TextStyle(fontSize: 13),
           ),
@@ -1207,11 +1305,13 @@ class _CaptureScreenState extends State<CaptureScreen>
                 ? _loadConfigs
                 : null,
             icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Refresh settings'),
+            label: const FieldText(UiText("Refresh settings")),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Connect once to load capture rules. Cached rules let you collect offline.',
+          const FieldText(
+            UiText(
+              "Connect once to load capture rules. Cached rules let you collect offline.",
+            ),
             style: TextStyle(fontSize: 12),
           ),
         ],
@@ -1222,16 +1322,18 @@ class _CaptureScreenState extends State<CaptureScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Before you head to the farm',
+          FieldText(
+            UiText("Before you head to the farm"),
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: FieldColors.ink,
             ),
           ),
           SizedBox(height: 10),
-          Text(
-            '01  Check free space and battery.\n02  Keep one muzzle visible, close and sharp.\n03  Use even light; avoid glare and deep shade.\n04  Back up before clearing or uninstalling the app.',
+          FieldText(
+            UiText(
+              "01  Check free space and battery.\n02  Keep one muzzle visible, close and sharp.\n03  Use even light; avoid glare and deep shade.\n04  Back up before clearing or uninstalling the app.",
+            ),
           ),
         ],
       ),
@@ -1261,7 +1363,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                     ? _capture
                     : null,
                 icon: const Icon(Icons.camera_alt_rounded),
-                label: const Text('Capture'),
+                label: const FieldText(UiText("Capture")),
               ),
             )
           else ...[
@@ -1275,7 +1377,9 @@ class _CaptureScreenState extends State<CaptureScreen>
                         ? Icons.cloud_done_outlined
                         : Icons.cloud_upload_outlined,
                   ),
-                  label: Text(_saved ? 'Uploaded' : 'Upload capture'),
+                  label: FieldText(
+                    _saved ? UiText("Uploaded") : UiText("Upload capture"),
+                  ),
                 ),
               ),
             if (_quality?.passed ?? false) const SizedBox(height: 8),
@@ -1284,8 +1388,10 @@ class _CaptureScreenState extends State<CaptureScreen>
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _retake,
                 icon: const Icon(Icons.add_a_photo_outlined),
-                label: Text(
-                  _queued != null ? 'Next capture (saved locally)' : 'Retake',
+                label: FieldText(
+                  _queued != null
+                      ? UiText("Next capture (saved locally)")
+                      : UiText("Retake"),
                 ),
               ),
             ),
@@ -1316,7 +1422,7 @@ class _CaptureScreenState extends State<CaptureScreen>
           ),
           const SizedBox(width: 10),
           const Expanded(
-            child: Text(
+            child: FieldText(
               'BioLivestock',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1335,7 +1441,7 @@ class _CaptureScreenState extends State<CaptureScreen>
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: FieldTag(
-              _cachedSettings ? 'Offline rules' : 'Local first',
+              _cachedSettings ? UiText("Offline rules") : UiText("Local first"),
               icon: _cachedSettings
                   ? Icons.cloud_off_outlined
                   : Icons.phone_android_rounded,
@@ -1362,8 +1468,10 @@ class _CaptureScreenState extends State<CaptureScreen>
                               onCapture: _useRegisteredAnimal,
                             )
                           : const Center(
-                              child: Text(
-                                'Load species settings and phone storage in Tools first.',
+                              child: FieldText(
+                                UiText(
+                                  "Load species settings and phone storage in Tools first.",
+                                ),
                               ),
                             ))
                     : _tab == 1
@@ -1406,29 +1514,29 @@ class _CaptureScreenState extends State<CaptureScreen>
                 setState(() => _tab = value);
               },
               destinations: [
-                const NavigationDestination(
+                const FieldDestination(
                   icon: Icon(Icons.camera_alt_outlined),
                   selectedIcon: Icon(Icons.camera_alt_rounded),
-                  label: 'Capture',
+                  label: UiText("Capture"),
                 ),
-                NavigationDestination(
+                FieldDestination(
                   icon: Badge(
                     isLabelVisible: _pending.isNotEmpty,
-                    label: Text('${_pending.length}'),
+                    label: FieldText('${_pending.length}'),
                     child: const Icon(Icons.inventory_2_outlined),
                   ),
                   selectedIcon: const Icon(Icons.inventory_2_rounded),
-                  label: 'Saved',
+                  label: UiText("Saved"),
                 ),
-                const NavigationDestination(
+                const FieldDestination(
                   icon: Icon(Icons.assignment_ind_outlined),
                   selectedIcon: Icon(Icons.assignment_ind_rounded),
-                  label: 'Animals',
+                  label: UiText("Animals"),
                 ),
-                const NavigationDestination(
+                const FieldDestination(
                   icon: Icon(Icons.tune_outlined),
                   selectedIcon: Icon(Icons.tune_rounded),
-                  label: 'Tools',
+                  label: UiText("Tools"),
                 ),
               ],
             ),

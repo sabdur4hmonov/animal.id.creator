@@ -138,35 +138,39 @@ class CaptureEnvironment {
        backup =
            backup ?? ((root, path) => compute(exportPhoneQueue, [root, path]));
 
-  factory CaptureEnvironment.native() => CaptureEnvironment(
-    api: ApiClient(),
-    backend: apiBaseUrl.replaceAll(RegExp(r'/+$'), ''),
-    operatorId: authenticatedOperatorId,
-    openQueue: () async => OfflineQueue(
-      Directory(
-        '${(await getApplicationSupportDirectory()).path}/capture_queue',
-      ),
-    ),
-    openCamera: NativeCaptureCamera.open,
-    gps: () => captureLocation(
-      NativeLocationAccess(),
-      Platform.isAndroid ? 'android_location' : 'ios_location',
-    ),
-    deviceSignals: readDeviceSignals,
-    quality: (photo, config) async => compute(checkLocalQuality, {
-      'bytes': await photo.readAsBytes(),
-      'quality': config.quality,
-    }),
-    exportDirectory: () async =>
-        Directory('${(await getTemporaryDirectory()).path}/capture_exports'),
-    share: (file, origin) async {
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          sharePositionOrigin: origin,
-          text: 'BioLivestock phone backup — save a copy outside this app.',
+  factory CaptureEnvironment.native({String Function()? backupShareText}) =>
+      CaptureEnvironment(
+        api: ApiClient(),
+        backend: apiBaseUrl.replaceAll(RegExp(r'/+$'), ''),
+        operatorId: authenticatedOperatorId,
+        openQueue: () async => OfflineQueue(
+          Directory(
+            '${(await getApplicationSupportDirectory()).path}/capture_queue',
+          ),
         ),
+        openCamera: NativeCaptureCamera.open,
+        gps: () => captureLocation(
+          NativeLocationAccess(),
+          Platform.isAndroid ? 'android_location' : 'ios_location',
+        ),
+        deviceSignals: readDeviceSignals,
+        quality: (photo, config) async => compute(checkLocalQuality, {
+          'bytes': await photo.readAsBytes(),
+          'quality': config.quality,
+        }),
+        exportDirectory: () async => Directory(
+          '${(await getTemporaryDirectory()).path}/capture_exports',
+        ),
+        share: (file, origin) async {
+          await SharePlus.instance.share(
+            ShareParams(
+              files: [XFile(file.path)],
+              sharePositionOrigin: origin,
+              text:
+                  backupShareText?.call() ??
+                  'BioLivestock phone backup — save a copy outside this app.',
+            ),
+          );
+        },
       );
-    },
-  );
 }
