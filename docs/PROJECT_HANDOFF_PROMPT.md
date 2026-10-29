@@ -10,6 +10,8 @@ Maqsad: dastlab qoramol tumshuq/noseprint suratlarini sifatli yig‘ish, keyin i
 
 Ushbu handoff 2026-10-29, Asia/Tashkent sanasida loyiha fayllari va jonli git tekshiruvi asosida tayyorlandi. Handoffdan oldingi HEAD: 3a960fc; working tree toza edi. Cached origin/main bilan remote-only/local-only: 0/22; bugun fetch/push qilinmadi, shuning uchun GitHub’dagi hozirgi holat tasdiqlangan deb aytma. Handoff hujjati keyingi documentation commit bilan qo‘shilishi mumkin; haqiqiy HEADni git orqali tekshir.
 
+Shu kunning keyingi yangilanishi: Sardorbek Agrobank/AgroVentures akseleratoriga ariza tayyorlamoqchi; solo founder, ishlaydigan telefon bor, real hayvon rasmlari hali yo‘q. Batafsil draft docs/AGROBANK_ACCELERATOR_APPLICATION.md da. Rasmiy sahifadagi 2–5 founder mezoni sabab solo eligibility aniqlashtirilishi kerak. Draft/submission/confirmed pilot bir xil narsa emas; hech kimga xabar yoki ariza yuborilmagan.
+
 Oxirgi to‘liq kod/test/build tekshiruvi 2026-10-14. 29-oktabrda kod o‘zgartirilmadi va testlar qayta bajarilmadi. Flutter SDK launcher hozir ham C:\src\flutter\bin\flutter.bat manzilida mavjud. APKning joriy SHA-256 qiymati quyidagi tarixiy build bilan mosligi 29-oktabrda qayta tekshirildi.
 
 2. HAR SESSIYADA ISHLASH QOIDALARI
@@ -183,7 +185,7 @@ Audit fixes ichida: original-pixel lighting histograms, uncertain COMMIT evidenc
 
 Data-independent MVP, requested groundwork, topilgan audit xatolari, dizayn, permanent numbering/ownership/lifecycle va multilingual UI bajarilgan. Bu besh bosqichning hammasi yoki production biometrics tayyor degani emas.
 
-Oldingi oxirgi xabarga ko‘ra Sardorbekning suv tekkan test telefoni ta’mirda, physical testing muddatsiz blocked edi. Avvalgi USB device ID23117RA68G faqat tarixiy ma’lumot; qaytsa adb devices bilan joriy qurilmani tekshir. 29-oktabrda telefon tuzalgani haqida yangi tasdiq yo‘q. Real reviewed cattle identity/session dataset, trained muzzle checkpoint, genuine/attack videos, measured weights/calibrated anatomy va market data ham hali taqdim etilgani tasdiqlanmagan. Sardorbek rasmlar yig‘ayotganini aytgan; tayyor deb taxmin qilma.
+Oldingi telefon ta’mirda bo‘lgani tarixiy blocker. **29-oktabrdagi eng yangi javob: ishlaydigan telefon bor**, ammo native end-to-end tekshiruvi hali o‘tgan deb aytilmaydi. Avvalgi USB device ID23117RA68G tarixiy; adb devices bilan joriy qurilmani tekshir. Sardorbek real hayvon suratlari hali yo‘qligini ham aniq aytdi; kerak bo‘lsa hayvonlarga kirish topishga harakat qilishi mumkin. Kelishilgan ferma hamkori yoki dataset bor deb taxmin qilma. Trained muzzle checkpoint, genuine/attack videos, measured weights/calibrated anatomy va market data ham hali tasdiqlanmagan.
 
 Davom etish tartibi:
 A) Live repo/progress/config/statusni o‘qi. Yangi talab yoki yangi data/phone kelgan-kelmaganini mavjud fayllardan tekshir. Faqat tashqi input kerak bo‘lib haqiqatan to‘xtasang Sardorbekdan so‘ra.
