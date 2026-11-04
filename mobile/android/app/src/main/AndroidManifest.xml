@@ -5,12 +5,16 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-feature android:name="android.hardware.camera.any" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.ar" android:required="false" />
+    <queries><package android:name="com.google.ar.core" /></queries>
     <application
         android:requestLegacyExternalStorage="true"
         android:label="BioLivestock Capture"
         android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+        <activity android:name=".ArMeasureActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

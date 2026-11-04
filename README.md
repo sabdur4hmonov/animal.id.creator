@@ -1,5 +1,21 @@
 # BioLivestock AI — Phase 1
 
+Fresh-install offline field collection and local Android AR measurement: follow
+[the Uzbek farm guide](docs/OFFLINE_FIELD_GUIDE.md). No API token/server is required
+for provisional L- animals. AR defaults to six-point length/depth/width with an
+explicit uncalibrated Ramanujan ellipse girth; ordered closed 3D contours remain a
+separate mode. Repeatability gates, both formula results, versioned local market
+prices and optional minimum-10-distinct-animal scale correction are available.
+Real phone/animal accuracy remains unverified; AR support must be checked on-device.
+The existing authenticated backend/manual upload and calibrated_3d API stay intact.
+
+Native AR rendering is original Kotlin/OpenGL using pinned official
+`com.google.ar:core:1.54.0`; no unlicensed renderer was copied. Google's
+[official sample source license](https://github.com/google-ar/arcore-android-sdk/blob/v1.54.0/LICENSE)
+is Apache-2.0, with **separate binary/AAR terms** in
+[ARCore Additional Terms](https://developers.google.com/ar/develop/terms).
+See [NOTICE](NOTICE) for sources/license distinctions. No Cloud/Geospatial service.
+
 Cattle data collection API: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. Authenticated registration/status controls, exact-image reuse review and immutable scan provenance are available. Offline cattle embedding/matching experiments are in `research/`; they do not provide validated production identity decisions. Cloud deployment and CI/CD are not implemented.
 
 ## Run the backend

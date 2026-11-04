@@ -5,6 +5,21 @@ BSD-3-Clause; complete notice and disclaimer: docs/licenses/gal-2.3.3.txt.
 https://pub.dev/packages/gal
 Used only for exporting captured-image copies to the photo album; no picker/import.
 
+ARCore Android SDK runtime com.google.ar:core:1.54.0 (Google).
+Official repository license checked 2026-11-04:
+https://github.com/google-ar/arcore-android-sdk/blob/v1.54.0/LICENSE
+Google's non-binary sample source is Apache-2.0; its prebuilt AAR/binary runtime
+is covered separately by ARCore Additional Terms:
+https://developers.google.com/ar/develop/terms
+Do not describe the binary as Apache-2.0 or this notice as a license waiver.
+Official Apache-2.0 hello_ar_kotlin sample/API documentation was consulted:
+https://github.com/google-ar/arcore-android-sdk/tree/v1.54.0/samples/hello_ar_kotlin
+https://developers.google.com/ar/develop/java/depth/developer-guide
+The local OpenGL camera/point renderer is original implementation, with no sample
+helper/asset or unlicensed third-party renderer copied. No Cloud/Geospatial API.
+Version 1.54.0 is explicitly pinned for the existing Android build toolchain;
+upgrading to versions that require newer Android API levels is a separate change.
+
 Flutter's generated application license registry also retains dependency licenses.
 Other existing dependencies retain their own licenses; this file does not relicense
 the repository or declare every dependency permissively licensed.

@@ -5,10 +5,40 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.os.Build
 import java.io.File
+import android.content.Intent
+import com.google.ar.core.ArCoreApk
+import com.google.ar.core.Session
+import com.google.ar.core.Config
 
 class MainActivity : FlutterActivity() {
+    private var arResult: MethodChannel.Result? = null
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "ai.biolivestock/ar_measurement")
+            .setMethodCallHandler { call, result ->
+                when(call.method) {
+                    "probe" -> {
+                        val availability=ArCoreApk.getInstance().checkAvailability(this)
+                        var depth: Boolean?=null
+                        if(availability==ArCoreApk.Availability.SUPPORTED_INSTALLED) {
+                            try { val candidate=Session(this);try { depth=candidate.isDepthModeSupported(Config.DepthMode.AUTOMATIC) } finally { candidate.close() } } catch(_: Exception) { }
+                        }
+                        val services=try { packageManager.getPackageInfo("com.google.ar.core",0).versionName } catch(_: Exception){null}
+                        result.success(mapOf("model" to Build.MODEL,"android" to Build.VERSION.RELEASE,
+                            "availability" to availability.name,"depth" to depth,"ar_services" to services))
+                    }
+                    "measure" -> {
+                        if(arResult!=null) result.error("busy","AR already running",null)
+                        else {
+                            arResult=result
+                            try { startActivityForResult(Intent(this,ArMeasureActivity::class.java)
+                                .putExtra("spec",call.arguments as String),6412) }
+                            catch(e: Exception){arResult=null;result.error("session_unavailable",e.javaClass.simpleName,null)}
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "ai.biolivestock/device_signals")
             .setMethodCallHandler { call, result ->
                 if (call.method != "readSignals") {
@@ -29,5 +59,23 @@ class MainActivity : FlutterActivity() {
                         "is_rooted" to rooted, "is_emulator" to emulator))
                 }
             }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode,resultCode,data)
+        if(requestCode==6412) {
+            val result=arResult;arResult=null
+            val path=data?.getStringExtra("measurement_file")
+            if(path!=null) {
+                try {
+                    val file=File(path).canonicalFile
+                    check(file.parentFile==cacheDir.canonicalFile && file.name.startsWith("ar-result-") && file.length()<=20000000)
+                    val payload=file.readText()
+                    if(resultCode==RESULT_OK)result?.success(payload)
+                    else result?.error(data?.getStringExtra("error")?:"interrupted","AR attempt not completed",payload)
+                    file.delete()
+                }catch(e:Exception){result?.error("invalid_result",e.javaClass.simpleName,null)}
+            } else result?.error(data?.getStringExtra("error")?:"interrupted","AR attempt not completed",data?.getStringExtra("partial"))
+        }
     }
 }

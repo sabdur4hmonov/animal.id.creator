@@ -53,6 +53,99 @@ permission va API29 legacy album access; Android30+ own MediaStore insert uchun
 read-media/gallery-import permission so‘ralmaydi. iOS album uchun Photos matnlari
 bor, lekin iOS native build/runtime Windowsda tekshirilmagan.
 
-AR va yakuniy APK/verifikatsiya holati keyingi P1 milestone va root PROGRESS.md da
-qayd qilinadi. Ulangan telefon bo‘lmasa host testlar native airplane/gallery/AR
-sinov o‘rnini bosmaydi.
+## P1: offlayn AR o‘lchash va vazn — amaliy tartib
+
+**Holat:** kod va sun’iy geometriya sinovlari mavjud; haqiqiy telefon/animal
+aniqligi tekshirilmagan. Bu avtomatik anatomik nuqta topuvchi model emas:
+ekranda nuqtalarni siz bosasiz, ARCore metrik masofani beradi, app hisoblaydi.
+
+### Uydan chiqishdan oldin
+
+1. APKni USB orqali telefonga ko‘chiring va ochib o‘rnating (yoki pastdagi adb).
+   Oldingi appni o‘chirmang, Clear data qilmang; yangilab o‘rnating.
+2. Internet borida kamera ruxsatini bering, Google Play Services for ARni
+   o‘rnating/yangilang. Vaqtinchalik hayvonni tanlab **AR vazn va qiymat → AR
+   mosligini tekshirish**. Model, Android, availability, Depth va AR service
+   versiyasi ko‘rinadi. `UNKNOWN` — mos emas degani emas; qayta tekshiring.
+   `UNSUPPORTED_DEVICE_NOT_CAPABLE` bo‘lsa AR ishlamaydi, surat yig‘ish ishlaydi.
+   Depth yo‘q bo‘lsa haqiqiy feature-point confidence bilan cheklangan yo‘l bor;
+   ishonchli nuqta bo‘lmasa hisob berilmaydi. Fon/polni mol o‘rniga bosmang.
+3. Samolyot rejimini yoqing. Operator, yangi lokal hayvon, olti rasm, albom,
+   qayta ochish, AR va ZIP chiqarishni oldindan sinang. Quyidagi host sinovlari
+   telefonning shu amallarini bajargan degani emas.
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices -l
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r 'D:\Coding projects\moliddetector\mobile\build\app\outputs\flutter-apk\app-release.apk'
+```
+
+### Har katta mol uchun
+
+1. Birka/laqabga mos **ayni L- yorliqni** tanlang. Bir molga qayta-qayta yangi
+   yorliq bermang: kalibratsiya turli yorliqlarni turli hayvon deb hisoblaydi.
+2. Olti tumshuq rasmini yuqoridagi P0 tartibida oling. **AR vazn va qiymat**ni
+   oching. Katta qoramol ekanini tasdiqlang, sut/go‘sht zot turini tanlang.
+3. Asosiy **Tez** rejim: kamera kuzatuvi tayyor bo‘lgach:
+   - 1 yelka bo‘g‘imi → 2 quymich do‘ngi: tana uzunligi;
+   - 3 old oyoqlar ortidagi yag‘rin → 4 o‘sha kesim pastidagi to‘sh: chuqurlik;
+   - 5 oldindan/tepadan o‘sha kesim chap yoni → 6 o‘ng yoni: kenglik.
+   Yashil belgilar qabul qilingan metrik nuqtalar. **Tugatish**ni bosing.
+   Ko‘krak aylanasi Ramanujan II ellips perimetri bilan taxmin qilinadi;
+   bu **taxminiy girth, kalibrlanmagan**, lenta o‘lchovi yoki kafolat emas.
+4. Ixtiyoriy shkala tekshiruvi: boshlashdan oldin o‘lchami aniq buyumning cm
+   uzunligini yozing (A4ning uzun tomoni 29.7 cm, bukilmagan/tekis bo‘lsin).
+   Avval uning ikki uchini bosing. Ma’lum qiymatni app o‘zi taxmin qilmaydi.
+   Xato 5% dan katta bo‘lsa to‘plam rad qilinadi; bu fizik reference hisobga
+   kiritilgan degani emas, ARCore metri alohida shkala manbasi.
+5. Mol bir joyda tinch tursin, yordamchi boshqarsin. Qimirlasa bekor qilib
+   boshidan oling. App nafas/mikroharakatni o‘lchamaydi. Tracking yo‘qolsa,
+   anchor 3 cm dan ko‘p siljisa yoki 180 s oshsa qayta boshlash kerak.
+   Nuqta confidence <0.8 bo‘lsa qabul qilinmaydi. Xavfli joyga kirmang.
+6. Bir to‘liq o‘lchovni boshidan **2 marta**, kerak bo‘lsa **3 marta** bajaring.
+   Rejim/zot bir xil qolsin. Farq = (max−min)/o‘rtacha ×100; uzunlik, aylana,
+   tez rejim chuqurlik/kengligi va ikkala formula vaznining eng katta farqi
+   olinadi. Chegara 5%; oshsa eski dalillarni saqlagan holda **yangi to‘plam**
+   boshlang. Bir yaxshi urinishdan yakuniy baho chiqmaydi.
+7. Go‘sht narxini **tana go‘shti uchun butun so‘m/kg**, haqiqiy kuzatilgan sana
+   `YYYY-MM-DD` va bozor/manba izohi bilan kiriting. Xohlasangiz tirik vazn
+   narxini alohida kiriting. Boneless go‘sht narxini tana narxi deb kiritmang.
+   **Narx versiyasini saqlash**, keyin **Qiymat nusxasini saqlash**.
+   Trukhanovsky va Schoorl alohida natija; tana go‘shti 50–58% taxmin oralig‘i.
+   Bu statistik ishonch oralig‘i emas, haqiqiy bozor narxini app topmaydi.
+
+**Aniq/kontur rejim** alohida variant: uzunlikning ikki nuqtasi, so‘ng oldingi
+oyoqlar ortidagi bitta ko‘krak kesimi bo‘ylab tartibli kamida 8 (ko‘pi 128)
+nuqta. Birinchi nuqtani oxirida takrorlamang, yopilish avtomatik. Kontur tekis,
+oddiy, to‘liq bo‘lsin; kesishgan, qayta ustidan ketgan yoki chiziq kontur rad
+qilinadi. Molning tagiga kirmang: xavfsiz to‘liq kontur olinmasa tez rejimdan
+foydalaning. “Aniq rejim” nomi real aniqlik kafolati emas. Rejimlarni aralashtirmang.
+
+### Tarozi va lokal korreksiya
+
+- Haqiqiy tarozida tortgan bo‘lsangiz kg+sana yozib saqlang; bu ixtiyoriy.
+  Sana ARdan ko‘pi bilan 7 kun farq qilishi mumkin, kelajak sana qabul qilinmaydi.
+  Vazn o‘zgargan bo‘lsa yaqin sananing o‘zida qayta AR oling.
+- **Lokal korreksiyani hisoblash**: kamida 10 turli hayvon, ayni species/rejim/
+  zot/formula/config hash guruhi kerak. Bir hayvonning ko‘p rasmlari Nni oshirmaydi;
+  eng oxirgi tortish versiyasi olinadi. Median haqiqiy/tuzatilmagan nisbat
+  saqlanadi. N<10 da tugma hisob/namuna sonini ko‘rsatadi, korreksiya qo‘llanmaydi.
+- N yetarli bo‘lsa yoqish/o‘chirish mumkin; oldingi va keyingi vazn hamda narx
+  birga ko‘rinadi. MAPE shu o‘qitilgan namunalarning xatosi, mustaqil test emas.
+  Har yangi hisob alohida revision, raw dalillar/narx/tortish o‘zgartirilmaydi.
+  Yangi tortish yoki qayta kalibratsiya joriy korreksiyani o‘chiradi; qayta yoqing.
+  Config o‘zgarsa eski koeffitsient boshqa guruhga avtomatik ko‘chmaydi.
+
+### Kun oxiri
+
+Hayvonning o‘lchov tarixida nuqtalar, segmentlar, confidence/tracking, shkala,
+vaqt/config, ikkala formula va 1–2 JPEG screenshot raw JSONda saqlanadi.
+Yarim/bekor urinish dalillari ham qoladi; process majburan o‘ldirilgan bo‘lsa
+hali tugallanmagan native urinishni tiklash kafolatlanmaydi, oldin saqlanganlar qoladi.
+ZIPga `ledger/measurements.csv`, `ledger/prices.csv` ham qo‘shiladi; CSV raw
+`queue/field-measurement-*.json` yo‘lini beradi. JPEGlar raw JSONdagi
+`raw.screenshots_jpeg_base64` ichida, CSVga uzun rasm matni ko‘chirilmaydi.
+ZIPni **telefondan tashqariga** ko‘chiring va yuqoridagi verify bilan tekshiring.
+
+Texnik manba va litsenziyalar: root NOTICE va README. ARCore 1.54.0 rasmiy API,
+original lokal OpenGL renderer; ruxsatsiz GitHub renderer kodi olinmagan.
+Google sample source Apache-2.0, runtime AAR esa alohida ARCore Additional Terms.

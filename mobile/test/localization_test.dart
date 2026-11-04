@@ -114,6 +114,17 @@ void main() {
           );
         }
       }
+      final arSource = await File('lib/ar_screen.dart').readAsString();
+      for (final match in RegExp(
+        r'''\b(?:t|input|button)\(\s*(['"])(.*?)\1''',
+        dotAll: true,
+      ).allMatches(arSource)) {
+        expect(
+          english.containsKey(match[2]!),
+          isTrue,
+          reason: 'AR template: ${match[2]}',
+        );
+      }
     },
   );
 

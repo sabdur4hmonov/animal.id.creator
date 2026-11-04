@@ -11,6 +11,7 @@ import 'animal_registry.dart';
 import 'registry_journal.dart';
 import 'animal_id.dart';
 import 'capture_environment.dart';
+import 'ar_screen.dart';
 import 'offline_queue.dart';
 import 'quality_control.dart';
 import 'species.dart';
@@ -67,6 +68,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   bool _saved = false;
   bool _active = true;
   int _cameraGeneration = 0;
+  bool _measuringAr = false;
 
   void _showMessage(Object message, {bool error = false}) {
     setState(() {
@@ -364,6 +366,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   }
 
   Future<void> _openCamera() async {
+    if (_measuringAr) return;
     final generation = ++_cameraGeneration;
     CaptureCamera? candidate;
     try {
@@ -398,7 +401,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       if (mounted) {
         setState(() {});
       }
-    } else if (_camera == null) {
+    } else if (_camera == null && !_measuringAr) {
       unawaited(_openCamera());
     }
   }
@@ -845,6 +848,28 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
   }
 
+  Future<void> _openAr() async {
+    if (_busy || _photo != null || _localAnimal == null || _fieldStore == null) {
+      return;
+    }
+    _measuringAr = true;
+    ++_cameraGeneration;
+    final camera = _camera;
+    _camera = null;
+    try {
+      await camera?.dispose();
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ArScreen(store: _fieldStore!, animal: _localAnimal!),
+        ),
+      );
+    } finally {
+      _measuringAr = false;
+      if (mounted && _active) await _openCamera();
+    }
+  }
+
   Widget _fieldPanel() => FieldCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -861,6 +886,10 @@ class _CaptureScreenState extends State<CaptureScreen>
           ),
         ),
         if (_localAnimal != null) ...[
+          OutlinedButton(
+            onPressed: _busy || _photo != null ? null : _openAr,
+            child: const FieldText(UiText('AR weight and valuation')),
+          ),
           SelectableText(
             '${_localAnimal!['label']} · ${_localAnimal!['tag']}\n${_localAnimal!['notes']}',
           ),
