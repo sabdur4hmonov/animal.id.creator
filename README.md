@@ -31,6 +31,16 @@ Images persist in the repository's ignored `data/` folder. PostgreSQL persists i
 
 ## Run the mobile app
 
+**Offline farm collection (2026-11-04):** a fresh token-free install now includes
+verified YAML defaults. Set an offline operator in Tools, create a clearly
+temporary `L-…` animal, record six muzzle views and export originals plus CSV
+ledgers. Gallery copies go to the BioLivestock album; originals survive permission
+failure. Provisional labels never allocate MAA IDs or auto-upload. Existing
+authenticated server-ID collection remains available. See
+[offline field instructions](docs/OFFLINE_FIELD_GUIDE.md). The online commands below
+remain for authenticated backend operations; an initial connection is no longer
+required for local provisional collection.
+
 Install Flutter 3.47.5 (Dart 3.13.4), Android Studio/Android SDK or Xcode for iOS, and confirm `flutter doctor`. The scaffold was generated for Android and iOS; gallery selection and desktop/web capture are intentionally absent. Android requires API 24+ and iOS 13+.
 
 ```powershell

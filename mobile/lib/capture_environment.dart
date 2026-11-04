@@ -11,6 +11,7 @@ import 'offline_queue.dart';
 import 'quality_control.dart';
 import 'queue_backup.dart';
 import 'species.dart';
+import 'package:gal/gal.dart';
 
 abstract class CaptureCamera {
   bool get initialized;
@@ -25,7 +26,9 @@ class NativeCaptureCamera implements CaptureCamera {
   NativeCaptureCamera(this.controller);
   static Future<CaptureCamera> open() async {
     final cameras = await availableCameras();
-    if (cameras.isEmpty) throw StateError('No camera is available');
+    if (cameras.isEmpty) {
+      throw StateError('No camera is available');
+    }
     final rear = cameras.where(
       (camera) => camera.lensDirection == CameraLensDirection.back,
     );
@@ -83,7 +86,9 @@ Future<Map<String, dynamic>?> captureLocation(
   String source,
 ) async {
   try {
-    if (!await access.enabled()) return null;
+    if (!await access.enabled()) {
+      return null;
+    }
     var permission = await access.check();
     if (permission == LocationPermission.denied) {
       permission = await access.request();
@@ -121,6 +126,8 @@ class CaptureEnvironment {
   final Future<void> Function(File, Rect) share;
   final DateTime Function() now;
   final Future<Map<String, dynamic>> Function(String, String) backup;
+  final bool fieldTools;
+  final Future<void> Function(String, String)? saveGallery;
   CaptureEnvironment({
     required this.api,
     required this.backend,
@@ -134,12 +141,25 @@ class CaptureEnvironment {
     required this.share,
     DateTime Function()? now,
     Future<Map<String, dynamic>> Function(String, String)? backup,
+    this.fieldTools = false,
+    this.saveGallery,
   }) : now = now ?? DateTime.now,
        backup =
            backup ?? ((root, path) => compute(exportPhoneQueue, [root, path]));
 
   factory CaptureEnvironment.native({String Function()? backupShareText}) =>
       CaptureEnvironment(
+        fieldTools: true,
+        saveGallery: (path, name) async {
+          if (!await Gal.hasAccess(toAlbum: true)) {
+            await Gal.requestAccess(toAlbum: true);
+          }
+          await Gal.putImageBytes(
+            await File(path).readAsBytes(),
+            album: 'BioLivestock',
+            name: name,
+          );
+        },
         api: ApiClient(),
         backend: apiBaseUrl.replaceAll(RegExp(r'/+$'), ''),
         operatorId: authenticatedOperatorId,

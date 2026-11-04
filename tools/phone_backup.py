@@ -9,7 +9,9 @@ import stat
 from pathlib import Path
 from zipfile import ZipFile
 
-NAME = re.compile(r"^queue/(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt)-[a-f0-9]{32}\.json)(?:\.next)?$")
+NAME = re.compile(
+    r"^(?:queue/(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt|field-animal|field-scan|field-gallery|field-measurement|field-price)-[a-f0-9]{32}\.json)(?:\.next)?|ledger/(?:roster|scans|measurements|prices)\.csv)$"
+)
 
 
 def verify(bundle: Path) -> dict:
@@ -21,8 +23,12 @@ def verify(bundle: Path) -> dict:
         if archive.getinfo("manifest.json").file_size > 8 * 1024 * 1024:
             raise ValueError("Manifest exceeds size limit")
         manifest = json.loads(archive.read("manifest.json"))
-        if (not isinstance(manifest, dict) or manifest.get("version") != 1 or manifest.get("format") != "biolivestock-phone-queue"
-                or not isinstance(manifest.get("files"), dict)):
+        if (
+            not isinstance(manifest, dict)
+            or manifest.get("version") != 1
+            or manifest.get("format") != "biolivestock-phone-queue"
+            or not isinstance(manifest.get("files"), dict)
+        ):
             raise ValueError("Unsupported phone backup")
         files = manifest["files"]
         if set(names) != set(files) | {"manifest.json"}:
@@ -34,9 +40,13 @@ def verify(bundle: Path) -> dict:
             if stat.S_ISLNK(info.external_attr >> 16) or info.is_dir():
                 raise ValueError("Backup links/directories are unsupported")
             size, checksum = expected.get("bytes"), expected.get("sha256")
-            if (type(size) is not int or not 0 <= size <= 128 * 1024 * 1024
-                    or info.file_size != size or not isinstance(checksum, str)
-                    or not re.fullmatch(r"[a-f0-9]{64}", checksum)):
+            if (
+                type(size) is not int
+                or not 0 <= size <= 128 * 1024 * 1024
+                or info.file_size != size
+                or not isinstance(checksum, str)
+                or not re.fullmatch(r"[a-f0-9]{64}", checksum)
+            ):
                 raise ValueError(f"Invalid file manifest: {name}")
             with archive.open(name) as source:
                 actual = hashlib.file_digest(source, "sha256").hexdigest()
@@ -63,7 +73,9 @@ def extract(bundle: Path, destination: Path) -> dict:
                 with target.open("rb") as recovered:
                     checksum = hashlib.file_digest(recovered, "sha256").hexdigest()
                 if checksum != manifest["files"][name]["sha256"]:
-                    raise ValueError("Recovered file differs; partial recovery retained for inspection")
+                    raise ValueError(
+                        "Recovered file differs; partial recovery retained for inspection"
+                    )
     return manifest
 
 
@@ -76,8 +88,14 @@ def main():
         if name == "extract":
             command.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args()
-    manifest = verify(args.bundle) if args.command == "verify" else extract(args.bundle, args.destination)
-    print(f"Verified {len(manifest['files'])} phone evidence files; no live queue/database changed")
+    manifest = (
+        verify(args.bundle)
+        if args.command == "verify"
+        else extract(args.bundle, args.destination)
+    )
+    print(
+        f"Verified {len(manifest['files'])} phone evidence files; no live queue/database changed"
+    )
 
 
 if __name__ == "__main__":

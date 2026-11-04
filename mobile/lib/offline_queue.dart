@@ -175,6 +175,11 @@ class OfflineQueue {
     QueuedCapture entry,
     QueueUploader upload,
   ) async {
+    if (entry.backend == 'local:biolivestock:provisional') {
+      throw StateError(
+        'Provisional captures require reviewed registration; automatic sync is not implemented',
+      );
+    }
     final response = await upload(entry.imagePath, entry.metadata, entry.key);
     entry.journal.receipt(response);
     await _atomicJson('receipt-${entry.key}.json', response);

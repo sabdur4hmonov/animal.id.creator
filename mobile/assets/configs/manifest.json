@@ -1,0 +1,18 @@
+{
+    "species_configs-cattle.yaml": {
+        "source": "species_configs/cattle.yaml",
+        "sha256": "453a5fe63581f10f934cee154eeeae00731313ec02c2588572385ae8d0895c5f"
+    },
+    "species_configs-sheep.yaml": {
+        "source": "species_configs/sheep.yaml",
+        "sha256": "8ca7c77d314979c032ad99726b9e9b96f1fa7f43ea61ec522e4210a4acb048ce"
+    },
+    "business_configs-cattle.yaml": {
+        "source": "business_configs/cattle.yaml",
+        "sha256": "b60bd75ebdf4daff2f0653abb95dd133ef8c08ef57e16899a09b134f0adbe2a3"
+    },
+    "business_configs-sheep.yaml": {
+        "source": "business_configs/sheep.yaml",
+        "sha256": "2c463cb366b582da0b8798c211889250b6cfbcd734f5a80e0533ea821ac26fba"
+    }
+}

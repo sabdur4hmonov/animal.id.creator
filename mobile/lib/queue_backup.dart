@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:crypto/crypto.dart';
+import 'field_store.dart';
 
 final _evidenceName = RegExp(
-  r'^(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt)-[a-f0-9]{32}\.json)(?:\.next)?$',
+  r'^(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt|field-animal|field-scan|field-gallery|field-measurement|field-price)-[a-f0-9]{32}\.json)(?:\.next)?$',
 );
 
 Future<Map<String, dynamic>> exportPhoneQueue(List<String> paths) =>
@@ -94,6 +95,15 @@ Future<Map<String, dynamic>> createPhoneBackup(
       };
       await encoder.addFile(file, name, ZipFileEncoder.store);
     }
+    for (final item in (await fieldLedgerFiles(root)).entries) {
+      hashes['ledger/${item.key}'] = {
+        'bytes': item.value.length,
+        'sha256': sha256.convert(item.value).toString(),
+      };
+      encoder.addArchiveFile(
+        ArchiveFile('ledger/${item.key}', item.value.length, item.value),
+      );
+    }
     final bytes = utf8.encode(jsonEncode(manifest));
     // Small manifest only; original photos stream from disk through the ZIP encoder.
     encoder.addArchiveFile(ArchiveFile('manifest.json', bytes.length, bytes));
@@ -147,8 +157,14 @@ Future<Map<String, dynamic>> verifyPhoneBackup(String filename) async {
     for (final file in archive.files) {
       if (file.name == 'manifest.json') continue;
       final name = file.name;
-      if (!name.startsWith('queue/') ||
-          !_evidenceName.hasMatch(name.substring(6)) ||
+      if (!(name.startsWith('queue/') &&
+                  _evidenceName.hasMatch(name.substring(6)) ||
+              {
+                'ledger/roster.csv',
+                'ledger/scans.csv',
+                'ledger/measurements.csv',
+                'ledger/prices.csv',
+              }.contains(name)) ||
           !file.isFile) {
         throw const FormatException('Unsafe backup entry');
       }

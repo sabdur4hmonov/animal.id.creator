@@ -1,0 +1,10 @@
+BioLivestock AI third-party notices
+
+gal 2.3.3 — Copyright (c) 2023 Midori Design Studio by @natsuk4ze.
+BSD-3-Clause; complete notice and disclaimer: docs/licenses/gal-2.3.3.txt.
+https://pub.dev/packages/gal
+Used only for exporting captured-image copies to the photo album; no picker/import.
+
+Flutter's generated application license registry also retains dependency licenses.
+Other existing dependencies retain their own licenses; this file does not relicense
+the repository or declare every dependency permissively licensed.

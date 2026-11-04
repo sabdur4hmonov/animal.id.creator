@@ -1,7 +1,34 @@
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Every APK bundles byte-identical authoritative YAML, without requiring Python on the build host.
+val syncOfflineConfigs by tasks.registering {
+    val repository = rootProject.projectDir.parentFile.parentFile
+    val destination = file("../../assets/configs")
+    inputs.files(fileTree(repository.resolve("species_configs")), fileTree(repository.resolve("business_configs")))
+    outputs.dir(destination)
+    doLast {
+        destination.mkdirs()
+        val manifest = linkedMapOf<String, Map<String, String>>()
+        for (folder in listOf("species_configs", "business_configs")) {
+            repository.resolve(folder).listFiles { f -> f.extension == "yaml" }!!.sortedBy { it.name }.forEach { source ->
+                val bytes = source.readBytes()
+                val name = "$folder-${source.name}"
+                destination.resolve(name).writeBytes(bytes)
+                val digest = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+                manifest[name] = mapOf("source" to "$folder/${source.name}", "sha256" to digest)
+            }
+        }
+        destination.resolve("manifest.json").writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)) + "\n")
+    }
+}
+tasks.configureEach {
+    if (name.startsWith("compileFlutterBuild")) dependsOn(syncOfflineConfigs)
 }
 
 android {

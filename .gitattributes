@@ -1,3 +1,6 @@
 backend/Dockerfile text eol=lf
 backend/*.lock text eol=lf
 backend/requirements*.txt text eol=lf
+species_configs/*.yaml text eol=lf
+business_configs/*.yaml text eol=lf
+mobile/assets/configs/*.yaml text eol=lf

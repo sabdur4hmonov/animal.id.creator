@@ -14,6 +14,9 @@ import 'capture_environment.dart';
 import 'offline_queue.dart';
 import 'quality_control.dart';
 import 'species.dart';
+import 'bundled_configs.dart';
+import 'field_store.dart';
+import 'field_widgets.dart';
 
 class CaptureScreen extends StatefulWidget {
   final CaptureEnvironment? environment;
@@ -39,6 +42,18 @@ class _CaptureScreenState extends State<CaptureScreen>
   QueuedCapture? _queued;
   List<QueuedCapture> _pending = [];
   List<Object> _queueIssues = [];
+  FieldStore? _fieldStore;
+  Map<String, dynamic>? _localAnimal;
+  List<Map<String, dynamic>> _localAnimals = [];
+  Set<String> _completedViews = {};
+  String _view = fieldViews.first;
+  String _session = '';
+  bool _bundledSettings = false;
+  String get _captureBackend =>
+      _localAnimal == null ? _backend : provisionalBackend;
+  String get _captureOperator => _localAnimal == null
+      ? _environment.operatorId
+      : (_fieldStore?.operatorId ?? '');
   String get _backend => _environment.backend;
   int _queuePage = 0;
   int _tab = 0;
@@ -80,8 +95,20 @@ class _CaptureScreenState extends State<CaptureScreen>
     setState(() => _loading = true);
     try {
       _queue ??= await _environment.openQueue();
+      if (_environment.fieldTools && _fieldStore == null) {
+        _fieldStore = FieldStore(_queue!.root);
+        await _fieldStore!.initialize();
+        _localAnimals = await _fieldStore!.records('animal');
+        _session = fieldSession(_environment.now());
+        if (_localAnimals.isNotEmpty && _animal.text.isEmpty) {
+          _localAnimal = _localAnimals.last;
+          _animal.text = _localAnimal!['label'] as String;
+          _operator.text = _fieldStore!.operatorId;
+        }
+      }
       List<SpeciesConfig> configs;
       var cached = false;
+      var bundled = false;
       try {
         configs = await _api.loadSpecies();
         await _queue!.cacheSettings(
@@ -92,8 +119,11 @@ class _CaptureScreenState extends State<CaptureScreen>
         configs = (await _queue!.cachedSettings(
           _backend,
         )).map(SpeciesConfig.fromJson).where((item) => item.enabled).toList();
-        // Without cached rules, retain the original auth/network error for useful guidance.
-        if (configs.isEmpty) rethrow;
+        if (configs.isEmpty) {
+          if (!_environment.fieldTools) rethrow;
+          configs = await bundledSpecies();
+          bundled = true;
+        }
         cached = true;
       }
       if (configs.isEmpty) {
@@ -104,6 +134,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         _configs = configs;
         _selected = configs.first;
         _cachedSettings = cached;
+        _bundledSettings = bundled;
         _messageError = false;
         _message = cached
             ? UiText(
@@ -123,14 +154,20 @@ class _CaptureScreenState extends State<CaptureScreen>
         );
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   Future<void> _refreshQueue() async {
     if (_queue == null) return;
     try {
-      final pending = await _queue!.pending(_backend, _environment.operatorId);
+      final pending = await _queue!.pending(_captureBackend, _captureOperator);
+      if (_fieldStore != null) {
+        _completedViews = await _fieldStore!.completed(_animal.text, _session);
+        _localAnimals = await _fieldStore!.records('animal');
+      }
       if (mounted) {
         setState(() {
           _pending = pending;
@@ -155,6 +192,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   }
 
   Future<void> _syncQueue() async {
+    if (_localAnimal != null) return;
     if (_busy || _queue == null) return;
     setState(() => _busy = true);
     try {
@@ -186,7 +224,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       }
     } finally {
       await _refreshQueue();
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -290,7 +330,9 @@ class _CaptureScreenState extends State<CaptureScreen>
         );
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -298,6 +340,10 @@ class _CaptureScreenState extends State<CaptureScreen>
     if (_busy || _photo != null) return;
     final quality = entry.journal.quality;
     _animal.text = entry.metadata['animal_id'] as String;
+    _localAnimal = entry.backend == provisionalBackend
+        ? _localAnimals.firstWhere((a) => a['label'] == _animal.text)
+        : null;
+    _operator.text = entry.metadata['operator_id'] as String;
     setState(() {
       _tab = 0;
       _queued = entry;
@@ -349,7 +395,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       final old = _camera;
       _camera = null;
       unawaited(old?.dispose());
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } else if (_camera == null) {
       unawaited(_openCamera());
     }
@@ -374,6 +422,13 @@ class _CaptureScreenState extends State<CaptureScreen>
       }
       return;
     }
+    if (_localAnimal != null && !validFieldOperator(_captureOperator)) {
+      _showMessage(
+        const UiText('Set an offline operator ID in Tools first.'),
+        error: true,
+      );
+      return;
+    }
     setState(() {
       _busy = true;
       _message = null;
@@ -384,7 +439,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     try {
       // Snapshot labels before asynchronous work; fields stay locked during capture.
       final animalId = _animal.text.trim();
-      final operatorId = _operator.text.trim();
+      final operatorId = _captureOperator;
       final timestamp = _environment.now().toUtc();
       photo = await camera.takePicture();
       final gps = await _environment.gps();
@@ -404,8 +459,45 @@ class _CaptureScreenState extends State<CaptureScreen>
               'blur_variance': quality.blurVariance,
               'brightness': quality.brightness,
               'reasons': quality.reasons,
-            }, _backend)
+            }, _captureBackend)
           : null;
+      Object? fieldWarning;
+      if (queued != null && _fieldStore != null) {
+        try {
+          await _fieldStore!.recordScan(
+            queued,
+            _localAnimal,
+            _view,
+            _session,
+            config.toJson(),
+          );
+        } catch (error) {
+          fieldWarning = UiText(
+            'Original saved; field ledger needs review: {0}',
+            [userError(error)],
+          );
+        }
+        try {
+          final save = _environment.saveGallery;
+          if (save != null) {
+            final name =
+                '${animalId}_${_view}_${timestamp.toIso8601String().replaceAll(RegExp(r'[:.]'), '-')}_${queued.key.substring(0, 8)}';
+            await save(queued.imagePath, name);
+            await _fieldStore!.append('field-gallery-${queued.key}.json', {
+              'version': 1,
+              'request_key': queued.key,
+              'album': 'BioLivestock',
+              'name': name,
+              'saved': true,
+            });
+          }
+        } catch (error) {
+          fieldWarning = UiText(
+            'Original saved. Gallery copy failed; check permission and storage. {0}',
+            [userError(error)],
+          );
+        }
+      }
       if (!mounted) {
         await _deletePhoto(photo);
         return;
@@ -420,9 +512,15 @@ class _CaptureScreenState extends State<CaptureScreen>
           _message = UiText(
             "Saved on this phone. Upload now or collect the next capture.",
           );
+          if (fieldWarning != null) {
+            _message = fieldWarning;
+            _messageError = true;
+          }
         }
       });
-      if (queued != null) await _deletePhoto(photo);
+      if (queued != null) {
+        await _deletePhoto(photo);
+      }
       await _refreshQueue();
     } catch (error) {
       await _deletePhoto(photo);
@@ -433,7 +531,9 @@ class _CaptureScreenState extends State<CaptureScreen>
         );
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -458,6 +558,8 @@ class _CaptureScreenState extends State<CaptureScreen>
           return;
         }
         _animal.text = animal['animal_id'] as String;
+        _localAnimal = null;
+        _operator.text = _environment.operatorId;
         _showMessage(
           UiText(
             "ID {0} is registered. Write it on the tag/ledger and keep using this ID.",
@@ -468,7 +570,9 @@ class _CaptureScreenState extends State<CaptureScreen>
     } catch (error) {
       if (mounted) _showMessage(userError(error), error: true);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -482,6 +586,8 @@ class _CaptureScreenState extends State<CaptureScreen>
       return;
     }
     _animal.text = animal['animal_id'] as String;
+    _localAnimal = null;
+    _operator.text = _environment.operatorId;
     setState(() {
       _selected = _configs.firstWhere(
         (config) => config.species.name == animal['species'],
@@ -492,6 +598,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   }
 
   Future<void> _upload() async {
+    if (_queued?.backend == provisionalBackend) return;
     if (_queued == null || _queue == null || _busy || _saved) return;
     setState(() => _busy = true);
     try {
@@ -520,7 +627,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       }
     } finally {
       await _refreshQueue();
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -542,6 +651,12 @@ class _CaptureScreenState extends State<CaptureScreen>
       _metadata = null;
       _message = null;
       _saved = false;
+      if (_fieldStore != null && _completedViews.length < 6) {
+        _view = fieldViews.firstWhere(
+          (v) => !_completedViews.contains(v),
+          orElse: () => fieldViews.first,
+        );
+      }
     });
   }
 
@@ -691,6 +806,159 @@ class _CaptureScreenState extends State<CaptureScreen>
     ),
   );
 
+  Future<void> _offlineOperator() async {
+    if (_busy || _photo != null || _fieldStore == null) return;
+    final id = await fieldOperatorDialog(context, _fieldStore!.operatorId);
+    if (id == null) return;
+    try {
+      await _fieldStore!.saveOperator(id);
+      if (mounted) {
+        setState(() {
+          if (_localAnimal != null) _operator.text = id;
+        });
+      }
+      await _refreshQueue();
+    } catch (e) {
+      if (mounted) _showMessage(userError(e), error: true);
+    }
+  }
+
+  Future<void> _newLocalAnimal() async {
+    if (_busy || _photo != null || _fieldStore == null) return;
+    if (_fieldStore!.operatorId.isEmpty) {
+      await _offlineOperator();
+    }
+    if (!mounted || _fieldStore!.operatorId.isEmpty) return;
+    final animal = await fieldAnimalDialog(
+      context,
+      _fieldStore!,
+      _environment.now(),
+    );
+    if (animal != null && mounted) {
+      setState(() {
+        _localAnimal = animal;
+        _animal.text = animal['label'] as String;
+        _operator.text = _fieldStore!.operatorId;
+        _tab = 0;
+      });
+      await _refreshQueue();
+    }
+  }
+
+  Widget _fieldPanel() => FieldCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FieldText(
+          UiText(
+            _bundledSettings ? 'Bundled offline rules' : 'Field collection',
+          ),
+        ),
+        const SizedBox(height: 8),
+        const FieldText(
+          UiText(
+            'Temporary label only. Not registered on the server; no automatic registration or sync.',
+          ),
+        ),
+        if (_localAnimal != null) ...[
+          SelectableText(
+            '${_localAnimal!['label']} · ${_localAnimal!['tag']}\n${_localAnimal!['notes']}',
+          ),
+          FieldText(
+            UiText('Checklist: {0}/6 distinct views', [_completedViews.length]),
+          ),
+        ],
+        OutlinedButton(
+          onPressed: _busy || _photo != null ? null : _newLocalAnimal,
+          child: const FieldText(UiText('New temporary animal')),
+        ),
+        if (_localAnimals.isNotEmpty)
+          DropdownButtonFormField<String>(
+            key: ValueKey('local-${_localAnimal?['label']}'),
+            initialValue: _localAnimal?['label'] as String?,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: const UiText('Choose local animal').resolve(context),
+            ),
+            items: [
+              for (final a in _localAnimals)
+                DropdownMenuItem(
+                  value: a['label'] as String,
+                  child: Text(
+                    '${a['label']} · ${a['tag']}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+            ],
+            onChanged: _busy || _photo != null
+                ? null
+                : (label) {
+                    setState(() {
+                      _localAnimal = _localAnimals.firstWhere(
+                        (a) => a['label'] == label,
+                      );
+                      _animal.text = label!;
+                      _operator.text = _fieldStore!.operatorId;
+                    });
+                    unawaited(_refreshQueue());
+                  },
+          ),
+        if (_localAnimal != null)
+          TextButton(
+            onPressed: _busy || _photo != null
+                ? null
+                : () {
+                    setState(() {
+                      _localAnimal = null;
+                      _animal.clear();
+                      _operator.text = _environment.operatorId;
+                    });
+                    unawaited(_refreshQueue());
+                  },
+            child: const FieldText(UiText('Use existing server ID')),
+          ),
+        if (_photo == null) ...[
+          const SizedBox(height: 8),
+          TextFormField(
+            initialValue: _session,
+            key: const ValueKey('field-session'),
+            enabled: !_busy,
+            maxLength: 80,
+            decoration: InputDecoration(
+              labelText: const UiText(
+                'Visit session (date-V1, V2...)',
+              ).resolve(context),
+            ),
+            onChanged: (v) {
+              _session = v;
+              unawaited(_refreshQueue());
+            },
+          ),
+          DropdownButtonFormField<String>(
+            key: ValueKey('view-$_view'),
+            initialValue: _view,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: const UiText('Capture view').resolve(context),
+            ),
+            items: [
+              for (final v in fieldViews)
+                DropdownMenuItem(value: v, child: FieldText(UiText(v))),
+            ],
+            onChanged: _busy ? null : (v) => setState(() => _view = v!),
+          ),
+        ],
+        if (_localAnimal != null)
+          const FieldText(
+            UiText(
+              'Local originals are retained. Permanent registration and upload require a later reviewed mapping.',
+            ),
+          ),
+      ],
+    ),
+  );
+
   Widget _identityCard() {
     final editable = !_busy && _photo == null;
     return FieldCard(
@@ -719,7 +987,7 @@ class _CaptureScreenState extends State<CaptureScreen>
             const SizedBox(height: 14),
             TextFormField(
               controller: _animal,
-              enabled: editable,
+              enabled: editable && _localAnimal == null,
               validator: (value) =>
                   animalValidation(context, validateAnimalId(value)),
               autocorrect: false,
@@ -773,6 +1041,7 @@ class _CaptureScreenState extends State<CaptureScreen>
             OutlinedButton.icon(
               onPressed:
                   editable &&
+                      _localAnimal == null &&
                       !_loading &&
                       _queue != null &&
                       _selected?.numbering != null
@@ -842,6 +1111,7 @@ class _CaptureScreenState extends State<CaptureScreen>
             style: TextStyle(fontSize: 12),
           ),
           ExpansionTile(
+            key: const PageStorageKey('capture-quality-details'),
             tilePadding: EdgeInsets.zero,
             childrenPadding: const EdgeInsets.only(bottom: 8),
             title: const FieldText(
@@ -914,6 +1184,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     color: FieldColors.cream,
     padding: const EdgeInsets.all(12),
     child: ExpansionTile(
+      key: const PageStorageKey('capture-queue-issues'),
       leading: const Icon(
         Icons.warning_amber_rounded,
         color: FieldColors.amber,
@@ -954,6 +1225,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     ),
     const SizedBox(height: 16),
     _cameraCard(),
+    if (_fieldStore != null) ...[const SizedBox(height: 12), _fieldPanel()],
     const SizedBox(height: 16),
     if (_photo == null) _identityCard(),
     if (_quality != null) _qualityCard(),
@@ -1100,7 +1372,9 @@ class _CaptureScreenState extends State<CaptureScreen>
               disabledBackgroundColor: Colors.white12,
               disabledForegroundColor: Colors.white70,
             ),
-            onPressed: !_busy && _pending.isNotEmpty ? _syncQueue : null,
+            onPressed: !_busy && _pending.isNotEmpty && _localAnimal == null
+                ? _syncQueue
+                : null,
             icon: const Icon(Icons.cloud_upload_outlined),
             label: const FieldText(UiText("Upload pending captures")),
           ),
@@ -1205,6 +1479,23 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   List<Widget> _toolsContent() => [
     const FieldCard(child: LanguageSettings()),
+    if (_fieldStore != null) ...[
+      const SizedBox(height: 12),
+      FieldCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FieldText(
+              UiText('Offline operator: {0}', [_fieldStore!.operatorId]),
+            ),
+            OutlinedButton(
+              onPressed: _busy || _photo != null ? null : _offlineOperator,
+              child: const FieldText(UiText('Set offline operator')),
+            ),
+          ],
+        ),
+      ),
+    ],
     const SizedBox(height: 16),
     const FieldHeading(
       eyebrow: UiText("Field essentials"),
@@ -1361,7 +1652,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                         _selected != null &&
                         _queue != null &&
                         !_loading &&
-                        _operator.text.trim().isNotEmpty
+                        _captureOperator.trim().isNotEmpty &&
+                        (_fieldStore == null || _session.trim().isNotEmpty)
                     ? _capture
                     : null,
                 icon: const Icon(Icons.camera_alt_rounded),
@@ -1373,7 +1665,12 @@ class _CaptureScreenState extends State<CaptureScreen>
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: !_busy && !_saved ? _upload : null,
+                  onPressed:
+                      !_busy &&
+                          !_saved &&
+                          _queued?.backend != provisionalBackend
+                      ? _upload
+                      : null,
                   icon: Icon(
                     _saved
                         ? Icons.cloud_done_outlined
@@ -1462,7 +1759,13 @@ class _CaptureScreenState extends State<CaptureScreen>
               if (_busy) const LinearProgressIndicator(minHeight: 3),
               Expanded(
                 child: _tab == 2
-                    ? (_queue != null && _configs.isNotEmpty
+                    ? (_fieldStore != null &&
+                              (_bundledSettings || _localAnimal != null)
+                          ? SingleChildScrollView(
+                              padding: const EdgeInsets.all(20),
+                              child: _fieldPanel(),
+                            )
+                          : _queue != null && _configs.isNotEmpty
                           ? AnimalRegistryScreen(
                               environment: _environment,
                               queueRoot: _queue!.root,

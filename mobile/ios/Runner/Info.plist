@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Save a copy of accepted livestock captures to the BioLivestock album.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Create and save captures to the BioLivestock album. No gallery import is provided.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Capture livestock muzzle images for the collection dataset.</string>
 	<key>NSMicrophoneUsageDescription</key>

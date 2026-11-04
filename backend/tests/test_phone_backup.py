@@ -8,11 +8,18 @@ from tools import phone_backup
 
 
 def make_bundle(path, files=None, altered=False):
-    files = files or {"queue/" + "a" * 32 + ".jpg": b"image",
-                      "queue/entry-" + "a" * 32 + ".json": b"{corrupt preserved evidence"}
-    manifest = {"version": 1, "format": "biolivestock-phone-queue", "files": {
-        name: {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
-        for name, content in files.items()}}
+    files = files or {
+        "queue/" + "a" * 32 + ".jpg": b"image",
+        "queue/entry-" + "a" * 32 + ".json": b"{corrupt preserved evidence",
+    }
+    manifest = {
+        "version": 1,
+        "format": "biolivestock-phone-queue",
+        "files": {
+            name: {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
+            for name, content in files.items()
+        },
+    }
     with ZipFile(path, "w") as archive:
         archive.writestr("manifest.json", json.dumps(manifest))
         for name, content in files.items():
@@ -28,6 +35,29 @@ def test_verified_phone_backup_extracts_to_new_directory(tmp_path):
     assert (root / ("queue/entry-" + "a" * 32 + ".json")).read_bytes() == b"{corrupt preserved evidence"
     with pytest.raises(ValueError, match="absent"):
         phone_backup.extract(bundle, root)
+
+
+def test_field_ledger_and_unicode_sidecars_restore_without_new_registration(tmp_path):
+    files = {
+        "queue/field-animal-" + "b" * 32 + ".json": '{"version":1,"tag":"Ғулом"}'.encode(),
+        "queue/field-scan-" + "c" * 32 + ".json": b'{"version":1,"view":"front1"}',
+        "ledger/roster.csv": "label,tag\r\nL-ABC,Ғулом\r\n".encode(),
+        "ledger/scans.csv": b"label,view\r\nL-ABC,front1\r\n",
+    }
+    bundle = make_bundle(tmp_path / "field.zip", files=files)
+    recovered = tmp_path / "recovered"
+    phone_backup.extract(bundle, recovered)
+    for name, content in files.items():
+        assert (recovered / name).read_bytes() == content
+
+
+@pytest.mark.parametrize(
+    "name", ["ledger/../tokens.json", "queue/field-preferences.json", "ledger/settings.csv"]
+)
+def test_field_ledger_allowlist_rejects_secrets_and_escapes(tmp_path, name):
+    bundle = make_bundle(tmp_path / "bad-field.zip", files={name: b"private"})
+    with pytest.raises(ValueError, match="Unsafe"):
+        phone_backup.verify(bundle)
 
 
 def test_registry_journals_and_partial_receipts_are_retained(tmp_path):
@@ -79,8 +109,16 @@ def test_zip_symlink_is_rejected(tmp_path):
     bundle = tmp_path / "link.zip"
     with ZipFile(bundle, "w") as archive:
         archive.writestr(info, content)
-        archive.writestr("manifest.json", json.dumps({"version": 1, "format": "biolivestock-phone-queue",
-            "files": {name: {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}}}))
+        archive.writestr(
+            "manifest.json",
+            json.dumps(
+                {
+                    "version": 1,
+                    "format": "biolivestock-phone-queue",
+                    "files": {name: {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}},
+                }
+            ),
+        )
     with pytest.raises(ValueError, match="links"):
         phone_backup.verify(bundle)
 
