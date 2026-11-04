@@ -26,11 +26,41 @@ class WeightConfig(ConfigBase):
         return self
 
 
+class ArConfig(ConfigBase):
+    # Engineering gates, not measured animal-accuracy guarantees.
+    min_contour_points: int = Field(default=8, ge=3, le=128)
+    max_contour_points: int = Field(default=128, ge=3, le=256)
+    min_repeats: int = Field(default=2, ge=2, le=3)
+    max_repeats: int = Field(default=3, ge=2, le=3)
+    max_repeat_difference_pct: float = Field(default=5, gt=0, le=100)
+    min_calibration_animals: int = Field(default=10, ge=3, le=10000)
+    max_scale_weight_age_days: int = Field(default=7, ge=0, le=30)
+    min_segment_cm: float = Field(default=10, gt=0, le=500)
+    max_segment_cm: float = Field(default=500, gt=0, le=500)
+    max_session_seconds: int = Field(default=180, ge=10, le=600)
+    max_depth_age_ms: int = Field(default=100, ge=1, le=1000)
+    min_point_confidence: float = Field(default=0.8, gt=0, le=1)
+    max_point_distance_m: float = Field(default=0.03, gt=0, le=0.1)
+    max_anchor_drift_m: float = Field(default=0.03, gt=0, le=0.1)
+    max_scale_check_error_pct: float = Field(default=5, gt=0, le=25)
+
+    @model_validator(mode="after")
+    def ordered(self):
+        if (
+            self.min_contour_points > self.max_contour_points
+            or self.min_repeats > self.max_repeats
+            or self.min_segment_cm >= self.max_segment_cm
+        ):
+            raise ValueError("AR limits must be ordered")
+        return self
+
+
 class BusinessConfig(ConfigBase):
     species: Species
     enabled: bool
     config_version: int = Field(ge=1)
     weight: WeightConfig
+    ar: ArConfig | None = None
 
 
 def load_business_configs(directory: Path):

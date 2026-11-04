@@ -9,7 +9,7 @@
     },
     "business_configs-cattle.yaml": {
         "source": "business_configs/cattle.yaml",
-        "sha256": "b60bd75ebdf4daff2f0653abb95dd133ef8c08ef57e16899a09b134f0adbe2a3"
+        "sha256": "494cf878bd6d03e79c2a8cf2be55abfa75c9f693d79c8fdd9d52b9dfe86436e8"
     },
     "business_configs-sheep.yaml": {
         "source": "business_configs/sheep.yaml",

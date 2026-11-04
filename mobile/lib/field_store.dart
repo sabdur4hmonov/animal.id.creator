@@ -204,8 +204,23 @@ String fieldCsv(List<List<Object?>> rows) =>
 Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
   final store = FieldStore(root);
   final animals = await store.records('animal', strict: false);
-  final scans = await store.records('scan', strict: false);
-  if (animals.isEmpty && scans.isEmpty) {
+  final scans = (await store.records('scan', strict: false))
+      .where(
+        (r) =>
+            r['metadata'] is Map &&
+            ((r['metadata'] as Map)['gps'] == null ||
+                (r['metadata'] as Map)['gps'] is Map),
+      )
+      .toList();
+  final measurements = (await store.records(
+    'measurement',
+    strict: false,
+  )).where((r) => r['result'] == null || r['result'] is Map).toList();
+  final prices = await store.records('price', strict: false);
+  if (animals.isEmpty &&
+      scans.isEmpty &&
+      measurements.isEmpty &&
+      prices.isEmpty) {
     return {};
   }
   final roster = <List<Object?>>[
@@ -271,5 +286,91 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
   return {
     'roster.csv': utf8.encode(fieldCsv(roster)),
     'scans.csv': utf8.encode(fieldCsv(ledger)),
+    if (measurements.isNotEmpty)
+      'measurements.csv': utf8.encode(
+        fieldCsv([
+          [
+            'key',
+            'record_type',
+            'label',
+            'species',
+            'mode',
+            'breed',
+            'created_at',
+            'operator_id',
+            'valid',
+            'body_length_cm',
+            'chest_depth_cm',
+            'chest_width_cm',
+            'chest_girth_cm',
+            'girth_method',
+            'weights_kg',
+            'repeat_difference_pct',
+            'scale_kg',
+            'weighed_date',
+            'sample_count',
+            'coefficient',
+            'mape_before_pct',
+            'mape_after_pct',
+            'raw_record_path',
+          ],
+          for (final r in measurements)
+            [
+              r['key'],
+              r['record_type'],
+              r['label'],
+              r['species'],
+              r['mode'],
+              r['breed'],
+              r['created_at'],
+              r['operator_id'],
+              r['valid'],
+              (r['result'] as Map?)?['body_length_cm'],
+              (r['result'] as Map?)?['chest_depth_cm'],
+              (r['result'] as Map?)?['chest_width_cm'],
+              (r['result'] as Map?)?['chest_girth_cm'],
+              (r['result'] as Map?)?['girth_method'],
+              jsonEncode(
+                r['weights_kg'] ?? (r['result'] as Map?)?['weights_kg'],
+              ),
+              r['repeat_difference_pct'],
+              r['scale_kg'],
+              r['weighed_date'],
+              r['sample_count'],
+              r['coefficient'],
+              r['mape_before_pct'],
+              r['mape_after_pct'],
+              'queue/field-measurement-${r['key']}.json',
+            ],
+        ]),
+      ),
+    if (prices.isNotEmpty)
+      'prices.csv': utf8.encode(
+        fieldCsv([
+          [
+            'key',
+            'species',
+            'created_at',
+            'effective_date',
+            'operator_id',
+            'meat_uzs_per_kg',
+            'live_uzs_per_kg',
+            'source',
+            'raw_record_path',
+          ],
+          for (final r in prices)
+            [
+              r['key'],
+              r['species'],
+              r['created_at'],
+              r['effective_date'],
+              r['operator_id'],
+              r['meat_uzs_per_kg'],
+              r['live_uzs_per_kg'],
+              r['source'],
+              'queue/field-price-${r['key']}.json',
+            ],
+        ]),
+      ),
   };
 }
