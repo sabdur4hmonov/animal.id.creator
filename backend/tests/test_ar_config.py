@@ -11,10 +11,12 @@ from app.core.species import Species
 def test_ar_is_additive_and_sheep_stays_disabled():
     configs = load_business_configs(get_settings().business_config_dir)
     cattle = configs[Species.cattle]
-    assert cattle.config_version == 2
+    assert cattle.config_version == 3
     assert cattle.ar.min_repeats == 2
     assert cattle.ar.max_repeats == 3
     assert cattle.ar.min_calibration_animals == 10
+    assert cattle.ar.snapshot_min_ratio_animals == 3
+    assert cattle.ar.snapshot_min_point_confidence == 0.8
     assert not configs[Species.sheep].enabled
     assert configs[Species.sheep].ar is None
     legacy = deepcopy(cattle.model_dump())
@@ -31,6 +33,9 @@ def test_ar_is_additive_and_sheep_stays_disabled():
         {"min_segment_cm": 100, "max_segment_cm": 100},
         {"min_point_confidence": 0},
         {"min_calibration_animals": 1},
+        {"snapshot_min_ratio_animals": 0},
+        {"snapshot_min_point_confidence": 0},
+        {"snapshot_min_depth_m": 9, "snapshot_max_depth_m": 8},
     ],
 )
 def test_invalid_ar_gates_fail_configuration_load(changes):

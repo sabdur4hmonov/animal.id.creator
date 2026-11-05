@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:crypto/crypto.dart';
 import 'ar_math.dart';
 import 'field_store.dart';
+import 'depth_snapshot.dart';
 
 String configDigest(Map config) =>
     sha256.convert(utf8.encode(jsonEncode(config))).toString();
@@ -31,6 +32,167 @@ class ArRecords {
     : now = clock ?? DateTime.now;
   final FieldStore store;
   final DateTime Function() now;
+  Future<Map<String, dynamic>> learnWidthRatio(Map config, String breed) async {
+    final all = await store.records('measurement');
+    final byKey = {for (final r in all) r['key']: r};
+    final animals = <String, Map<String, dynamic>>{};
+    final eligible =
+        all
+            .where(
+              (r) =>
+                  r['record_type'] == 'repeat_set' &&
+                  r['mode'] == 'fast' &&
+                  r['valid'] == true &&
+                  r['species'] == config['species'] &&
+                  r['breed'] == breed,
+            )
+            .toList()
+          ..sort((a, b) {
+            final time = (a['created_at'] as String).compareTo(
+              b['created_at'] as String,
+            );
+            return time != 0
+                ? time
+                : (a['key'] as String).compareTo(b['key'] as String);
+          });
+    for (final set in eligible) {
+      final keys = set['attempt_keys'] as List;
+      final attempts = keys.map((k) => byKey[k]).toList();
+      if (attempts.length < 2 ||
+          attempts.any(
+            (a) =>
+                a == null ||
+                a['valid'] != true ||
+                a['mode'] != 'fast' ||
+                a['label'] != set['label'] ||
+                a['species'] != set['species'] ||
+                a['breed'] != breed,
+          )) {
+        continue;
+      }
+      final depths = attempts
+          .map((a) => finiteNumber(a!['result']['chest_depth_cm']))
+          .toList();
+      final widths = attempts
+          .map((a) => finiteNumber(a!['result']['chest_width_cm']))
+          .toList();
+      if ([...depths, ...widths].any((v) => v <= 0)) continue;
+      final d = depths.reduce((a, b) => a + b) / depths.length,
+          w = widths.reduce((a, b) => a + b) / widths.length;
+      animals[set['label'] as String] = {
+        'label': set['label'],
+        'set_key': set['key'],
+        'width_cm': w,
+        'depth_cm': d,
+        'ratio': w / d,
+        'source_config_sha256': set['config_sha256'],
+      };
+    }
+    final ratios = animals.values.map((r) => r['ratio'] as double).toList()
+      ..sort();
+    final n = ratios.length,
+        minimum = config['ar']['snapshot_min_ratio_animals'] as int;
+    final samples = animals.values.toList()
+      ..sort((a, b) => (a['label'] as String).compareTo(b['label'] as String));
+    final inputHash = configDigest({
+      'config_sha256': configDigest(config),
+      'species': config['species'],
+      'breed': breed,
+      'samples': samples,
+    });
+    final existing = all
+        .where(
+          (r) =>
+              r['record_type'] == 'width_ratio' &&
+              r['input_sha256'] == inputHash,
+        )
+        .toList();
+    if (existing.isNotEmpty) {
+      return existing.last;
+    }
+    final value = n < minimum
+        ? null
+        : n.isOdd
+        ? ratios[n ~/ 2]
+        : (ratios[n ~/ 2 - 1] + ratios[n ~/ 2]) / 2;
+    final revision =
+        all
+            .where(
+              (r) =>
+                  r['record_type'] == 'width_ratio' &&
+                  r['species'] == config['species'] &&
+                  r['breed'] == breed,
+            )
+            .length +
+        1;
+    return save('width_ratio', {
+      'species': config['species'],
+      'breed': breed,
+      'revision': revision,
+      'sample_count': n,
+      'minimum_count': minimum,
+      'ratio': value,
+      'method': 'median_distinct_animal_fast_width_over_depth',
+      'config_sha256': configDigest(config),
+      'input_sha256': inputHash,
+      'samples': samples,
+      'real_world_accuracy_verified': false,
+    });
+  }
+
+  Future<Map<String, dynamic>> snapshotFrame(
+    String label,
+    Map<String, dynamic> frame,
+    Map config,
+    String breed,
+  ) async => save('snapshot_frame', {
+    'label': label,
+    'species': config['species'],
+    'breed': breed,
+    'mode': 'snapshot',
+    'view': frame['view'],
+    'config_snapshot': config,
+    'config_sha256': configDigest(config),
+    'raw': frame,
+  });
+
+  Future<Map<String, dynamic>> snapshotSet(
+    String label,
+    List<Map<String, dynamic>> frames,
+    Map config,
+    String breed,
+    Map? ratio,
+  ) async {
+    if (frames.any(
+      (f) =>
+          f['record_type'] != 'snapshot_frame' ||
+          f['label'] != label ||
+          f['species'] != config['species'] ||
+          f['breed'] != breed ||
+          f['config_sha256'] != configDigest(config),
+    )) {
+      throw const FormatException(
+        'Do not mix snapshot animals or configurations',
+      );
+    }
+    final result = measureSnapshotSet(
+      frames.map((f) => Map<String, dynamic>.from(f['raw'] as Map)).toList(),
+      config,
+      breed,
+      ratio,
+    );
+    return save('repeat_set', {
+      'label': label,
+      'species': config['species'],
+      'breed': breed,
+      ...result,
+      'config_snapshot': config,
+      'config_sha256': configDigest(config),
+      'snapshot_frame_keys': frames.map((f) => f['key']).toList(),
+      'attempt_keys': <String>[],
+    });
+  }
+
   Future<Map<String, dynamic>> save(
     String type,
     Map<String, dynamic> fields, {
@@ -239,7 +401,7 @@ class ArRecords {
         (r) =>
             r['record_type'] == 'repeat_set' &&
             r['valid'] == true &&
-            r['mode'] == mode &&
+            (r['calibration_mode'] ?? r['mode']) == mode &&
             r['breed'] == breed &&
             r['config_sha256'] == configDigest(config),
       ))

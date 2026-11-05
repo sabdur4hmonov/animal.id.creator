@@ -1,6 +1,6 @@
 species: cattle
 enabled: true
-config_version: 2
+config_version: 3
 weight:
   schoorl_offset_cm: 22
   denominator: 100
@@ -27,3 +27,8 @@ ar:
   max_point_distance_m: 0.03
   max_anchor_drift_m: 0.03
   max_scale_check_error_pct: 5
+  snapshot_min_ratio_animals: 3
+  snapshot_min_depth_m: 0.2
+  snapshot_max_depth_m: 8
+  snapshot_min_point_confidence: 0.8
+  snapshot_max_depth_pixels: 1048576

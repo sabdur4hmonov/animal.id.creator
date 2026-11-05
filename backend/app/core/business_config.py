@@ -43,6 +43,11 @@ class ArConfig(ConfigBase):
     max_point_distance_m: float = Field(default=0.03, gt=0, le=0.1)
     max_anchor_drift_m: float = Field(default=0.03, gt=0, le=0.1)
     max_scale_check_error_pct: float = Field(default=5, gt=0, le=25)
+    snapshot_min_ratio_animals: int = Field(default=3, ge=1, le=10000)
+    snapshot_min_depth_m: float = Field(default=0.2, gt=0, le=10)
+    snapshot_max_depth_m: float = Field(default=8, gt=0, le=65)
+    snapshot_min_point_confidence: float = Field(default=0.8, gt=0, le=1)
+    snapshot_max_depth_pixels: int = Field(default=1048576, ge=1, le=4194304)
 
     @model_validator(mode="after")
     def ordered(self):
@@ -50,6 +55,7 @@ class ArConfig(ConfigBase):
             self.min_contour_points > self.max_contour_points
             or self.min_repeats > self.max_repeats
             or self.min_segment_cm >= self.max_segment_cm
+            or self.snapshot_min_depth_m >= self.snapshot_max_depth_m
         ):
             raise ValueError("AR limits must be ordered")
         return self
