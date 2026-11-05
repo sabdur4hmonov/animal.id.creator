@@ -7,6 +7,7 @@ import 'ar_records.dart';
 import 'bundled_configs.dart';
 import 'field_store.dart';
 import 'localization.dart';
+import 'snapshot_annotation.dart';
 
 class ArScreen extends StatefulWidget {
   const ArScreen({
@@ -27,9 +28,10 @@ class ArScreen extends StatefulWidget {
 class _ArScreenState extends State<ArScreen> {
   late final records = ArRecords(widget.store);
   late final bridge = widget.bridge ?? ArBridge();
-  Map<String, dynamic>? config, probe, set, price;
+  Map<String, dynamic>? config, probe, set, price, widthRatio;
+  List<Map<String, dynamic>> snapshots = [];
   List<Map<String, dynamic>> attempts = [], history = [], calibrations = [];
-  String mode = 'fast',
+  String mode = 'snapshot',
       breed = 'dairy',
       reference = '',
       meat = '',
@@ -65,6 +67,7 @@ class _ArScreenState extends State<ArScreen> {
         (a, b) => (a['revision'] as int).compareTo(b['revision'] as int),
       );
       price = prices.isEmpty ? null : prices.last;
+      widthRatio = await records.learnWidthRatio(config!, breed);
       history = (await widget.store.records(
         'measurement',
       )).where((r) => r['label'] == widget.animal['label']).toList();
@@ -79,6 +82,14 @@ class _ArScreenState extends State<ArScreen> {
         set = sets.last;
         mode = set!['mode'] as String;
         breed = set!['breed'] as String;
+        widthRatio = await records.learnWidthRatio(config!, breed);
+        snapshots = history
+            .where(
+              (r) => (set!['snapshot_frame_keys'] as List? ?? []).contains(
+                r['key'],
+              ),
+            )
+            .toList();
         attempts = history
             .where((r) => (set!['attempt_keys'] as List).contains(r['key']))
             .toList();
@@ -143,13 +154,22 @@ class _ArScreenState extends State<ArScreen> {
     'cancel': t('Cancel'),
     'finish': t('Finish AR measurement'),
     'safety': t(
-      'Keep the animal still with a handler. Stay safe; never crawl underneath. Tap only the named anatomical point. Restart if the animal moves.',
+      'Keep the animal still with a handler. Stay safe; never crawl underneath. Tap only the named body point. Restart if the animal moves.',
     ),
     'tracking': t('Move the phone slowly until tracking is ready.'),
-    'bodyStart': t('1. Tap the shoulder joint.'),
-    'bodyEnd': t('2. Tap the pin bone.'),
-    'depthTop': t('3. Tap the withers above the chest, behind the front legs.'),
-    'depthBottom': t('4. Tap the brisket below that same chest section.'),
+    'bodyStart': t('1 — Front end (the frontmost part of the chest)'),
+    'bodyEnd': t('2 — Back end (under the tail)'),
+    'depthTop': t('3 — Top of the back (highest point above the front legs)'),
+    'depthBottom': t(
+      '4 — Bottom of the chest (directly below point 3, behind the front legs)',
+    ),
+    'capture': t('Capture frame'),
+    'snapshotLive': t(
+      'Keep the whole animal in view. Capture one sharp frame with current depth, then mark the frozen image.',
+    ),
+    'snapshotNoDepth': t(
+      'No raw depth for this exact camera frame. Move slowly and capture again; no substitute depth is used.',
+    ),
     'widthLeft': t(
       '5. From front/above, tap the left side of that chest section.',
     ),
@@ -212,8 +232,79 @@ class _ArScreenState extends State<ArScreen> {
     await _disableCorrection();
     calibrations = [];
     for (final f in ['trukhanovsky', 'schoorl']) {
-      calibrations.add(await records.calibrate(config!, mode, breed, f));
+      calibrations.add(
+        await records.calibrate(
+          config!,
+          (set?['calibration_mode'] ?? mode) as String,
+          breed,
+          f,
+        ),
+      );
     }
+  });
+  Future<void> _captureSnapshot() async => _action(() async {
+    final view = ['left', 'right', 'front'][snapshots.length];
+    while (mounted) {
+      final raw = await bridge.measure({
+        'mode': 'snapshot_capture',
+        'view': view,
+        'rules': config!['ar'],
+        'labels': nativeLabels,
+      });
+      // Persist the immutable capture before allowing unhurried annotation.
+      final captured = await records.save('snapshot_capture', {
+        'label': widget.animal['label'],
+        'species': config!['species'],
+        'breed': breed,
+        'mode': 'snapshot',
+        'view': view,
+        'config_snapshot': config,
+        'config_sha256': configDigest(config!),
+        'raw': {...raw, 'view': view},
+      });
+      if (!mounted) return;
+      final annotation = await Navigator.of(context).push<Map<String, dynamic>>(
+        MaterialPageRoute(
+          builder: (_) => SnapshotAnnotation(
+            frame: raw,
+            view: view,
+            rules: config!['ar'] as Map,
+          ),
+        ),
+      );
+      final frame = {
+        ...raw,
+        'capture_key': captured['key'],
+        'view': view,
+        'points': annotation?['points'] ?? [],
+        'annotation_action': annotation?['action'] ?? 'cancel',
+      };
+      final event = await records.snapshotFrame(
+        widget.animal['label'] as String,
+        frame,
+        config!,
+        breed,
+      );
+      if (annotation?['action'] == 'retake') continue;
+      if (annotation?['action'] == 'save') {
+        snapshots.add(event);
+        set = null;
+        correct = false;
+        calibrations = [];
+      }
+      break;
+    }
+  });
+  Future<void> _finishSnapshots() async => _action(() async {
+    set = await records.snapshotSet(
+      widget.animal['label'] as String,
+      snapshots,
+      config!,
+      breed,
+      widthRatio,
+    );
+    correct = false;
+    calibrations = [];
   });
   Future<void> _disableCorrection() async {
     if (!correct || set == null) return;
@@ -320,10 +411,15 @@ class _ArScreenState extends State<ArScreen> {
             ),
             DropdownButtonFormField<String>(
               key: ValueKey('ar-mode-$mode'),
+              itemHeight: null,
               initialValue: mode,
               isExpanded: true,
               decoration: InputDecoration(labelText: t('Measurement mode')),
               items: [
+                DropdownMenuItem(
+                  value: 'snapshot',
+                  child: Text(t('Snapshot: left + right, optional front')),
+                ),
                 DropdownMenuItem(
                   value: 'fast',
                   child: Text(t('Fast: six points, estimated girth')),
@@ -333,12 +429,21 @@ class _ArScreenState extends State<ArScreen> {
                   child: Text(t('Detailed: closed 3D contour')),
                 ),
               ],
-              onChanged: busy || attempts.isNotEmpty
+              onChanged: busy || attempts.isNotEmpty || snapshots.isNotEmpty
                   ? null
-                  : (v) => setState(() => mode = v!),
+                  : (v) => _action(() async {
+                      mode = v!;
+                      if (mode == 'snapshot') {
+                        widthRatio = await records.learnWidthRatio(
+                          config!,
+                          breed,
+                        );
+                      }
+                    }),
             ),
             DropdownButtonFormField<String>(
               key: ValueKey('ar-breed-$breed'),
+              itemHeight: null,
               initialValue: breed,
               isExpanded: true,
               decoration: InputDecoration(labelText: t('Breed category')),
@@ -350,37 +455,107 @@ class _ArScreenState extends State<ArScreen> {
                     child: Text(t(b == 'dairy' ? 'Dairy' : 'Beef')),
                   ),
               ],
-              onChanged: busy || attempts.isNotEmpty
+              onChanged: busy || attempts.isNotEmpty || snapshots.isNotEmpty
                   ? null
-                  : (v) => setState(() => breed = v!),
+                  : (v) => _action(() async {
+                      breed = v!;
+                      widthRatio = await records.learnWidthRatio(
+                        config!,
+                        breed,
+                      );
+                    }),
             ),
-            if (attempts.isEmpty)
+            if (attempts.isEmpty && mode != 'snapshot')
               input(
                 'Optional known-object length (cm); A4 long edge = 29.7',
                 (v) => reference = v,
                 keyboard: const TextInputType.numberWithOptions(decimal: true),
                 max: 12,
               ),
-            Text(
-              t(
-                'Repeat the whole measurement {0}–{1} times. The animal must remain still during each run.',
-                [config!['ar']['min_repeats'], config!['ar']['max_repeats']],
+            if (mode != 'snapshot')
+              Text(
+                t(
+                  'Repeat the whole measurement {0}–{1} times. The animal must remain still during each run.',
+                  [config!['ar']['min_repeats'], config!['ar']['max_repeats']],
+                ),
               ),
+            if (mode == 'snapshot') ...[
+              Text(
+                t(
+                  'Capture left and right separately. Front width is optional. Never measure between different frames.',
+                ),
+              ),
+              if (probe?['depth'] != true)
+                Text(
+                  t(
+                    'Snapshot mode requires Depth API. Depth is unavailable or unconfirmed; fast/contour and offline photos remain available.',
+                  ),
+                ),
+              Text(
+                t(
+                  'First measure {1} different animals in six-point mode ({0}/{1}). Optional front width bypasses the ratio requirement.',
+                  [
+                    widthRatio?['sample_count'] ?? 0,
+                    config!['ar']['snapshot_min_ratio_animals'],
+                  ],
+                ),
+              ),
+              if (snapshots.length < 3)
+                Text(
+                  t(
+                    snapshotViewLabels[[
+                      'left',
+                      'right',
+                      'front',
+                    ][snapshots.length]]!,
+                  ),
+                ),
+              button(
+                'Capture next snapshot',
+                supported &&
+                        probe?['depth'] == true &&
+                        adult &&
+                        snapshots.length < 3
+                    ? _captureSnapshot
+                    : null,
+              ),
+              if (snapshots.length >= 2)
+                button(
+                  'Finish snapshot set',
+                  snapshots.length == 3 || widthRatio?['ratio'] != null
+                      ? _finishSnapshots
+                      : null,
+                ),
+              if (set != null)
+                Text(
+                  t(
+                    set!['width_source'] == 'front_snapshot'
+                        ? 'Width measured from optional front frame.'
+                        : 'Approximate, uncalibrated; width ratio from {0} animals, revision {1}.',
+                    [set!['ratio_sample_count'], set!['ratio_revision']],
+                  ),
+                ),
+            ],
+            if (mode != 'snapshot')
+              button(
+                'Start next AR measurement',
+                supported &&
+                        adult &&
+                        attempts.length < (config!['ar']['max_repeats'] as int)
+                    ? _measure
+                    : null,
+              ),
+            Text(
+              t('Completed repeats: {0}', [
+                mode == 'snapshot' ? snapshots.length : attempts.length,
+              ]),
             ),
-            button(
-              'Start next AR measurement',
-              supported &&
-                      adult &&
-                      attempts.length < (config!['ar']['max_repeats'] as int)
-                  ? _measure
-                  : null,
-            ),
-            Text(t('Completed repeats: {0}', [attempts.length])),
-            if (attempts.isNotEmpty)
+            if (attempts.isNotEmpty || snapshots.isNotEmpty)
               button(
                 'Start a new repeat set (retain history)',
                 () => setState(() {
                   attempts = [];
+                  snapshots = [];
                   set = null;
                   calibrations = [];
                   correct = false;
@@ -544,9 +719,15 @@ class _ArScreenState extends State<ArScreen> {
                     ...r,
                     'raw': r['raw'] is Map
                         ? {
-                            ...(r['raw'] as Map),
-                            'screenshots_jpeg_base64':
-                                '[JPEG images retained in original JSON / ZIP]',
+                            for (final entry in (r['raw'] as Map).entries)
+                              if (!entry.key.toString().endsWith('base64'))
+                                entry.key: entry.value,
+                            'binary_fields_retained_in_raw_json':
+                                (r['raw'] as Map).keys
+                                    .where(
+                                      (k) => k.toString().endsWith('base64'),
+                                    )
+                                    .toList(),
                           }
                         : r['raw'],
                   }),
@@ -555,6 +736,8 @@ class _ArScreenState extends State<ArScreen> {
                   for (final encoded
                       in (r['raw']['screenshots_jpeg_base64'] as List? ?? []))
                     _picture(encoded),
+                if (r['raw'] is Map && r['raw']['jpeg_base64'] is String)
+                  _picture(r['raw']['jpeg_base64']),
               ],
             ),
         ],

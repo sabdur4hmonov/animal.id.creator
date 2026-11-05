@@ -2,7 +2,12 @@
 
 Fresh-install offline field collection and local Android AR measurement: follow
 [the Uzbek farm guide](docs/OFFLINE_FIELD_GUIDE.md). No API token/server is required
-for provisional L- animals. AR defaults to six-point length/depth/width with an
+for provisional L- animals. AR defaults to frozen left/right snapshots (four
+simple body points each), with optional two-point front width. Snapshot requires
+same-frame raw Depth/confidence; without front width it needs the median ratio
+from at least three distinct same-species/breed animals measured in fast mode.
+Point selection has undo/retake and mirrored original vector guides. Six-point
+fast length/depth/width remains available with an
 explicit uncalibrated Ramanujan ellipse girth; ordered closed 3D contours remain a
 separate mode. Repeatability gates, both formula results, versioned local market
 prices and optional minimum-10-distinct-animal scale correction are available.

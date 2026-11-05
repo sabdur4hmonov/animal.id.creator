@@ -20,6 +20,14 @@ helper/asset or unlicensed third-party renderer copied. No Cloud/Geospatial API.
 Version 1.54.0 is explicitly pinned for the existing Android build toolchain;
 upgrading to versions that require newer Android API levels is a separate change.
 
+FrozenDepth, pinhole unprojection and mirrored vector point guides are original.
+Reference APIs (no third-party renderer/helper imported):
+https://developers.google.com/ar/reference/java/com/google/ar/core/Frame
+https://developers.google.com/ar/reference/java/com/google/ar/core/CameraIntrinsics
+https://developers.google.com/ar/develop/java/depth/raw-depth
+docs/design/mol-olchash-nuqtalari.png is the user-supplied design reference;
+the runtime schematic is drawn in Dart/Kotlin, with no copied image asset.
+
 Flutter's generated application license registry also retains dependency licenses.
 Other existing dependencies retain their own licenses; this file does not relicense
 the repository or declare every dependency permissively licensed.

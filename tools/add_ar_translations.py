@@ -5,12 +5,7 @@ from pathlib import Path
 
 ROWS = """AR weight and valuation|AR vazn va qiymat|AR: вес и стоимость|AR вазн ва қиймат
 Finish AR measurement|AR o‘lchovni tugatish|Завершить AR-измерение|AR ўлчовни тугатиш
-Keep the animal still with a handler. Stay safe; never crawl underneath. Tap only the named anatomical point. Restart if the animal moves.|Yordamchi molni tinch ushlasin. Xavfsiz turing; tagiga kirmang. Faqat aytilgan tana nuqtasini bosing. Mol qimirlasa boshidan boshlang.|Помощник должен удерживать животное неподвижно. Не залезайте под него. Касайтесь только указанной анатомической точки. При движении начните заново.|Ёрдамчи молни тинч ушласин. Хавфсиз туринг; тагига кирманг. Фақат айтилган тана нуқтасини босинг. Мол қимирласа бошидан бошланг.
 Move the phone slowly until tracking is ready.|Kuzatuv tayyor bo‘lguncha telefonni sekin siljiting.|Медленно перемещайте телефон до готовности отслеживания.|Кузатув тайёр бўлгунча телефонни секин силжитинг.
-1. Tap the shoulder joint.|1. Yelka bo‘g‘imini bosing.|1. Коснитесь плечевого сустава.|1. Елка бўғимини босинг.
-2. Tap the pin bone.|2. Quymich do‘ngini bosing.|2. Коснитесь седалищного бугра.|2. Қуймич дўнгини босинг.
-3. Tap the withers above the chest, behind the front legs.|3. Old oyoqlar ortidagi ko‘krak usti — yag‘rinni bosing.|3. Коснитесь холки над грудью, за передними ногами.|3. Олд оёқлар ортидаги кўкрак усти — яғринни босинг.
-4. Tap the brisket below that same chest section.|4. Shu kesimning pastki to‘sh nuqtasini bosing.|4. Коснитесь нижней точки грудины в том же сечении.|4. Шу кесимнинг пастки тўш нуқтасини босинг.
 5. From front/above, tap the left side of that chest section.|5. Oldindan yoki tepadan shu kesimning chap yonini bosing.|5. Спереди или сверху коснитесь левой стороны того же сечения.|5. Олдиндан ёки тепадан шу кесимнинг чап ёнини босинг.
 6. Tap the right side of the same chest section.|6. Shu kesimning o‘ng yonini bosing.|6. Коснитесь правой стороны того же сечения.|6. Шу кесимнинг ўнг ёнини босинг.
 Tap both endpoints of your known object first.|Avval o‘lchami ma’lum buyumning ikki uchini bosing.|Сначала коснитесь обоих концов предмета известной длины.|Аввал ўлчами маълум буюмнинг икки учини босинг.

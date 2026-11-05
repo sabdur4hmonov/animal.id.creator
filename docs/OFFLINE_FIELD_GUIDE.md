@@ -1,4 +1,4 @@
-# Qishloqda serversiz yig‘ish — 2026-11-04
+# Qishloqda serversiz yig‘ish — 2026-11-05
 
 P0 oqimi: app ichida source YAML bilan bir xil oflayn qoidalar bor. Yangi
 o‘rnatilgan telefonda server yoki API token shart emas. Samolyot rejimida
@@ -79,15 +79,63 @@ ekranda nuqtalarni siz bosasiz, ARCore metrik masofani beradi, app hisoblaydi.
 & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r 'D:\Coding projects\moliddetector\mobile\build\app\outputs\flutter-apk\app-release.apk'
 ```
 
-### Har katta mol uchun
+### Asosiy rejim: muzlatilgan chap + o‘ng kadr
+
+**Depth API shart.** Depth yo‘q yoki hali tasdiqlanmagan bo‘lsa olish tugmasi
+o‘chiq; tez/kontur rejimlari va oflayn suratlar qoladi. Boshqa kadr depth’i yoki
+to‘qima kenglik bilan natija chiqarilmaydi.
+
+1. Ayni hayvon yorlig‘i → **AR vazn va qiymat** → katta qoramol va zot turi.
+   Asosiy tanlov **Muzlatilgan kadr: chap + o‘ng**.
+2. **1/3 Chap yon:** butun gavda sig‘sin (2–3 metrdan boshlang, fokus/Depthga
+   qarab moslang). Jonli kamerada **Kadrni olish**. Aynan shu kadrning depth’i
+   tayyor bo‘lmasa xabar chiqadi: sekin siljib yana kadr oling.
+3. Muzlagan rasmda shoshilmay, sariq ajratilgan sxemaga qarab 4 joyni bosing:
+   **1 Old uchi** — ko‘krakning eng oldinga chiqqan joyi;
+   **2 Orqa uchi** — dumning tagi;
+   **3 Orqa tepasi** — old oyoqlar ustidagi eng baland joy;
+   **4 Ko‘krak tagi** — 3-nuqtaning to‘g‘ri pastida, old oyoqlar orqasida.
+   Ishonchsiz depth pikseli rad etiladi; fonni bosmang. **Oxirgi nuqtani bekor
+   qilish** va **Qayta olish** bor. Tugagach kadrni saqlang.
+4. **2/3 O‘ng yon:** boshqa tomondan yangi kadrda ayni 4 joy. Sxema ko‘zgudek
+   aylanadi. Har segment faqat o‘z kadridan olinadi: mol kadrlar orasida siljisa
+   ham chap kadrdan o‘ng kadrgacha masofa hisoblanmaydi.
+5. **3/3 Old tomon (ixtiyoriy):** o‘sha ko‘krak kesimining, old oyoqlar orqasidagi
+   chap/o‘ng chekkalari ko‘rinsa, yangi kadrda shu **2 nuqta**. Bunda kenglik
+   bevosita olinadi; oldindan 3 hayvon kerak emas. To‘silib qolgan chekkani
+   fon/pol bilan almashtirmang.
+6. Old kadrni olmasangiz: ayni telefonda/species/zot guruhida kamida **3 turli
+   molning muvaffaqiyatli 6 nuqtali tez o‘lchovi** kerak. App `k/3`ni ko‘rsatadi.
+   Yetmasa ikki yon kadr natija bermaydi: old kadr oling yoki avval 3 molni tez
+   rejimda o‘lchang. Bir molga qayta yangi yorliq berib Nni oshirmang. Oldingi
+   v2 fast yozuvlari ham hisobga olinadi.
+7. **Kadrlar to‘plamini yakunlash.** Xom chap/o‘ng uzunlik va chuqurlik saqlanadi;
+   yakuniy uzunlik/chuqurlik ularning o‘rtachasi. Mavjud 5% farq qoidasidan
+   oshsa yangi to‘plamda qayta oling; yakuniy baho/korreksiya qo‘llanmaydi.
+8. Natija **taxminiy, kalibrlanmagan**. Old kadr bo‘lmasa kenglik = o‘rtacha
+   chuqurlik × o‘rganilgan median nisbat, `width_source: learned_ratio:<revision>`.
+   Old kadr bo‘lsa `width_source: front_snapshot`. Girth — Ramanujan II ellipsi.
+   Ikkala vazn formulasi, narx, baho va tarozi bo‘limlari quyidagidek ishlaydi.
+
+Bir xil ma’lumot/policy bilan nisbat revision’i qayta ochishda o‘zgarmaydi;
+yangi mos fast yozuvlari kelsa yangi append-only revision. Old kadr va nisbat
+korreksiyalari aralashmaydi; yangi nisbat revision’i ham alohida guruh.
+Kenglik uchun **N=3** va tarozi korreksiyasi uchun **N=10** boshqa chegaralar.
+Bir suratni ikki yon sifatida qayta ishlatish rad etiladi.
+
+Kadr olishda molni imkon qadar tinch tuting; muzlagan rasmda shoshilmang:
+nuqta belgilashga jonli tracking yoki 180 s cheklov qo‘yilmaydi. Tagiga kirmang.
+App harakatni aniqlamaydi; haqiqiy telefon/hayvon aniqligi hali tekshirilmagan.
+
+### Muqobil 6 nuqtali tez rejim va narx
 
 1. Birka/laqabga mos **ayni L- yorliqni** tanlang. Bir molga qayta-qayta yangi
    yorliq bermang: kalibratsiya turli yorliqlarni turli hayvon deb hisoblaydi.
 2. Olti tumshuq rasmini yuqoridagi P0 tartibida oling. **AR vazn va qiymat**ni
    oching. Katta qoramol ekanini tasdiqlang, sut/go‘sht zot turini tanlang.
-3. Asosiy **Tez** rejim: kamera kuzatuvi tayyor bo‘lgach:
-   - 1 yelka bo‘g‘imi → 2 quymich do‘ngi: tana uzunligi;
-   - 3 old oyoqlar ortidagi yag‘rin → 4 o‘sha kesim pastidagi to‘sh: chuqurlik;
+3. Muqobil **Tez** rejim: kamera kuzatuvi tayyor bo‘lgach:
+   - 1 old uchi → 2 orqa uchi (dum tagi): tana uzunligi;
+   - 3 orqa tepasi → 4 uning to‘g‘ri pastidagi ko‘krak tagi: chuqurlik;
    - 5 oldindan/tepadan o‘sha kesim chap yoni → 6 o‘ng yoni: kenglik.
    Yashil belgilar qabul qilingan metrik nuqtalar. **Tugatish**ni bosing.
    Ko‘krak aylanasi Ramanujan II ellips perimetri bilan taxmin qilinadi;
@@ -144,6 +192,15 @@ hali tugallanmagan native urinishni tiklash kafolatlanmaydi, oldin saqlanganlar 
 ZIPga `ledger/measurements.csv`, `ledger/prices.csv` ham qo‘shiladi; CSV raw
 `queue/field-measurement-*.json` yo‘lini beradi. JPEGlar raw JSONdagi
 `raw.screenshots_jpeg_base64` ichida, CSVga uzun rasm matni ko‘chirilmaydi.
+Yangi snapshot kadrlar `snapshot_frame` yozuvining `raw.jpeg_base64`, to‘liq
+`depth_u16le_base64`, `confidence_u8_base64`, pose/intrinsics va view→image
+moslashuvi bilan saqlanadi. Pikselxy/confidence va frame timestamp/hashlar ham
+bor. CSVda frame/view, width_source, ratio revision/N va xom yozuv yo‘li chiqadi.
+Qayta olingan/bekor qilingan kadrlar ham tarixdan o‘chirilmaydi. App tarixida
+`snapshot_capture` xom kadr yozuvi nuqtalash ekrani ochilishidan oldin saqlanadi.
+App yopilib qolsa tugallanmagan to‘plam avtomatik davom ettirilmaydi: yangi
+to‘plam boshlang; oldingi xom kadrlar tarix/ZIPda qoladi.
+rasm va metadata ko‘rinadi; katta binary matnlar faqat original JSON/ZIPda qoladi.
 ZIPni **telefondan tashqariga** ko‘chiring va yuqoridagi verify bilan tekshiring.
 
 Texnik manba va litsenziyalar: root NOTICE va README. ARCore 1.54.0 rasmiy API,

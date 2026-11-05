@@ -141,6 +141,13 @@ void main() {
     (tester) async {
       final bridge = FakeAr(supported: true);
       await open(tester, AppLanguage.english, bridge);
+      final modes = find.byKey(const ValueKey('ar-mode-snapshot'));
+      await reveal(tester, modes);
+      await tester.tap(modes);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Fast: six points, estimated girth').last);
+      await waitIdle(tester);
+      await tester.pumpAndSettle();
       await reveal(tester, find.byType(CheckboxListTile));
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pumpAndSettle();

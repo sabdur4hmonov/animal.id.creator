@@ -26,6 +26,8 @@ import kotlin.math.*
 class ArMeasureActivity : Activity(), GLSurfaceView.Renderer {
     private lateinit var surface: GLSurfaceView
     private lateinit var label: TextView
+    private lateinit var guide: PointGuideView
+    private fun snapshotMode()=spec.optString("mode")=="snapshot_capture"
     private lateinit var spec: JSONObject
     private var session: Session? = null
     private var texture = 0
@@ -67,6 +69,7 @@ class ArMeasureActivity : Activity(), GLSurfaceView.Renderer {
             }
             session = Session(this)
             depth = session!!.isDepthModeSupported(Config.DepthMode.AUTOMATIC)
+            if(snapshotMode()&&!depth){fail("snapshot_depth_required");return}
             session!!.configure(Config(session).apply {
                 depthMode = if (depth) Config.DepthMode.AUTOMATIC else Config.DepthMode.DISABLED
                 planeFindingMode = Config.PlaneFindingMode.DISABLED
@@ -77,6 +80,9 @@ class ArMeasureActivity : Activity(), GLSurfaceView.Renderer {
             label = TextView(this).apply { textSize = 17f; setTextColor(-1); setPadding(14, 10, 14, 10); text = text("safety") }
             label.text="${text("safety")}\n${if(spec.optDouble("reference_cm",0.0)>0)text("reference") else text("bodyStart")}"
             scroll.addView(label); layout.addView(scroll, LinearLayout.LayoutParams(-1, (170*resources.displayMetrics.density).toInt()))
+            guide=PointGuideView(this).apply{right=spec.optString("view")=="right";front=spec.optString("view")=="front";step=if(snapshotMode()||spec.optDouble("reference_cm",0.0)>0)-1 else 0}
+            layout.addView(guide,LinearLayout.LayoutParams(-1,(80*resources.displayMetrics.density).toInt()))
+            if(snapshotMode())label.text=text("snapshotLive")
             surface = GLSurfaceView(this).apply {
                 setEGLContextClientVersion(2); preserveEGLContextOnPause = true; setRenderer(this@ArMeasureActivity)
                 setOnTouchListener { _, event -> if (event.action == MotionEvent.ACTION_UP) { val x=event.x;val y=event.y;queueEvent { tap = Pair(x, y) }; performClick() }; true }
@@ -84,7 +90,7 @@ class ArMeasureActivity : Activity(), GLSurfaceView.Renderer {
             layout.addView(surface, LinearLayout.LayoutParams(-1, 0, 1f))
             val actions = LinearLayout(this)
             actions.addView(Button(this).apply { setText(text("cancel")); setOnClickListener { fail("cancelled") } }, LinearLayout.LayoutParams(0, -2, 1f))
-            actions.addView(Button(this).apply { setText(text("finish")); setOnClickListener { surface.queueEvent { finishRequested = true } } }, LinearLayout.LayoutParams(0, -2, 1f))
+            actions.addView(Button(this).apply { setText(text(if(snapshotMode())"capture" else "finish")); setOnClickListener { surface.queueEvent { finishRequested = true } } }, LinearLayout.LayoutParams(0, -2, 1f))
             layout.addView(actions); setContentView(layout)
             began = System.nanoTime()
         } catch (e: Exception) { fail("session_unavailable:${e.javaClass.simpleName}") }
@@ -168,6 +174,17 @@ class ArMeasureActivity : Activity(), GLSurfaceView.Renderer {
                 hint(text("tracking"));tap=null;return
             }
             if((System.nanoTime()-began)/1e9>rule("max_session_seconds")){runOnUiThread{fail("measurement_timed_out")};return}
+            if(snapshotMode()){
+                tap=null
+                if(finishRequested){finishRequested=false
+                    try{
+                        val frozen=FrozenDepth.capture(frame,width,height,spec.getJSONObject("rules"))
+                        val file=java.io.File.createTempFile("ar-result-",".json",cacheDir);file.writeText(frozen.toString())
+                        closing=true
+                        runOnUiThread{setResult(RESULT_OK,Intent().putExtra("measurement_file",file.absolutePath));finish()}
+                    }catch(e:Exception){hint(text("snapshotNoDepth"))}
+                };return
+            }
             if(anchors.indices.any { anchors[it].trackingState!=TrackingState.TRACKING || distance(vector(anchors[it].pose),initialAnchors[it])>rule("max_anchor_drift_m") }){
                 runOnUiThread{fail("anchor_changed_repeat_measurement")};return
             }
@@ -245,6 +262,7 @@ class ArMeasureActivity : Activity(), GLSurfaceView.Renderer {
             5->if(spec.getString("mode")=="fast")text("widthRight") else text("contour")
             else->if(spec.getString("mode")=="fast")text("finish") else text("contour") }
         hint("${text("safety")}\n${points.length()}: $step")
+        runOnUiThread{guide.contour=spec.getString("mode")=="contour"&&points.length()>=2;guide.front=guide.contour||points.length()>=4&&spec.getString("mode")=="fast";guide.step=if(guide.contour)(points.length()-2)%8 else if(guide.front)points.length()-4 else points.length();guide.invalidate()}
     }
     private fun screenshot(frameTimestamp:Long){
         if(screenshots.length()>=2)return

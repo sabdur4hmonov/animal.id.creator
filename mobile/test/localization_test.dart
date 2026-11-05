@@ -125,6 +125,19 @@ void main() {
           reason: 'AR template: ${match[2]}',
         );
       }
+      final snapshotSource = await File(
+        'lib/snapshot_annotation.dart',
+      ).readAsString();
+      for (final match in RegExp(
+        r'''\bt\(\s*(['"])(.*?)\1''',
+        dotAll: true,
+      ).allMatches(snapshotSource)) {
+        expect(
+          english.containsKey(match[2]!),
+          isTrue,
+          reason: 'Snapshot: ${match[2]}',
+        );
+      }
     },
   );
 
