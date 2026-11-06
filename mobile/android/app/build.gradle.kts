@@ -6,6 +6,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val advisoryProbe = providers.gradleProperty("biolivestockProbe").orNull == "true"
+
 // Every APK bundles byte-identical authoritative YAML, without requiring Python on the build host.
 val syncOfflineConfigs by tasks.registering {
     val repository = rootProject.projectDir.parentFile.parentFile
@@ -44,6 +46,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "ai.biolivestock.biolivestock_capture"
+        manifestPlaceholders["bioApplicationLabel"] = if (advisoryProbe) "BioLivestock Synthetic Probe" else "BioLivestock Capture"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
@@ -58,6 +61,7 @@ android {
 
     buildTypes {
         release {
+            if (advisoryProbe) applicationIdSuffix = ".probe"
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
@@ -73,6 +77,7 @@ kotlin {
 
 dependencies {
     implementation("com.google.ar:core:1.54.0")
+    implementation("org.opencv:opencv:4.13.0")
 }
 
 flutter {

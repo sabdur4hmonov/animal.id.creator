@@ -1,11 +1,39 @@
-# Qishloqda serversiz yig‘ish — 2026-11-05
+# Qishloqda serversiz yig‘ish — 2026-11-06
+
+## Molni skanerlash va profil
+
+1. **Molni skanerlash** → bitta molning tumshug‘ini markazga oling →
+   **Suratga olish**. App sifatni tekshiradi. Surat xira yoki yorug‘lik
+   yomon bo‘lsa, qayta oling. Har suratni alohida oling.
+2. O‘xshash nomzod chiqsa, yangi va eski surat, birka va vaznni ko‘ring.
+   Faqat o‘sha mol ekaniga ishonchingiz komil bo‘lsa **Ha, shu mol**ni
+   bosing: surat yangi sessiya bilan o‘sha **L-…** IDga qo‘shiladi.
+   **Yo‘q, boshqa mol** orqali yangi ID oching. Bu tajribaviy signal;
+   app o‘zi ID tanlamaydi yoki yozuvlarni birlashtirmaydi.
+3. Nomzod chiqmasa, **Yangi mol**da birka/laqabni ixtiyoriy kiriting.
+   Bu avvalgi mol bo‘lsa **Saqlangan molni tanlash** orqali IDni topib
+   tasdiqlang. Birka takrorlansa, yangi ID berishdan oldin ogohlantiradi.
+   Eski yoki yangi molning profili ochiladi.
+4. **Mollarim**da ID, birka yoki laqab bo‘yicha qidiring. Profildan
+   **Yangi surat**, **AR o‘lchov** yoki **Tarozi vazni**ni tanlang.
+   Qoidalardan o‘tgan AR natijasi shu profilga avtomatik yoziladi;
+   o‘lchov rejimi, sanasi va ikki formula ko‘rinadi. Tarozi vazni alohida.
+5. Dala sinovi: avval mollarni ro‘yxatdan o‘tkazing va haqiqiy birka↔ID
+   ro‘yxatini tuting. So‘ng 5–10 tasini bosh ekrandan ataylab qayta skanerlang.
+   Nomzod chiqmasa, to‘g‘ri IDni qo‘lda tanlang; boshqa IDni tasdiqlamang.
+   **Vositalar**da topilgan/topilmagan qayta skanlar va yangi mollardagi
+   ogohlantirishlar sanog‘ini ko‘ring. ZIPdagi `ledger/match_decisions.csv`
+   qarorlarni saqlaydi. Bu sanovlar operator tasdiqlariga asoslanadi.
+
+## Olti ko‘rinish va zaxira
 
 P0 oqimi: app ichida source YAML bilan bir xil oflayn qoidalar bor. Yangi
 o‘rnatilgan telefonda server yoki API token shart emas. Samolyot rejimida
 **Vositalar → Oflayn operatorni sozlash** orqali lotin harflarida masalan
 `SARDOR-01` kiriting. Bu operator bayonoti; serverga kirish kaliti emas.
 
-1. **Yangi vaqtinchalik hayvon**: birka yoki laqab, xohlasangiz Unicode izoh.
+1. Eski olti ko‘rinishli yig‘ish ekrani **Vositalar** orqali ochiladi.
+   **Yangi vaqtinchalik hayvon**: birka yoki laqab, xohlasangiz Unicode izoh.
    App `L-…` mahalliy yorliq beradi. Uni daftarga yozing; bir hayvon uchun keyingi
    suratlarda ayni yorliqni tanlang. Bu rasmiy MAA ID emas, serverda ro‘yxatda yo‘q.
    Boshqa telefonda shu hayvonga avtomatik bog‘lanmaydi.

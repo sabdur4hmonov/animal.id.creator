@@ -52,11 +52,12 @@ class _ArScreenState extends State<ArScreen> {
       UiText(key, args).resolve(context);
   Future<void> _load() async {
     try {
-      config =
-          widget.config ??
-          await bundledConfig(
-            'business_configs-${widget.animal['species']}.yaml',
-          );
+      config = arPolicy(
+        widget.config ??
+            await bundledConfig(
+              'business_configs-${widget.animal['species']}.yaml',
+            ),
+      );
       if (config!['enabled'] != true || config!['ar'] is! Map) {
         throw const FormatException('AR config unavailable');
       }

@@ -9,11 +9,25 @@ import android.content.Intent
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.Session
 import com.google.ar.core.Config
+import org.json.JSONObject
+import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
+    private val matchingWorker=Executors.newSingleThreadExecutor()
     private var arResult: MethodChannel.Result? = null
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger,"ai.biolivestock/advisory_matching")
+            .setMethodCallHandler { call,result ->
+                if(call.method!="compare")result.notImplemented()
+                else matchingWorker.execute {
+                    try {
+                        val request=JSONObject(call.arguments as String)
+                        val output=AdvisoryOrb(applicationContext,request.getJSONObject("rules"),request.getString("rules_sha256")).compare(request)
+                        runOnUiThread { result.success(output.toString()) }
+                    }catch(e:Throwable){runOnUiThread{result.error("matching_unavailable",e.javaClass.simpleName,null)}}
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "ai.biolivestock/ar_measurement")
             .setMethodCallHandler { call, result ->
                 when(call.method) {
@@ -60,6 +74,8 @@ class MainActivity : FlutterActivity() {
                 }
             }
     }
+
+    override fun onDestroy(){matchingWorker.shutdown();super.onDestroy()}
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode,resultCode,data)

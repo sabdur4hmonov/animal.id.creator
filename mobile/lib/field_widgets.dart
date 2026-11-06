@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'field_store.dart';
 import 'localization.dart';
+import 'local_profiles.dart';
 
 Future<Map<String, dynamic>?> fieldAnimalDialog(
   BuildContext context,
   FieldStore store,
-  DateTime now,
-) async {
+  DateTime now, {
+  String? registrationScanKey,
+  bool allowExisting = false,
+}) async {
   var tag = '', notes = '';
   String? error;
   bool saving = false;
@@ -17,7 +20,11 @@ Future<Map<String, dynamic>?> fieldAnimalDialog(
       builder: (context, refresh) => PopScope(
         canPop: !saving,
         child: AlertDialog(
-          title: const FieldText(UiText('Temporary animal')),
+          title: FieldText(
+            registrationScanKey == null
+                ? const UiText('Temporary animal')
+                : const UiText('New animal'),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -53,6 +60,15 @@ Future<Map<String, dynamic>?> fieldAnimalDialog(
             ),
           ),
           actions: [
+            if (allowExisting)
+              TextButton(
+                onPressed: saving
+                    ? null
+                    : () => Navigator.pop(context, <String, dynamic>{
+                        'pick_existing': true,
+                      }),
+                child: const FieldText(UiText('Choose existing animal')),
+              ),
             TextButton(
               onPressed: saving ? null : () => Navigator.pop(context),
               child: const FieldText(UiText('Cancel')),
@@ -63,10 +79,60 @@ Future<Map<String, dynamic>?> fieldAnimalDialog(
                   : () async {
                       refresh(() => saving = true);
                       try {
+                        final normalized = normalizeFieldTag(tag);
+                        final same = normalized.isEmpty
+                            ? <String>[]
+                            : (await store.records('animal'))
+                                  .where(
+                                    (r) =>
+                                        normalizeFieldTag(
+                                              r['tag'] as String? ?? '',
+                                            ) ==
+                                            normalized &&
+                                        (registrationScanKey == null ||
+                                            r['registration_scan_key'] !=
+                                                registrationScanKey),
+                                  )
+                                  .map((r) => r['label'] as String)
+                                  .toList();
+                        if (same.isNotEmpty && context.mounted) {
+                          final separate = await showDialog<bool>(
+                            context: context,
+                            builder: (confirm) => AlertDialog(
+                              title: const FieldText(
+                                UiText('Repeated tag or nickname'),
+                              ),
+                              content: FieldText(
+                                UiText(
+                                  'This tag or nickname is already used by {0}. Create a separate animal?',
+                                  [same.join(', ')],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(confirm, false),
+                                  child: const FieldText(UiText('Cancel')),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(confirm, true),
+                                  child: const FieldText(
+                                    UiText('Create separate ID'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (separate != true) {
+                            if (context.mounted) refresh(() => saving = false);
+                            return;
+                          }
+                        }
                         final animal = await store.newAnimal(
                           tag.trim(),
                           notes.trim(),
                           now,
+                          registrationScanKey: registrationScanKey,
                         );
                         if (context.mounted) Navigator.pop(context, animal);
                       } catch (e) {

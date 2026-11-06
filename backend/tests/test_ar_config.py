@@ -3,7 +3,12 @@ from copy import deepcopy
 import pytest
 from pydantic import ValidationError
 
-from app.core.business_config import ArConfig, BusinessConfig, load_business_configs
+from app.core.business_config import (
+    AdvisoryMatchingConfig,
+    ArConfig,
+    BusinessConfig,
+    load_business_configs,
+)
 from app.core.settings import get_settings
 from app.core.species import Species
 
@@ -11,7 +16,9 @@ from app.core.species import Species
 def test_ar_is_additive_and_sheep_stays_disabled():
     configs = load_business_configs(get_settings().business_config_dir)
     cattle = configs[Species.cattle]
-    assert cattle.config_version == 3
+    assert cattle.config_version == 4
+    assert cattle.ar_policy_version == 3
+    assert cattle.advisory_matching.top_k == 3
     assert cattle.ar.min_repeats == 2
     assert cattle.ar.max_repeats == 3
     assert cattle.ar.min_calibration_animals == 10
@@ -19,10 +26,29 @@ def test_ar_is_additive_and_sheep_stays_disabled():
     assert cattle.ar.snapshot_min_point_confidence == 0.8
     assert not configs[Species.sheep].enabled
     assert configs[Species.sheep].ar is None
+    assert configs[Species.sheep].advisory_matching is None
     legacy = deepcopy(cattle.model_dump())
     legacy.pop("ar")
+    legacy.pop("ar_policy_version")
+    legacy.pop("advisory_matching")
     legacy["config_version"] = 1
     assert BusinessConfig.model_validate(legacy).ar is None
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"feature_limit": 64, "min_inliers": 65},
+        {"patch_size": 30},
+        {"lowe_ratio": 1},
+        {"top_k": 0},
+    ],
+)
+def test_advisory_thresholds_reject_invalid_values(changes):
+    cattle = load_business_configs(get_settings().business_config_dir)[Species.cattle]
+    values = cattle.advisory_matching.model_dump()
+    with pytest.raises(ValidationError):
+        AdvisoryMatchingConfig(**(values | changes))
 
 
 @pytest.mark.parametrize(

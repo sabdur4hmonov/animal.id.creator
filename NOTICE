@@ -28,6 +28,14 @@ https://developers.google.com/ar/develop/java/depth/raw-depth
 docs/design/mol-olchash-nuqtalari.png is the user-supplied design reference;
 the runtime schematic is drawn in Dart/Kotlin, with no copied image asset.
 
+Android advisory matching uses the official OpenCV Android SDK AAR
+org.opencv:opencv:4.13.0. We chose it for the native, offline ORB, Hamming
+matching and RANSAC APIs without an additional Flutter wrapper or model.
+The Kotlin adapter and Flutter workflow are original project code.
+Artifact: https://central.sonatype.com/artifact/org.opencv/opencv/4.13.0
+Apache License 2.0: https://github.com/opencv/opencv/blob/4.13.0/LICENSE
+The unchanged license is shipped in mobile/assets/licenses/opencv-4.13.0.txt.
+
 Flutter's generated application license registry also retains dependency licenses.
 Other existing dependencies retain their own licenses; this file does not relicense
 the repository or declare every dependency permissively licensed.

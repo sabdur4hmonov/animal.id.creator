@@ -61,12 +61,40 @@ class ArConfig(ConfigBase):
         return self
 
 
+class AdvisoryMatchingConfig(ConfigBase):
+    # Engineering defaults for human-reviewed candidates; not calibrated accuracy.
+    max_image_side: int = Field(ge=128, le=1024)
+    center_crop_fraction: float = Field(gt=0.25, le=1)
+    feature_limit: int = Field(ge=64, le=2048)
+    pyramid_scale: float = Field(gt=1, le=2)
+    pyramid_levels: int = Field(ge=1, le=16)
+    edge_threshold: int = Field(ge=1, le=100)
+    patch_size: int = Field(ge=3, le=99)
+    fast_threshold: int = Field(ge=1, le=100)
+    lowe_ratio: float = Field(gt=0, lt=1)
+    ransac_reprojection_px: float = Field(gt=0, le=20)
+    ransac_iterations: int = Field(ge=10, le=5000)
+    ransac_confidence: float = Field(gt=0, lt=1)
+    min_inliers: int = Field(ge=4, le=2048)
+    min_inlier_ratio: float = Field(gt=0, le=1)
+    top_k: int = Field(ge=1, le=10)
+    thumbnail_max_side: int = Field(ge=64, le=512)
+
+    @model_validator(mode="after")
+    def valid_feature_settings(self):
+        if self.min_inliers > self.feature_limit or self.patch_size % 2 == 0:
+            raise ValueError("Invalid advisory feature settings")
+        return self
+
+
 class BusinessConfig(ConfigBase):
     species: Species
     enabled: bool
     config_version: int = Field(ge=1)
+    ar_policy_version: int | None = Field(default=None, ge=1)
     weight: WeightConfig
     ar: ArConfig | None = None
+    advisory_matching: AdvisoryMatchingConfig | None = None
 
 
 def load_business_configs(directory: Path):

@@ -72,6 +72,53 @@ class OfflineQueue {
     return QueuedCapture(journal, image.path);
   }
 
+  /// Publish a staged scan with the operator's explicit final animal selection.
+  /// The image is already durable; a retry may only replay identical metadata.
+  Future<QueuedCapture> adoptPrepared(
+    String key,
+    Map<String, dynamic> metadata,
+    Map<String, dynamic> quality,
+    String backend,
+  ) async {
+    if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(key)) {
+      throw const FormatException('Unsafe prepared key');
+    }
+    final image = File('${root.path}/$key.jpg'),
+        entry = File('${root.path}/entry-$key.json');
+    if (await FileSystemEntity.type(image.path, followLinks: false) !=
+        FileSystemEntityType.file) {
+      throw const FormatException('Prepared original missing');
+    }
+    final journal = CaptureJournal.decode(
+      jsonDecode(
+        jsonEncode({
+          'version': 1,
+          'key': key,
+          'metadata': metadata,
+          'quality': quality,
+          'backend': backend,
+        }),
+      ),
+    );
+    final type = await FileSystemEntity.type(entry.path, followLinks: false);
+    if (type == FileSystemEntityType.file) {
+      final old = CaptureJournal.decode(
+        jsonDecode(await entry.readAsString()),
+        filename: 'entry-$key.json',
+      );
+      if (jsonEncode(old.toJson()) != jsonEncode(journal.toJson())) {
+        throw const FormatException(
+          'Prepared scan already linked to a different record',
+        );
+      }
+    } else if (type == FileSystemEntityType.notFound) {
+      await _atomicJson('entry-$key.json', journal.toJson());
+    } else {
+      throw const FormatException('Unsafe prepared journal');
+    }
+    return QueuedCapture(journal, image.path);
+  }
+
   Future<List<T>> _batched<T>(
     List<QueuedCapture> entries,
     Future<T> Function(QueuedCapture) read,

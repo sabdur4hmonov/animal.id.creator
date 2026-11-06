@@ -1,6 +1,7 @@
 species: cattle
 enabled: true
-config_version: 3
+config_version: 4
+ar_policy_version: 3
 weight:
   schoorl_offset_cm: 22
   denominator: 100
@@ -32,3 +33,21 @@ ar:
   snapshot_max_depth_m: 8
   snapshot_min_point_confidence: 0.8
   snapshot_max_depth_pixels: 1048576
+# Initial uncalibrated advisory settings; not biometric acceptance thresholds.
+advisory_matching:
+  max_image_side: 480
+  center_crop_fraction: 0.72
+  feature_limit: 512
+  pyramid_scale: 1.2
+  pyramid_levels: 8
+  edge_threshold: 24
+  patch_size: 31
+  fast_threshold: 18
+  lowe_ratio: 0.78
+  ransac_reprojection_px: 3.0
+  ransac_iterations: 600
+  ransac_confidence: 0.995
+  min_inliers: 16
+  min_inlier_ratio: 0.4
+  top_k: 3
+  thumbnail_max_side: 160

@@ -1,8 +1,77 @@
 # BioLivestock AI — project progress
 
-Last live repository inspection: 2026-11-05, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
+Last live repository inspection: 2026-11-06, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
 
 ## Current stop point
+
+**Offline profiles and advisory rescan — 2026-11-06.** Main screen now opens
+one native-camera scan flow with the existing quality gates; from a match
+warning or manual lookup, only the operator can confirm an existing ID.
+Otherwise the new-animal form allocates a local L-ID. Interrupted assignments
+retain the original photo and replay only the chosen ID. Profiles keep all
+sessions/photos, both formula estimates, latest rate and ranges, and dated
+scale observations. Completed valid AR sets already save to the local ledger
+and now refresh the profile on return. Lists use capture-date ordering and
+hash-keyed 160px thumbnails; raw Depth/JPEG events are not decoded for lists.
+Previous P0/manual authenticated upload and AR fast/contour/snapshot workflows
+remain available. Cattle business config v4 adds advisory gates; the separate
+AR policy digest stays v3 to preserve existing correction cohorts. Sheep is
+unchanged and disabled.
+
+**Duplicate review is experimental.** Android uses official OpenCV
+`org.opencv:opencv:4.13.0` (Apache-2.0 license shipped in the APK, see NOTICE).
+Original Kotlin code uses grayscale center ROI, ORB descriptors, Hamming
+Lowe-ratio matches, RANSAC inliers and per-ID top-3 ranking. Cached descriptors
+are keyed by policy and source image SHA-256. There is no model checkpoint,
+identity assertion, auto-link, merge, or accuracy percentage. Case/space
+normalized tag collisions get a separate confirmation. Raw append-only
+evaluations/decisions and `ledger/match_decisions.csv` record the rule hashes,
+scores, session and human decision, including manual matches with no warning.
+Tools denominators count only adjudicated new/repeat scans.
+
+**Direct phone release verification.** ARM64 signed APK
+`data/artifacts/profiles-advisory-20261106/app-release.apk`, **47,821,782 bytes**,
+SHA-256 **0e185a9995a085e0f5d9c04b2b2531a1cef3072f29dd67f64bbe6824b2a90275**.
+Android package and version code unchanged, APK v2 and same Android Debug
+signer verified; no token included. Four YAML configs, manifest, four locale
+catalogs and OpenCV license verified byte-for-byte. Build: from `mobile/android`,
+`./gradlew.bat :app:assembleRelease -Psplit-per-abi=true -Ptarget-platform=android-arm64 -Pforce-version-code-ignoring-abi=true`.
+`adb install -r` succeeded on **23117RA68G** Android 16 and cold launch was OK.
+UI dumps `data/dev/advisory-device-{home,roster}.xml` show the new scan button
+and original **L-08950445754DD715 / TEST_NOT_CATTLE** retained in Mollarim.
+No application data reset, no backend deployment, no push.
+
+**Synthetic verification on 23117RA68G.** Separate `.probe` APK, with gallery
+copy disabled, ran real OpenCV on 30 synthetic identities × 6 JPEGs. Three
+warm requests completed in **1.299 / 1.335 / 1.320 s**, 180 compared,
+181 cache hits including the query, no extraction or failed photos; cold
+request with 180 extractions took **6.331 s**. Exact image: 512/512 inliers;
+rotated/cropped: 256/265; unrelated texture and deliberately strict threshold:
+no warning. Isolated empty roster → 3 local IDs → native comparison →
+simulated human confirmation → reopen same ID with 2 photos and still only
+3 animals. No synthetic images were added to the production roster or album.
+Raw report: `data/artifacts/profiles-advisory-20261106/synthetic-phone-probe.json`.
+To rebuild the probe, use the ARM64 command above plus
+`-PbiolivestockProbe=true -Ptarget=tool/advisory_device_probe.dart`;
+verify the APK package suffix `.probe` before any install. These synthetic
+results verify the mechanism and timing, not accuracy on animals.
+
+**Host verification:** Flutter analyzer clean, **150 Flutter tests** (including
+the scan/confirmation/restart widget flow, all four locales at 320×720 and
+200% text for profile/roster, immutable scan evidence, AR digest compatibility,
+and ZIP ledger), **221 backend + 48 research tests**, and Ruff clean. See
+`data/dev/advisory-{flutter-verified,analyze-verified,backend-final,research-final}.log`.
+
+**Field next step:** follow the updated [offline field guide](docs/OFFLINE_FIELD_GUIDE.md):
+enroll each actual animal with separate muzzle photos, then intentionally
+rescan 5–10 verified identities; manually confirm correct IDs even when there
+is no warning. Compare actual AR results to scale values only after checking
+the phone's ARCore/Depth availability. Real cattle matching, weight accuracy,
+Depth capture, and real camera/GPS/gallery behavior in the new workflow have
+not been verified in this session. Synthetic tests are kept out of the
+production roster.
+
+**Phone ID proof complete — 2026-11-05:** user created `TEST_NOT_CATTLE`, app automatically issued **L-08950445754DD715**. Actual before/after XML `data/dev/device-roster-{pre,post}.xml` shows exactly the same ID+tag after force-stop/cold start, no app data reset. Offline operator SARDOR-01 visible. AR screen probed on 23117RA68G Android16: `UNKNOWN_CHECKING`, `Depth ?`, `AR ?`; com.google.ar.core absent initially. Do not claim unsupported or real Depth capture from this. Restored global USB stay-awake to 0. No cow/image/weight was acquired. Snapshot UI milestone **f02ff8d**. Starting My Cattle/profile/advisory implementation below. Official OpenCV Android Maven artifact `org.opencv:opencv:4.13.0` and tag license verified; native adapter will use original OpenCV ORB/KNN/RANSAC code, no external models/account, preserve ARCore optional path.
 
 **Active next request — 2026-11-05:** after checking local ID persistence on the phone, implement the user-approved offline **My Cattle / profile / one Scan Animal** workflow plus **advisory ORB duplicate candidates**. This supersedes the earlier open QR/manual-vs-matching question: no QR, no definitive biometric recognition or automatic ID/link/merge. Main camera→existing QC→advisory top-3→operator confirms existing (new visit/group, same ID and profile), rejects/chooses new (auto local L-ID, optional tag/notes, profile), or manually chooses an existing animal even with no warning. Empty roster goes straight to new registration. Profile latest weight auto-updates from a completed saved AR set, both formulas/date/mode, price range/latest dated price and scale weight, all photos/history/prices, new photo/AR/scale buttons. Searchable newest-first compact roster, latest thumbnail/ID/tag/weight/date; cached resized thumbnails and no bulk depth/base64 parsing to display list. Preserve legacy authenticated/P0 and all snapshot/fast/contour flows. User approved native official OpenCV ORB (or permissive package); verify exact SDK/source/license. Grayscale + center ROI, Lowe ratio + RANSAC inliers/ratio; config-only thresholds and feature sizing, hash-keyed descriptor cache, per-animal best score, top3; explicit uncalibrated advisory signal, no accuracy percentage. Normalize tag case/whitespace, warn separately. Append-only evaluation and decision evidence incl manual missed-match adjudication; ZIP ledger/match_decisions.csv, Tools repeat-found/missed/new false-warning counts with denominators. Target 3s on 30×6 warm cached phone comparisons; prove on device or mark unverified, never fake benchmark. Tests same/rotated/cropped/different texture and full empty→3→rescan→same-profile flow; physical no cattle today, distinguish synthetic from real. Four locales/320×720 at 200%, tests/build/SHA/new artifact and install -r only. No data deletion or push. Update guide with enroll all then intentionally rescan 5–10 and compare human-confirmed identities.
 

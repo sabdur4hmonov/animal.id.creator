@@ -1,8 +1,13 @@
 # BioLivestock AI — Phase 1
 
-Fresh-install offline field collection and local Android AR measurement: follow
+Fresh-install offline cattle profiles, field collection and Android AR measurement: follow
 [the Uzbek farm guide](docs/OFFLINE_FIELD_GUIDE.md). No API token/server is required
-for provisional L- animals. AR defaults to frozen left/right snapshots (four
+for provisional L- animals. **Scan animal** captures a quality-checked muzzle
+photo, suggests local repeat candidates on Android, and lets the operator choose
+an existing ID or create a new one. Open **My cattle** for photo and weight
+history. Suggestions use the official OpenCV Android SDK's ORB features and
+require human confirmation. The thresholds are experimental; field accuracy has
+not been established. AR defaults to frozen left/right snapshots (four
 simple body points each), with optional two-point front width. Snapshot requires
 same-frame raw Depth/confidence; without front width it needs the median ratio
 from at least three distinct same-species/breed animals measured in fast mode.

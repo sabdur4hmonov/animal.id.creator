@@ -9,7 +9,7 @@
     <queries><package android:name="com.google.ar.core" /></queries>
     <application
         android:requestLegacyExternalStorage="true"
-        android:label="BioLivestock Capture"
+        android:label="${bioApplicationLabel}"
         android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

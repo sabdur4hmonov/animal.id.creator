@@ -7,6 +7,14 @@ import 'depth_snapshot.dart';
 
 String configDigest(Map config) =>
     sha256.convert(utf8.encode(jsonEncode(config))).toString();
+// Matching-only updates must not discard existing AR correction cohorts.
+Map<String, dynamic> arPolicy(Map<String, dynamic> business) => {
+  for (final entry in business.entries)
+    if (!{'ar_policy_version', 'advisory_matching'}.contains(entry.key))
+      entry.key: entry.key == 'config_version'
+          ? (business['ar_policy_version'] ?? entry.value)
+          : entry.value,
+};
 String calibrationGroup(
   Map config,
   String mode,

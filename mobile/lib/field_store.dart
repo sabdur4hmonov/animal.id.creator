@@ -80,6 +80,7 @@ class FieldStore {
   Future<List<Map<String, dynamic>>> records(
     String kind, {
     bool strict = true,
+    Set<String>? eventTypes,
   }) async {
     final values = <Map<String, dynamic>>[];
     if (!await root.exists()) {
@@ -95,6 +96,10 @@ class FieldStore {
         throw const FormatException('Linked field record rejected');
       }
       try {
+        if (eventTypes != null &&
+            !eventTypes.contains(await _eventType(file))) {
+          continue;
+        }
         final value = journalMap(jsonDecode(await file.readAsString()));
         if (value['version'] != 1) {
           throw const FormatException(
@@ -117,11 +122,28 @@ class FieldStore {
     return values;
   }
 
+  /// ArRecords puts the event envelope at the end. Read only its small trailer
+  /// before loading a requested compact event; never decode depth/JPEG for a list.
+  Future<String?> _eventType(File file) async {
+    final reader = await file.open();
+    try {
+      final size = await reader.length(), length = size > 2048 ? 2048 : size;
+      await reader.setPosition(size - length);
+      final tail = utf8.decode(await reader.read(length), allowMalformed: true);
+      return RegExp(
+        r'"record_type":"([a-z_]+)","created_at":"[^"\r\n]+","operator_id":"[A-Za-z0-9_-]+"}\s*$',
+      ).firstMatch(tail)?[1];
+    } finally {
+      await reader.close();
+    }
+  }
+
   Future<Map<String, dynamic>> newAnimal(
     String tag,
     String notes,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    String? registrationScanKey,
+  }) async {
     if (_writing) {
       throw StateError('Registration is already running');
     }
@@ -134,7 +156,17 @@ class FieldStore {
     _writing = true;
     try {
       // Random namespace avoids collisions between disconnected phones; not an official ID.
-      final existing = (await records('animal')).map((a) => a['label']).toSet();
+      final roster = await records('animal');
+      if (registrationScanKey != null) {
+        if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(registrationScanKey)) {
+          throw const FormatException('Invalid registration scan key');
+        }
+        final prior = roster
+            .where((a) => a['registration_scan_key'] == registrationScanKey)
+            .firstOrNull;
+        if (prior != null) return prior;
+      }
+      final existing = roster.map((a) => a['label']).toSet();
       var key = randomFieldKey();
       while (existing.contains('L-${key.substring(0, 16).toUpperCase()}')) {
         key = randomFieldKey();
@@ -146,6 +178,7 @@ class FieldStore {
         'species': 'cattle',
         'provisional': true,
         'registered_on_server': false,
+        'registration_scan_key': ?registrationScanKey,
         'tag': tag,
         'notes': notes,
         'operator_id': operatorId,
@@ -217,6 +250,15 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
     strict: false,
   )).where((r) => r['result'] == null || r['result'] is Map).toList();
   final prices = await store.records('price', strict: false);
+  final evaluations = measurements
+      .where((r) => r['record_type'] == 'match_evaluation')
+      .toList();
+  final decisions = {
+    for (final d in measurements.where(
+      (r) => r['record_type'] == 'match_decision',
+    ))
+      d['evaluation_key']: d,
+  };
   if (animals.isEmpty &&
       scans.isEmpty &&
       measurements.isEmpty &&
@@ -286,6 +328,62 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
   return {
     'roster.csv': utf8.encode(fieldCsv(roster)),
     'scans.csv': utf8.encode(fieldCsv(ledger)),
+    if (evaluations.isNotEmpty)
+      'match_decisions.csv': utf8.encode(
+        fieldCsv([
+          [
+            'evaluation_key',
+            'scan_key',
+            'query_sha256',
+            'species',
+            'created_at',
+            'operator_id',
+            'config_sha256',
+            'matching_rules_sha256',
+            'status',
+            'reference_photos',
+            'compared_photos',
+            'failed_photos',
+            'elapsed_ms',
+            'candidates',
+            'decision',
+            'decision_kind',
+            'chosen_id',
+            'warning_shown',
+            'chosen_candidate',
+            'decided_at',
+            'decision_operator',
+            'session',
+            'raw_evaluation_path',
+          ],
+          for (final e in evaluations)
+            [
+              e['key'],
+              e['scan_key'],
+              e['query_sha256'],
+              e['species'],
+              e['created_at'],
+              e['operator_id'],
+              e['config_sha256'],
+              e['matching_rules_sha256'],
+              e['status'],
+              e['reference_photos'],
+              e['compared_photos'],
+              e['failed_photos'],
+              e['client_elapsed_ms'],
+              jsonEncode(e['candidates']),
+              decisions[e['key']]?['action'] ?? 'pending',
+              decisions[e['key']]?['decision_kind'],
+              decisions[e['key']]?['label'],
+              decisions[e['key']]?['warning_shown'],
+              decisions[e['key']]?['chosen_candidate'],
+              decisions[e['key']]?['created_at'],
+              decisions[e['key']]?['operator_id'],
+              decisions[e['key']]?['session'],
+              'queue/field-measurement-${e['key']}.json',
+            ],
+        ]),
+      ),
     if (measurements.isNotEmpty)
       'measurements.csv': utf8.encode(
         fieldCsv([

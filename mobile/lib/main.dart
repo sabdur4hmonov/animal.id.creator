@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'capture_environment.dart';
 import 'localization.dart';
 import 'uzbek_cyrillic_material.dart';
+import 'field_home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +49,19 @@ class _BioLivestockAppState extends State<BioLivestockApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: CaptureScreen(environment: widget.environment),
+        home: widget.environment == null
+            ? Builder(
+                builder: (context) => FieldHome(
+                  environment: CaptureEnvironment.native(
+                    backupShareText: () => FieldLocalizations.of(context).resolve(
+                      const UiText(
+                        'BioLivestock phone backup — save a copy outside this app.',
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : CaptureScreen(environment: widget.environment),
       ),
     ),
   );
