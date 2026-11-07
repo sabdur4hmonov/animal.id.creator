@@ -4,6 +4,26 @@ Last live repository inspection: 2026-11-06, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Pitch / product update — 2026-11-07:** Sardorbek chose the public brand
+**Chorvam**, with a whole-life cattle-passport vision: birth/growth/health,
+ownership/sales, insurance/collateral support and slaughter history. Reviewed
+all 12 pages of his PDF visually and against current code evidence; see
+docs/CHORVAM_PITCH_REVIEW.md for corrections, usable copy and official sources.
+No app/package/storage rename or feature implementation was requested in
+this review. Supplied PDF unchanged; no application/message submission.
+**New user-confirmed evidence:** Sardorbek says he tested with **6 real cattle**;
+the PDF reports offline registration and rescan/profile lookup. We have not
+independently examined the trial logs, images or attempt counts. Earlier
+'no real-animal trial' notes are superseded by this founder report, not by
+an independently validated accuracy claim. No 100% identity/weight guarantee.
+Video best-frame extraction, veterinary/birth/growth modules, marketplace,
+full automatic local-passport sync and bank/insurance integrations remain
+future capabilities. Current L-ID upload needs explicit permanent registration.
+Official accelerator rechecked: deadline 9 Nov 2026 and stated 2–5 founders;
+Sardorbek remains solo, eligibility clarification is still outstanding.
+Next application work: qualify claims/statuses, add real screenshots/trial
+counts, resolve funding placeholder with a costed ask and prepare demo.
+
 **Offline profiles and advisory rescan — 2026-11-06.** Main screen now opens
 one native-camera scan flow with the existing quality gates; from a match
 warning or manual lookup, only the operator can confirm an existing ID.
