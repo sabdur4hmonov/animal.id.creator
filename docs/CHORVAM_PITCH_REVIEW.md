@@ -11,12 +11,13 @@ The vision is a cattle passport covering birth, growth, verified veterinary
 records, ownership and sales, insurance/collateral and eventual slaughter.
 Unimplemented integrations/modules belong to the roadmap.
 
-**New founder report, 7 November:** Sardorbek explicitly confirmed a trial
-with **6 real cattle**. The PDF reports offline registration and successful
-rescan/profile lookup. We did not independently inspect its photos/video,
-ground-truth roster or decision logs. Correct-rescan numerator/denominator
-is unknown. Treat it as founder-reported initial field evidence. Earlier
-notes saying no real cattle trial are superseded by this report.
+**Corrected founder report, 7 November:** Sardorbek clarified that the trial
+was yesterday (**6 November 2026**) and only **2 cattle were properly tested**;
+animal motion interfered with capture. His earlier six-cattle statement and
+the PDF must not become 'six successful identifications'. We did not inspect
+field photos/video or logs. Attempt counts, confirmed correct matches and
+error rates are unknown; do not call this 2/2 accuracy. Present it as an
+initial two-animal field trial that exposed a capture-usability problem.
 
 The Nov6 installation, retained local ID and synthetic native ORB benchmark
 were directly verified separately. Current matching is advisory and requires
@@ -41,7 +42,7 @@ inspection/history for one bank or insurance workflow.
 | 3–4 | Candidate → operator confirmation → profile. Replace 'Xato ID berilmaydi' with 'IDga bog‘lash operator tasdig‘i bilan; xatolar pilotda o‘lchanadi'. Explain supported upload rather than full autonomous sync. |
 | 5 | 'Egalik tarixi: mavjud; bozor: rejada'. 'Garov/sug‘urta: pilotga taklif' rather than 'Pilotda' without an agreed partner. Health, birth, growth chart and meat-batch traceability are future modules. |
 | 6 | 'Ishlaydigan MVP; dala validatsiyasi davom etmoqda'. Distinguish phone offline flows from server-side ownership/status/terminal events. Remove 'Har qanday telefonda'. Add three real screenshots. |
-| 7 | Keep six-cattle trial as founder-confirmed early evidence; add date, number of rescan attempts and correct/missed/wrong outcomes if recorded. Mark video best-frame selection as planned. |
+| 7 | Replace six successful cattle with the clarified initial two-animal trial on 6 November. Explain motion/capture difficulty. No accuracy fraction was recorded. Video best-frame selection is planned. |
 | 8 | Dated primary sources/direct links. A deferred animal-registration obligation is not itself proof of a specific fine. Herd size/total bank lending are context, not paying market size. |
 | 9 | 'Bank/sug‘urta tekshiruviga ma’lumot beradi'. A flag does not establish an insurance policy, actual registered collateral or credit approval. Fraud reduction remains a pilot hypothesis. |
 | 10 | Good proposed 2-farm/100-cattle/3-visit scope, subject to access. Use independent tags and denominators for identity errors. |
@@ -55,8 +56,9 @@ yuritadigan oflayn yechim. Ishlaydigan MVP tumshuq suratini sifat nazoratidan
 o‘tkazadi, shu telefondagi o‘xshash yozuvlarni taklif qiladi va operator
 tasdig‘idan keyin suratni mavjud yoki yangi mol profiliga saqlaydi.
 Dalada ma’lumot internetsiz yig‘iladi; qo‘llab-quvvatlanadigan serverga
-yuborish oqimi internet tiklangach bajariladi. Founder olti haqiqiy molda
-dastlabki sinov o‘tkazgan; kengroq tanish va vazn aniqligi hali o‘lchanadi.
+yuborish oqimi internet tiklangach bajariladi. Founder ikki haqiqiy molda
+dastlabki amaliy sinov o‘tkazgan; mol harakati sabab sifatli kadr olish
+qiyinligi aniqlangan. Kengroq tanish va vazn aniqligi hali o‘lchanadi.
 
 Uzoq muddatli maqsad — tug‘ilish, o‘sish, veterinar tasdiqlagan sog‘liq tarixi,
 egalik va savdo, sug‘urta/garov holati va so‘yish qaydlarini bog‘lash.

@@ -1,5 +1,13 @@
 # BioLivestock AI — Agrobank / AgroVentures ariza va pilot qoralamasi
 
+**2026-11-07 yangilanishi:** ommaviy nom **Chorvam**. Hozirgi tadqiqot va
+yangilangan ariza matni: [CHORVAM_MARKET_AND_APPLICATION.md](CHORVAM_MARKET_AND_APPLICATION.md).
+Quyidagi Oct29 qoralama tarixiy; telefon o‘rnatilishi tekshirildi, founder
+Nov6 sinovida **ikki molda** to‘g‘ri amaliy sinov qilganini aniqlashtirdi.
+Capture paytida mol harakati muammo; matching/vazn accuracy foizi yo‘q.
+Solo eligibility va founder tanlagan pul so‘rovi hali ochiq. Pastdagi eski
+holat, muddat va feature bayonotlarini yangilanmaganicha yubormang.
+
 Tayyorlangan: 2026-10-29, Asia/Tashkent. Bu review uchun matnlar; ariza yuborilmadi, hech kimga xabar jo‘natilmadi va shartlar qabul qilinmadi. Sana, talab va formani submitdan oldin yana tekshirish kerak.
 
 ## Hozir aniq bo‘lgan holat

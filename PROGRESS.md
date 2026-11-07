@@ -1,8 +1,23 @@
 # BioLivestock AI — project progress
 
-Last live repository inspection: 2026-11-06, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
+Last live repository inspection: 2026-11-07, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
 
 ## Current stop point
+
+**Latest field correction / market research — 2026-11-07:** Sardorbek
+clarified his earlier six-animal report: the trial was **2026-11-06** and
+only **2 cattle were properly tested**, with moving cattle making sharp
+capture difficult. Do not reuse the PDF's 'six successfully recognized'
+claim or invent 2/2 accuracy. Matching attempt counts/outcomes remain
+unrecorded; this is founder-reported early field/usability evidence.
+Capture completion and motion handling are the next validation priority;
+short-video best-frame capture is still planned, not implemented.
+Market/application research in docs/CHORVAM_MARKET_AND_APPLICATION.md:
+government VIS-CHINOR exists; position a proposed complementary offline
+inspection workflow rather than a first national registry. Primary sources
+show sector financing, institutional digitization and foreign identity/
+insurance partnerships, not paid demand for Chorvam. No organization was
+contacted or form submitted. Existing app and user data are unchanged.
 
 **Pitch / product update — 2026-11-07:** Sardorbek chose the public brand
 **Chorvam**, with a whole-life cattle-passport vision: birth/growth/health,
@@ -11,7 +26,7 @@ all 12 pages of his PDF visually and against current code evidence; see
 docs/CHORVAM_PITCH_REVIEW.md for corrections, usable copy and official sources.
 No app/package/storage rename or feature implementation was requested in
 this review. Supplied PDF unchanged; no application/message submission.
-**New user-confirmed evidence:** Sardorbek says he tested with **6 real cattle**;
+**Initial report, superseded by the correction above:** Sardorbek said he tested with **6 real cattle**;
 the PDF reports offline registration and rescan/profile lookup. We have not
 independently examined the trial logs, images or attempt counts. Earlier
 'no real-animal trial' notes are superseded by this founder report, not by
