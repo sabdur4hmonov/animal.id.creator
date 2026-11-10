@@ -51,6 +51,18 @@ def test_field_ledger_and_unicode_sidecars_restore_without_new_registration(tmp_
         assert (recovered / name).read_bytes() == content
 
 
+def test_side_photo_and_registration_ledgers_restore_with_immutable_evidence(tmp_path):
+    files = {
+        "queue/field-measurement-" + "d" * 32 + ".json": b'{"record_type":"server_mapping"}',
+        "ledger/side_photos.csv": b"label,side,scale_kg\r\nL-SYNTHETIC,left,400\r\n",
+        "ledger/registrations.csv": b"local_label,animal_id\r\nL-SYNTHETIC,MAA00000001\r\n",
+        "ledger/registered_uploads.csv": b"local_label,source_scan_key\r\nL-SYNTHETIC,fixture\r\n",
+    }
+    recovered = tmp_path / "new-ledger-restore"
+    phone_backup.extract(make_bundle(tmp_path / "new-ledgers.zip", files=files), recovered)
+    assert {name: (recovered / name).read_bytes() for name in files} == files
+
+
 @pytest.mark.parametrize(
     "name", ["ledger/../tokens.json", "queue/field-preferences.json", "ledger/settings.csv"]
 )

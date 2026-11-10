@@ -333,6 +333,64 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
   return {
     'roster.csv': utf8.encode(fieldCsv(roster)),
     'scans.csv': utf8.encode(fieldCsv(ledger)),
+    if (measurements.any((m) => m['record_type'] == 'server_mapping'))
+      'registrations.csv': utf8.encode(
+        fieldCsv([
+          [
+            'local_label',
+            'species',
+            'animal_id',
+            'backend',
+            'authenticated_operator_id',
+            'registered_at',
+            'request_key',
+            'raw_record_path',
+          ],
+          for (final m in measurements.where(
+            (m) => m['record_type'] == 'server_mapping',
+          ))
+            [
+              m['label'],
+              m['species'],
+              m['animal_id'],
+              m['backend'],
+              m['authenticated_operator_id'],
+              m['created_at'],
+              m['request_key'],
+              'queue/field-measurement-${m['key']}.json',
+            ],
+        ]),
+      ),
+    if (measurements.any((m) => m['record_type'] == 'registered_upload'))
+      'registered_uploads.csv': utf8.encode(
+        fieldCsv([
+          [
+            'local_label',
+            'species',
+            'animal_id',
+            'source_scan_key',
+            'source_sha256',
+            'upload_key',
+            'backend',
+            'created_at',
+            'raw_record_path',
+          ],
+          for (final m in measurements.where(
+            (m) => m['record_type'] == 'registered_upload',
+          ))
+            [
+              m['label'],
+              m['species'],
+              m['animal_id'],
+              m['source_scan_key'],
+              m['source_sha256'],
+              m['upload_key'],
+              m['backend'],
+              m['created_at'],
+              'queue/field-measurement-${m['key']}.json',
+            ],
+        ]),
+      ),
     if (measurements.any((m) => m['record_type'] == 'side_photo'))
       'side_photos.csv': utf8.encode(
         fieldCsv([

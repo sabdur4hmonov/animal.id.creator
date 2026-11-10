@@ -342,6 +342,83 @@ class RegistryJournal {
     }
   }
 
+  /// Deterministic local-label issuance must never consume another label's ID.
+  Future<Map<String, dynamic>> submitKeyed(
+    String key,
+    Map<String, dynamic> body,
+    ApiClient api,
+  ) async {
+    if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(key)) {
+      throw const FormatException('Invalid stable registry key');
+    }
+    final lock = await _acquire();
+    try {
+      final wanted = RegistryRequest.decode(
+        RegistryRequest(key, backend, operatorId, registryRoot, body).toJson(),
+        key,
+      );
+      final requests = await pending();
+      if (issues.isNotEmpty) {
+        throw const FormatException(
+          'Registry journals need review; export a backup',
+        );
+      }
+      if (requests.any((r) => r.path == registryRoot && r.key != key) ||
+          (await issued()).any(
+            (r) => r['_delivered'] != true && r['_request_key'] != key,
+          )) {
+        throw StateError(
+          'Finish the earlier registry request before registering another animal',
+        );
+      }
+      final source = File('${root.path}/registry-$key.json');
+      final receipt = File('${root.path}/registry-receipt-$key.json');
+      final type = await FileSystemEntity.type(source.path, followLinks: false);
+      RegistryRequest request;
+      if (type == FileSystemEntityType.file) {
+        request = RegistryRequest.decode(await _read(source), key);
+        if (jsonEncode(_ordered(request.toJson())) !=
+            jsonEncode(_ordered(wanted.toJson()))) {
+          throw const FormatException(
+            'Stable registry request differs from its original intent',
+          );
+        }
+      } else if (type == FileSystemEntityType.notFound &&
+          await FileSystemEntity.type(receipt.path, followLinks: false) ==
+              FileSystemEntityType.notFound) {
+        request = wanted;
+        await _write('registry-$key.json', request.toJson());
+      } else {
+        throw const FormatException(
+          'Unsafe or incomplete stable registry evidence',
+        );
+      }
+      if (await FileSystemEntity.type(receipt.path, followLinks: false) !=
+          FileSystemEntityType.notFound) {
+        final saved = await _read(receipt);
+        if (saved['key'] != key || saved['accepted'] is! bool) {
+          throw const FormatException('Invalid stable registry receipt');
+        }
+        if (saved['accepted'] == true) {
+          final response = Map<String, dynamic>.from(saved['response'] as Map);
+          _checkResponse(request, response);
+          return {...response, '_request_key': key};
+        }
+        if (!{404, 409, 422}.contains(saved['status']) ||
+            saved['message'] is! String) {
+          throw const FormatException('Invalid stable registry rejection');
+        }
+        throw RegistryApiError(
+          saved['status'] as int,
+          saved['message'] as String,
+        );
+      }
+      return await _send(request, api);
+    } finally {
+      _release(lock);
+    }
+  }
+
   Future<Map<String, dynamic>> _send(
     RegistryRequest request,
     ApiClient api,

@@ -5,6 +5,8 @@ import 'ar_screen.dart';
 import 'local_profiles.dart';
 import 'localization.dart';
 import 'side_photo_link.dart';
+import 'local_registration.dart';
+import 'registration_views.dart';
 
 String fieldDay(Object? value) {
   final s = value?.toString() ?? '';
@@ -215,6 +217,7 @@ class AnimalProfileScreen extends StatefulWidget {
     required this.config,
     required this.newPhoto,
     this.sidePhoto,
+    this.registration,
   });
   final String id;
   final ProfileCatalog catalog;
@@ -222,6 +225,7 @@ class AnimalProfileScreen extends StatefulWidget {
   final Map<String, dynamic> config;
   final Future<void> Function(LocalProfile) newPhoto;
   final Future<void> Function(LocalProfile, String)? sidePhoto;
+  final LocalRegistration? registration;
   @override
   State<AnimalProfileScreen> createState() => _AnimalProfileScreenState();
 }
@@ -365,6 +369,8 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
             ]),
           ),
           if (busy) const LinearProgressIndicator(),
+          if (widget.registration != null)
+            RegistrationPanel(service: widget.registration!, profile: p),
           if (error != null) FieldText(UiText('Action failed: {0}', [error])),
           Wrap(
             spacing: 8,

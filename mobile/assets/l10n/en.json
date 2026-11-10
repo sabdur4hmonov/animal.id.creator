@@ -401,5 +401,22 @@
   "Fit the whole body, including feet. Start about {0}–{1} m away.": "Fit the whole body, including feet. Start about {0}–{1} m away.",
   "Collected for a future weight model. No weight is calculated from this photo.": "Collected for a future weight model. No weight is calculated from this photo.",
   "No nearby scale weight. Add kg and weighing date.": "No nearby scale weight. Add kg and weighing date.",
-  "Saving photo…": "Saving photo…"
+  "Saving photo…": "Saving photo…",
+  "Animal owner": "Animal owner",
+  "Use a farm reference, not a passport number. Owner details are sent to the configured server.": "Use a farm reference, not a passport number. Owner details are sent to the configured server.",
+  "Owner reference (e.g. FARM-01)": "Owner reference (e.g. FARM-01)",
+  "Enter a valid owner reference and name.": "Enter a valid owner reference and name.",
+  "Register and upload muzzle photos": "Register and upload muzzle photos",
+  "Server registration": "Server registration",
+  "Temporary ID stays on this phone until you register it.": "Temporary ID stays on this phone until you register it.",
+  "Muzzle photos not uploaded: {0}": "Muzzle photos not uploaded: {0}",
+  "Configure backend, operator ID and operator token before registration. Offline capture still works.": "Configure backend, operator ID and operator token before registration. Offline capture still works.",
+  "Register on server / retry uploads": "Register on server / retry uploads",
+  "Choose animals to register and upload. Original offline records stay unchanged.": "Choose animals to register and upload. Original offline records stay unchanged.",
+  "Completed animals: {0}": "Completed animals: {0}",
+  "Register selected animals": "Register selected animals",
+  "This registration belongs to another operator. Use that operator; no new ID was created.": "This registration belongs to another operator. Use that operator; no new ID was created.",
+  "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Saved photo operator differs. Configure its original operator; metadata was not changed.",
+  "Finish the earlier registry request before registering another animal": "Finish the earlier registry request before registering another animal",
+  "Registration or upload is already running": "Registration or upload is already running"
 }

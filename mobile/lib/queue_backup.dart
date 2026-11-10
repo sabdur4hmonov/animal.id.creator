@@ -166,6 +166,8 @@ Future<Map<String, dynamic>> verifyPhoneBackup(String filename) async {
                 'ledger/prices.csv',
                 'ledger/match_decisions.csv',
                 'ledger/side_photos.csv',
+                'ledger/registrations.csv',
+                'ledger/registered_uploads.csv',
               }.contains(name)) ||
           !file.isFile) {
         throw const FormatException('Unsafe backup entry');

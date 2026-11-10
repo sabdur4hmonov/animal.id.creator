@@ -1,4 +1,4 @@
-# Qishloqda serversiz yig‘ish — 2026-11-06
+# Qishloqda serversiz yig‘ish — 2026-11-10
 
 ## Molni skanerlash va profil
 
@@ -76,10 +76,24 @@ Kompyuterda rootdan:
 .\.venv\Scripts\python.exe tools/phone_backup.py extract --bundle 'D:\Backups\phone.zip' --destination 'D:\Backups\recovery-NEW'
 ```
 
-Provisional suratlar avtomatik upload/register qilinmaydi. Ularni keyin canonical
-serverdagi doimiy ID bilan review qilib bog‘lash alohida ish; eski journalni qayta
-yorliqlash yoki metadata’ni edit qilish yo‘q. Online server/cached qoidalar va
-oldingi authenticated manual upload mavjud server IDlar uchun saqlanadi.
+Vaqtinchalik suratlar avtomatik yuborilmaydi. Server va operator kaliti sozlangan
+bo‘lsa, **profil → Serverga ro‘yxatlash / yuborishni takrorlash** yoki
+**Vositalar → Serverga ro‘yxatdan o‘tkazish → mollarni tanlash**ni bosing.
+Ega yorlig‘i (masalan `FARM-01`, pasport raqami emas) va ismini kiriting.
+App doimiy IDni olib **L-… → MAA…** bog‘lanishini saqlaydi, keyin shu molning
+tumshuq originallarini yuboradi. Yon gavda suratlari bu endpointga yuborilmaydi.
+
+Javob yo‘qolsa/yuborish to‘xtasa ayni tugmani yana bosing: o‘sha kalit va muzlatilgan
+ega ma’lumoti bilan davom etadi, ikkinchi ID so‘ramaydi. L-ID, eski metadata,
+GPS, sana va jurnallar o‘zgarmaydi; server yuklash uchun alohida MAA yozuv bor.
+Profilda yuborilmagan suratlar sonini tekshiring. Server kaliti suratni olgan
+**asl operator**ga tegishli bo‘lishi kerak; farq qilsa xabar chiqadi, asl operator
+uchun sozlang. Qo‘lda eski metadata yoki jurnalni tahrirlamang. Ma’lum 4xx rad
+javobi qayta yangi kalitga aylantirilmaydi: ZIPni saqlab, sababini tekshiring.
+Bog‘lanish server/operator doirasida: boshqa endpoint/operatorga ko‘chirayotganda
+eski dalillar tekshirilmaguncha yangi ID chiqarilmaydi. ZIPda
+`ledger/registrations.csv`, `ledger/registered_uploads.csv` va xom receiptlar bor.
+Kalitsiz release oflayn ishlaydi; u serverga ulanish sozlangan degani emas.
 
 Release APK shaxsiy sideload uchun mavjud debug key bilan sign qilinadi; production
 signing emas. Uchinchi tomon gallery-save plugin: `gal 2.3.3` (BSD-3-Clause), faqat app

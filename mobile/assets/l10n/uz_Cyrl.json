@@ -401,5 +401,22 @@
   "Fit the whole body, including feet. Start about {0}–{1} m away.": "Бутун гавда ва оёқлар кадрга сиғсин. Тахминан {0}–{1} м узоқликдан бошланг.",
   "Collected for a future weight model. No weight is calculated from this photo.": "Бу суратлар келажакдаги вазн модели учун йиғилмоқда; ҳозир суратдан вазн ҳисобланмайди.",
   "No nearby scale weight. Add kg and weighing date.": "Яқин санадаги тарози вазни йўқ. Кг ва тортилган санани киритинг.",
-  "Saving photo…": "Сурат сақланяпти…"
+  "Saving photo…": "Сурат сақланяпти…",
+  "Animal owner": "Мол эгаси",
+  "Use a farm reference, not a passport number. Owner details are sent to the configured server.": "Хўжалик ёрлиғини ёзинг, паспорт рақамини эмас. Эга маълумоти созланган серверга юборилади.",
+  "Owner reference (e.g. FARM-01)": "Эга ёрлиғи (масалан FARM-01)",
+  "Enter a valid owner reference and name.": "Эга ёрлиғи ва исмини тўғри киритинг.",
+  "Register and upload muzzle photos": "Рўйхатлаш ва тумшуқ суратларини юбориш",
+  "Server registration": "Серверга рўйхатдан ўтказиш",
+  "Temporary ID stays on this phone until you register it.": "Рўйхатламагунингизча вақтинчалик ID шу телефонда қолади.",
+  "Muzzle photos not uploaded: {0}": "Юборилмаган тумшуқ суратлари: {0}",
+  "Configure backend, operator ID and operator token before registration. Offline capture still works.": "Рўйхатлашдан олдин сервер, оператор IDси ва оператор калитини созланг. Офлайн сурат олиш ишлайверади.",
+  "Register on server / retry uploads": "Серверга рўйхатлаш / юборишни такрорлаш",
+  "Choose animals to register and upload. Original offline records stay unchanged.": "Рўйхатлаш ва юбориш учун молларни танланг. Дастлабки офлайн ёзувлар ўзгармайди.",
+  "Completed animals: {0}": "Якунланган моллар: {0}",
+  "Register selected animals": "Танланган молларни рўйхатлаш",
+  "This registration belongs to another operator. Use that operator; no new ID was created.": "Бу рўйхат бошқа операторники. Ўша оператор билан киринг; янги ID яратилмади.",
+  "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Сақланган сурат оператори бошқа. Унинг асл операторини созланг; метадата ўзгартирилмади.",
+  "Finish the earlier registry request before registering another animal": "Бошқа молни рўйхатлашдан олдин аввалги сўровни якунланг",
+  "Registration or upload is already running": "Рўйхатлаш ёки юбориш аллақачон ишлаяпти"
 }

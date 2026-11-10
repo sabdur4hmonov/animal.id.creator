@@ -85,6 +85,40 @@ guidance are **synthetic-only**; phone capture/scale pairing in field remain
 Artifact `data/artifacts/chorvam-side-photos-20261110/app-release.apk`;
 SHA recorded in its SHA256SUMS.txt (ignored). No device access.
 
+Stage 3 APK SHA-256: `2aa725de2c89cba4e9777e324404948116a9619104828379f000fb9fd2d38548`.
+Stage 3 ordinary push directly verified: clean `## main...origin/main`,
+ahead/behind **0 / 0**, real log:
+```text
+3fb1324 Collect separate body-side photos linked to dated true scale weights
+6b04d79 Capture and review sharp original burst frames with per-photo identity confirmation
+091a66f Brand Android capture app as Chorvam and audit public publication
+```
+
+**Stage 4 built and host-verified:** deterministic issuance key from species + random local
+L label (independent of endpoint/operator changes; existing registry journals
+fail closed on scope change). Frozen owner intent, existing registry receipt
+replay, append-only mapping; derived MAA upload original + new strict journal
+with a raw link to untouched L evidence. No automatic/background registration.
+Upload keeps original operator/GPS/time; credentials must belong to that operator.
+No backend schema/API change needed. No device/normal stack write.
+Profile registration panel and Tools multi-select require explicit action;
+first owner reference/name is retained in local intent. New registration and
+derived-upload CSVs/raw receipts survive verified ZIP export/restore. The same
+local label under another operator/endpoint cannot silently allocate a second
+request key. A known rejection remains a rejection, requiring review rather
+than rotating the key. Old L scan/JPEG/journal bytes remain unchanged.
+Direct checks: **177 Flutter tests**, analyzer clean, **226 backend/tool tests**
+and Ruff clean. Synthetic-only: owner form/confirmation, independent labels
+sharing owner, issuance/upload lost-reply replay, accepted receipt before
+mapping recovery, concurrency guard, source-hash/operator mismatch, offline
+credential gate and all four 320px/200% registration layouts. Initial owner
+widget waits were corrected to await disk IO and inspect SelectableText;
+final full suite passed. Existing PostgreSQL contracts were reused, no new
+live server integration/deployment claim. Phone runtime **unverified**.
+ARM64 release built and original signer verified; artifact
+`data/artifacts/chorvam-registration-20261110/app-release.apk`, SHA256SUMS.txt.
+Next: documentation-only pilot server plan, then final publication evidence.
+
 **Latest field correction / market research — 2026-11-07:** Sardorbek
 clarified his earlier six-animal report: the trial was **2026-11-06** and
 only **2 cattle were properly tested**, with moving cattle making sharp

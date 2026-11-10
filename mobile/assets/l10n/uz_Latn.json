@@ -401,5 +401,22 @@
   "Fit the whole body, including feet. Start about {0}–{1} m away.": "Butun gavda va oyoqlar kadrga sig‘sin. Taxminan {0}–{1} m uzoqlikdan boshlang.",
   "Collected for a future weight model. No weight is calculated from this photo.": "Bu suratlar kelajakdagi vazn modeli uchun yig‘ilmoqda; hozir suratdan vazn hisoblanmaydi.",
   "No nearby scale weight. Add kg and weighing date.": "Yaqin sanadagi tarozi vazni yo‘q. Kg va tortilgan sanani kiriting.",
-  "Saving photo…": "Surat saqlanyapti…"
+  "Saving photo…": "Surat saqlanyapti…",
+  "Animal owner": "Mol egasi",
+  "Use a farm reference, not a passport number. Owner details are sent to the configured server.": "Xo‘jalik yorlig‘ini yozing, pasport raqamini emas. Ega ma’lumoti sozlangan serverga yuboriladi.",
+  "Owner reference (e.g. FARM-01)": "Ega yorlig‘i (masalan FARM-01)",
+  "Enter a valid owner reference and name.": "Ega yorlig‘i va ismini to‘g‘ri kiriting.",
+  "Register and upload muzzle photos": "Ro‘yxatlash va tumshuq suratlarini yuborish",
+  "Server registration": "Serverga ro‘yxatdan o‘tkazish",
+  "Temporary ID stays on this phone until you register it.": "Ro‘yxatlamaguningizcha vaqtinchalik ID shu telefonda qoladi.",
+  "Muzzle photos not uploaded: {0}": "Yuborilmagan tumshuq suratlari: {0}",
+  "Configure backend, operator ID and operator token before registration. Offline capture still works.": "Ro‘yxatlashdan oldin server, operator IDsi va operator kalitini sozlang. Oflayn surat olish ishlayveradi.",
+  "Register on server / retry uploads": "Serverga ro‘yxatlash / yuborishni takrorlash",
+  "Choose animals to register and upload. Original offline records stay unchanged.": "Ro‘yxatlash va yuborish uchun mollarni tanlang. Dastlabki oflayn yozuvlar o‘zgarmaydi.",
+  "Completed animals: {0}": "Yakunlangan mollar: {0}",
+  "Register selected animals": "Tanlangan mollarni ro‘yxatlash",
+  "This registration belongs to another operator. Use that operator; no new ID was created.": "Bu ro‘yxat boshqa operatorniki. O‘sha operator bilan kiring; yangi ID yaratilmadi.",
+  "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Saqlangan surat operatori boshqa. Uning asl operatorini sozlang; metadata o‘zgartirilmadi.",
+  "Finish the earlier registry request before registering another animal": "Boshqa molni ro‘yxatlashdan oldin avvalgi so‘rovni yakunlang",
+  "Registration or upload is already running": "Ro‘yxatlash yoki yuborish allaqachon ishlayapti"
 }

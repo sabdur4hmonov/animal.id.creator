@@ -401,5 +401,22 @@
   "Fit the whole body, including feet. Start about {0}–{1} m away.": "В кадре должны быть весь корпус и ноги. Начните с расстояния около {0}–{1} м.",
   "Collected for a future weight model. No weight is calculated from this photo.": "Фото собираются для будущей модели веса. Сейчас вес по фото не рассчитывается.",
   "No nearby scale weight. Add kg and weighing date.": "Нет близкого по дате взвешивания. Введите кг и дату.",
-  "Saving photo…": "Сохранение фото…"
+  "Saving photo…": "Сохранение фото…",
+  "Animal owner": "Владелец животного",
+  "Use a farm reference, not a passport number. Owner details are sent to the configured server.": "Укажите код хозяйства, а не номер паспорта. Данные владельца отправятся на настроенный сервер.",
+  "Owner reference (e.g. FARM-01)": "Код владельца (например FARM-01)",
+  "Enter a valid owner reference and name.": "Введите корректный код и имя владельца.",
+  "Register and upload muzzle photos": "Зарегистрировать и загрузить фото морды",
+  "Server registration": "Регистрация на сервере",
+  "Temporary ID stays on this phone until you register it.": "До регистрации временный ID хранится на этом телефоне.",
+  "Muzzle photos not uploaded: {0}": "Незагруженные фото морды: {0}",
+  "Configure backend, operator ID and operator token before registration. Offline capture still works.": "Перед регистрацией настройте сервер, ID и ключ оператора. Офлайн-съёмка продолжает работать.",
+  "Register on server / retry uploads": "Регистрация / повтор загрузки",
+  "Choose animals to register and upload. Original offline records stay unchanged.": "Выберите животных для регистрации и загрузки. Исходные офлайн-записи сохраняются без изменений.",
+  "Completed animals: {0}": "Завершено животных: {0}",
+  "Register selected animals": "Зарегистрировать выбранных",
+  "This registration belongs to another operator. Use that operator; no new ID was created.": "Эта регистрация принадлежит другому оператору. Используйте его учётные данные; новый ID не создан.",
+  "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Оператор сохранённого фото отличается. Настройте исходного оператора; метаданные не изменены.",
+  "Finish the earlier registry request before registering another animal": "Завершите предыдущий запрос перед регистрацией другого животного",
+  "Registration or upload is already running": "Регистрация или загрузка уже выполняется"
 }

@@ -24,6 +24,25 @@ retention policy because old retries would otherwise create new scans.
 
 ## Local keys and registry
 
+### Explicit mobile L-label registration (2026-11-10)
+
+Profile/Tools registration freezes owner reference/name before HTTP. The stable
+issuance key hashes a versioned purpose + species + random L-label; endpoint or
+operator changes never generate another key. Existing registry journals enforce
+their original endpoint/operator/body scope and preserve accepted/rejected receipts.
+An uncertain reply replays the original issuance; acceptance without a local mapping
+is recovered from that receipt. Separate service instances share a phone-store lock.
+Local mappings are append-only events with the server receipt and authenticated
+operator. Other operators cannot silently remap the same local animal.
+
+After explicit registration, a deterministic derived JPEG/journal pair uploads the
+original muzzle bytes under the permanent ID. L metadata, GPS, time and operator
+stay unchanged in their original journal; raw derived sidecars link both keys and
+preserve frame provenance. Photos taken by another operator are retained and blocked
+until credentials for that original operator are configured. No background sync,
+body-photo upload, relabeling, schema change or production device credential
+distribution is introduced. Public APKs are built without operator tokens.
+
 Run `.\.venv\Scripts\python.exe tools/init_local_credentials.py` from the repository root once. It creates distinct random operator/admin bearer keys and SHA-256-only server records in ignored `backend/.secrets/`. No key is printed or included in the Docker build context. Start/restart Compose to load `api_keys.json`; absent credentials return 503 on protected endpoints, never anonymous access. `/health` stays public for container health checks. API schemas/docs are public, while `/api/v1/*` requires a key. Rotate by creating a fresh random token, replacing its server hash and client token, and restarting the API. Never use an admin key in the capture app.
 
 Use `backend/.secrets/tokens.json` locally to retrieve credentials. Protect this file with your machine's user permissions; it is not a secrets vault. Development bearer keys identify operators, not hardware or organizations. There is no multitenancy/ownership/legal verification or external identity provider yet. Send keys over HTTPS before exposing the service outside a trusted local development network. A compile-time mobile API_TOKEN can be recovered from the app binary; this is a development client, not a production credential-distribution solution.

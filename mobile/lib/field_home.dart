@@ -11,6 +11,8 @@ import 'muzzle_scan_camera.dart';
 import 'profile_views.dart';
 import 'species.dart';
 import 'side_photos.dart';
+import 'local_registration.dart';
+import 'registration_views.dart';
 
 class FieldHome extends StatefulWidget {
   const FieldHome({
@@ -238,6 +240,12 @@ class _FieldHomeState extends State<FieldHome> {
         cache: thumbnails!,
         config: flow!.config,
         newPhoto: (p) => _scan(pinned: p),
+        registration: LocalRegistration(
+          flow!.catalog,
+          flow!.queue,
+          env,
+          flow!.config,
+        ),
         sidePhoto: (p, side) => Navigator.of(context).push<void>(
           MaterialPageRoute(
             builder: (_) => SidePhotoCamera(
@@ -295,6 +303,21 @@ class _FieldHomeState extends State<FieldHome> {
             children: [
               FieldText(UiText('Offline operator: {0}', [wf.store.operatorId])),
               const FieldText(UiText('Advisory scan review')),
+              OutlinedButton(
+                onPressed: () => Navigator.of(page).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => RegistrationScreen(
+                      service: LocalRegistration(
+                        wf.catalog,
+                        wf.queue,
+                        env,
+                        wf.config,
+                      ),
+                    ),
+                  ),
+                ),
+                child: const FieldText(UiText('Server registration')),
+              ),
               FieldText(
                 UiText('Repeat scans with correct warning: {0}/{1}', [
                   report['repeat_found'],

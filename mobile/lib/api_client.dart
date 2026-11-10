@@ -44,6 +44,7 @@ class ApiClient {
        _baseUrl = baseUrl;
   Uri endpoint(String path) =>
       Uri.parse('${_baseUrl.replaceAll(RegExp(r'/+$'), '')}$path');
+  bool get hasCredentials => _token.trim().isNotEmpty;
   Map<String, String> get _headers {
     if (_token.isEmpty) {
       throw Exception('Configure an operator API_TOKEN before connecting');
