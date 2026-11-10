@@ -394,5 +394,12 @@
   "Improve light or focus": "Улучшите освещение или фокус",
   "No sharp frames. Improve light and try again.": "Чётких кадров нет. Улучшите освещение и повторите.",
   "Burst frames are unsupported or too small. Use single photo mode.": "Поток кадров не поддерживается или разрешение мало. Используйте один снимок.",
-  "Video capture is unavailable. Single photo mode is ready.": "Видеозахват недоступен. Можно сделать один снимок."
+  "Video capture is unavailable. Single photo mode is ready.": "Видеозахват недоступен. Можно сделать один снимок.",
+  "Side photos for weight data": "Фото корпуса для данных о весе",
+  "Left body photo": "Фото слева",
+  "Right body photo": "Фото справа",
+  "Fit the whole body, including feet. Start about {0}–{1} m away.": "В кадре должны быть весь корпус и ноги. Начните с расстояния около {0}–{1} м.",
+  "Collected for a future weight model. No weight is calculated from this photo.": "Фото собираются для будущей модели веса. Сейчас вес по фото не рассчитывается.",
+  "No nearby scale weight. Add kg and weighing date.": "Нет близкого по дате взвешивания. Введите кг и дату.",
+  "Saving photo…": "Сохранение фото…"
 }

@@ -10,6 +10,7 @@ import 'localization.dart';
 import 'muzzle_scan_camera.dart';
 import 'profile_views.dart';
 import 'species.dart';
+import 'side_photos.dart';
 
 class FieldHome extends StatefulWidget {
   const FieldHome({
@@ -237,6 +238,18 @@ class _FieldHomeState extends State<FieldHome> {
         cache: thumbnails!,
         config: flow!.config,
         newPhoto: (p) => _scan(pinned: p),
+        sidePhoto: (p, side) => Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => SidePhotoCamera(
+              store: flow!.store,
+              animal: p.animal,
+              side: side,
+              config: flow!.config,
+              species: species!,
+              environment: env,
+            ),
+          ),
+        ),
       ),
     ),
   );

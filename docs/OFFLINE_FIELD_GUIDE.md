@@ -88,6 +88,21 @@ permission va API29 legacy album access; Android30+ own MediaStore insert uchun
 read-media/gallery-import permission so‘ralmaydi. iOS album uchun Photos matnlari
 bor, lekin iOS native build/runtime Windowsda tekshirilmagan.
 
+## ARsiz telefon: vazn uchun chap/o‘ng gavda suratlari
+
+1. Mol profilida **Vazn uchun yon suratlar** → **Chap yon surat**.
+   Taxminan **3–4 m** uzoqlikdan boshlang: butun gavda, oyoq va dum sig‘sin.
+   Sxemaga qarang; tekis yorug‘likda surat oling. O‘ng yonini ham alohida oling.
+2. Bu **tumshuq surati emas**: tanish signali yoki olti ko‘rinish checklistiga
+   qo‘shilmaydi. Hozir gavda suratidan **vazn hisoblanmaydi**; kelajak modeli
+   uchun dalil yig‘iladi. 23117RA68Gda ARCore yo‘q — AR vazni chiqmaydi.
+3. Haqiqiy tarozi bo‘lsa profilda **Tarozi vazni** → kg va tortilgan sana.
+   Suratga eng yaqin, ko‘pi bilan **7 kun** farqli haqiqiy tortish bog‘lanadi.
+   Imkon bo‘lsa o‘sha kun torting; taxminiy AR vaznini tarozi deb kiritmang.
+4. ZIPda original JPEG/append-only qayd va `ledger/side_photos.csv` bor:
+   ID, chap/o‘ng, sana, hash, mos tarozi yozuvi va kun farqi. Keyin tarozi
+   qo‘shilganda raw surat qaydi tahrirlanmaydi, eksportdagi bog‘lanish yangilanadi.
+
 ## P1: offlayn AR o‘lchash va vazn — amaliy tartib
 
 **Holat:** kod va sun’iy geometriya sinovlari mavjud; haqiqiy telefon/animal

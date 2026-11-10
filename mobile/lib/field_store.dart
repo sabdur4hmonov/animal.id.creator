@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'capture_journal.dart';
 import 'offline_queue.dart';
+import 'side_photo_link.dart';
 
 const provisionalBackend = 'local:biolivestock:provisional';
 const fieldViews = [
@@ -332,6 +333,31 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
   return {
     'roster.csv': utf8.encode(fieldCsv(roster)),
     'scans.csv': utf8.encode(fieldCsv(ledger)),
+    if (measurements.any((m) => m['record_type'] == 'side_photo'))
+      'side_photos.csv': utf8.encode(
+        fieldCsv([
+          [
+            'key',
+            'label',
+            'species',
+            'side',
+            'captured_at',
+            'operator_id',
+            'file_path',
+            'sha256',
+            'scale_kg',
+            'weighed_date',
+            'date_difference_days',
+            'scale_key',
+            'max_scale_age_days',
+            'raw_record_path',
+          ],
+          for (final p in measurements.where(
+            (m) => m['record_type'] == 'side_photo',
+          ))
+            _sidePhotoRow(p, nearestSideScale(p, measurements)),
+        ]),
+      ),
     if (evaluations.isNotEmpty)
       'match_decisions.csv': utf8.encode(
         fieldCsv([
@@ -507,3 +533,20 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
 
 Object? _rawField(Map r, String key) =>
     r['raw'] is Map ? (r['raw'] as Map)[key] : null;
+
+List<Object?> _sidePhotoRow(Map p, Map? scale) => [
+  p['key'],
+  p['label'],
+  p['species'],
+  p['side'],
+  p['captured_at'],
+  p['operator_id'],
+  p['file_path'],
+  p['sha256'],
+  scale?['scale_kg'],
+  scale?['weighed_date'],
+  scale?['date_difference_days'],
+  scale?['key'],
+  p['max_scale_age_days'],
+  'queue/field-measurement-${p['key']}.json',
+];

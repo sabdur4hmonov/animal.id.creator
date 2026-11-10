@@ -394,5 +394,12 @@
   "Improve light or focus": "Improve light or focus",
   "No sharp frames. Improve light and try again.": "No sharp frames. Improve light and try again.",
   "Burst frames are unsupported or too small. Use single photo mode.": "Burst frames are unsupported or too small. Use single photo mode.",
-  "Video capture is unavailable. Single photo mode is ready.": "Video capture is unavailable. Single photo mode is ready."
+  "Video capture is unavailable. Single photo mode is ready.": "Video capture is unavailable. Single photo mode is ready.",
+  "Side photos for weight data": "Side photos for weight data",
+  "Left body photo": "Left body photo",
+  "Right body photo": "Right body photo",
+  "Fit the whole body, including feet. Start about {0}–{1} m away.": "Fit the whole body, including feet. Start about {0}–{1} m away.",
+  "Collected for a future weight model. No weight is calculated from this photo.": "Collected for a future weight model. No weight is calculated from this photo.",
+  "No nearby scale weight. Add kg and weighing date.": "No nearby scale weight. Add kg and weighing date.",
+  "Saving photo…": "Saving photo…"
 }

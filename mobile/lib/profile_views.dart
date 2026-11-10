@@ -4,6 +4,7 @@ import 'ar_records.dart';
 import 'ar_screen.dart';
 import 'local_profiles.dart';
 import 'localization.dart';
+import 'side_photo_link.dart';
 
 String fieldDay(Object? value) {
   final s = value?.toString() ?? '';
@@ -213,12 +214,14 @@ class AnimalProfileScreen extends StatefulWidget {
     required this.cache,
     required this.config,
     required this.newPhoto,
+    this.sidePhoto,
   });
   final String id;
   final ProfileCatalog catalog;
   final ProfileThumbnails cache;
   final Map<String, dynamic> config;
   final Future<void> Function(LocalProfile) newPhoto;
+  final Future<void> Function(LocalProfile, String)? sidePhoto;
   @override
   State<AnimalProfileScreen> createState() => _AnimalProfileScreenState();
 }
@@ -437,6 +440,32 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
               ),
             ),
           const Divider(),
+          const FieldText(UiText('Side photos for weight data')),
+          const FieldText(
+            UiText(
+              'Collected for a future weight model. No weight is calculated from this photo.',
+            ),
+          ),
+          if (widget.sidePhoto != null)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final side in ['left', 'right'])
+                  OutlinedButton(
+                    onPressed: busy
+                        ? null
+                        : () => _update(() => widget.sidePhoto!(p, side)),
+                    child: FieldText(
+                      UiText(
+                        side == 'left' ? 'Left body photo' : 'Right body photo',
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          for (final s in p.sidePhotos) _sidePhoto(s),
+          const Divider(),
           const FieldText(UiText('Measurement history')),
           for (final m in p.measurements)
             if (m['record_type'] == 'repeat_set')
@@ -499,6 +528,43 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
         q['uzs_min'],
         q['uzs_max'],
       ]),
+    );
+  }
+
+  Widget _sidePhoto(Map s) {
+    final scale = nearestSideScale(s, profile.measurements);
+    return ListTile(
+      leading: ProfileThumbnail(cache: widget.cache, scan: s, size: 48),
+      title: FieldText(
+        UiText(s['side'] == 'left' ? 'Left body photo' : 'Right body photo'),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(fieldDay(s['captured_at'])),
+          if (scale != null)
+            FieldText(
+              UiText('Scale weight: {0} kg · {1}', [
+                scale['scale_kg'],
+                scale['weighed_date'],
+              ]),
+            )
+          else
+            const FieldText(
+              UiText('No nearby scale weight. Add kg and weighing date.'),
+            ),
+        ],
+      ),
+      onTap: () => showDialog<void>(
+        context: context,
+        builder: (_) => Dialog(
+          child: Image.file(
+            widget.catalog.photo(s),
+            cacheWidth: 960,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
     );
   }
 }

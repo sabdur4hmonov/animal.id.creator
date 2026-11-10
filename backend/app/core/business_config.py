@@ -97,6 +97,18 @@ class BurstCaptureConfig(ConfigBase):
     soft_blur_ratio: float = Field(gt=0, lt=1)
 
 
+class SidePhotoConfig(ConfigBase):
+    max_scale_age_days: int = Field(ge=0, le=30)
+    suggested_distance_min_m: float = Field(gt=0, le=20)
+    suggested_distance_max_m: float = Field(gt=0, le=20)
+
+    @model_validator(mode="after")
+    def distance_order(self):
+        if self.suggested_distance_min_m > self.suggested_distance_max_m:
+            raise ValueError("Side photo distance bounds must be ordered")
+        return self
+
+
 class BusinessConfig(ConfigBase):
     species: Species
     enabled: bool
@@ -106,6 +118,7 @@ class BusinessConfig(ConfigBase):
     ar: ArConfig | None = None
     advisory_matching: AdvisoryMatchingConfig | None = None
     burst_capture: BurstCaptureConfig | None = None
+    side_photos: SidePhotoConfig | None = None
 
 
 def load_business_configs(directory: Path):

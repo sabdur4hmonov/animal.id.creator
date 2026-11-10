@@ -394,5 +394,12 @@
   "Improve light or focus": "Yorug‘lik yoki fokusni yaxshilang",
   "No sharp frames. Improve light and try again.": "Tiniq kadr chiqmadi. Yorug‘likni yaxshilab qayta oling.",
   "Burst frames are unsupported or too small. Use single photo mode.": "Kamera kadr oqimi mos emas yoki o‘lchami kichik. Bitta surat rejimidan foydalaning.",
-  "Video capture is unavailable. Single photo mode is ready.": "Video bilan olish ishlamadi. Bitta surat rejimi tayyor."
+  "Video capture is unavailable. Single photo mode is ready.": "Video bilan olish ishlamadi. Bitta surat rejimi tayyor.",
+  "Side photos for weight data": "Vazn uchun yon suratlar",
+  "Left body photo": "Chap yon surat",
+  "Right body photo": "O‘ng yon surat",
+  "Fit the whole body, including feet. Start about {0}–{1} m away.": "Butun gavda va oyoqlar kadrga sig‘sin. Taxminan {0}–{1} m uzoqlikdan boshlang.",
+  "Collected for a future weight model. No weight is calculated from this photo.": "Bu suratlar kelajakdagi vazn modeli uchun yig‘ilmoqda; hozir suratdan vazn hisoblanmaydi.",
+  "No nearby scale weight. Add kg and weighing date.": "Yaqin sanadagi tarozi vazni yo‘q. Kg va tortilgan sanani kiriting.",
+  "Saving photo…": "Surat saqlanyapti…"
 }

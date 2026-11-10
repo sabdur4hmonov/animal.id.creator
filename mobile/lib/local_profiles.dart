@@ -22,6 +22,8 @@ class LocalProfile {
         (e) => {'weighing', 'scale_observation'}.contains(e['record_type']),
       )
       .firstOrNull;
+  Iterable<Map<String, dynamic>> get sidePhotos =>
+      measurements.where((m) => m['record_type'] == 'side_photo');
   String get activity => [
     animal['created_at'],
     latestPhoto?['metadata']?['timestamp'],
@@ -46,6 +48,7 @@ class ProfileCatalog {
           'weighing',
           'scale_observation',
           'valuation',
+          'side_photo',
         },
       ),
       store.records('price', strict: false),

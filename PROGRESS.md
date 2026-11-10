@@ -62,6 +62,29 @@ ARM64 release and original signer/package/version verified; artifact
 `a234a4981d16ac83e4180102a6a8a3da24f2c4629e45542b05f75ae9611109af`.
 Phone runtime **unverified**, no device access. Next: separate side photos.
 
+Stage 2 ordinary push directly verified: clean `## main...origin/main`,
+ahead/behind **0 / 0**; real log at that point:
+```text
+6b04d79 Capture and review sharp original burst frames with per-photo identity confirmation
+091a66f Brand Android capture app as Chorvam and audit public publication
+5910f35 Research Chorvam market demand and refine accelerator application
+```
+
+**Stage 3 built and host-verified:** separate `side_photo` immutable events/originals,
+never muzzle scan/checklist/matching/research items. Date-linked actual scale
+observations, 7-day per-photo config snapshot; no photo weight model. Profile
+has left/right capture, mirrored original silhouette and configurable 3–4 m
+guidance. Original bytes/hash and append-only event survive ZIP/restart;
+`ledger/side_photos.csv` derives nearest actual scale record at export time
+(inclusive UTC calendar-day boundary; latest revision resolves equal gaps).
+Cattle config v6; AR correction-policy digest unchanged; sheep unchanged.
+Direct checks: **165 Flutter tests**, analyzer clean, **225 backend tests**,
+Ruff clean. New linkage/exclusion/hash/export tests and 4-locale 320px/200%
+guidance are **synthetic-only**; phone capture/scale pairing in field remain
+**unverified**. ARM64 release built, package/version/original signer checked.
+Artifact `data/artifacts/chorvam-side-photos-20261110/app-release.apk`;
+SHA recorded in its SHA256SUMS.txt (ignored). No device access.
+
 **Latest field correction / market research — 2026-11-07:** Sardorbek
 clarified his earlier six-animal report: the trial was **2026-11-06** and
 only **2 cattle were properly tested**, with moving cattle making sharp

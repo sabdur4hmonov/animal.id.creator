@@ -183,9 +183,14 @@ class _SnapshotAnnotationState extends State<SnapshotAnnotation> {
 
 /// Original vector inspired by the user's diagram; no third-party asset/code.
 class CowPointPainter extends CustomPainter {
-  CowPointPainter({required this.step, this.right = false, this.front = false});
+  CowPointPainter({
+    required this.step,
+    this.right = false,
+    this.front = false,
+    this.showPoints = true,
+  });
   final int step;
-  final bool right, front;
+  final bool right, front, showPoints;
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
@@ -233,7 +238,7 @@ class CowPointPainter extends CustomPainter {
             Offset(x(105), 20),
             Offset(x(105), 88),
           ];
-    for (var i = 0; i < positions.length; i++) {
+    for (var i = 0; showPoints && i < positions.length; i++) {
       final at = positions[i];
       p.color = i == step ? const Color(0xffffce40) : const Color(0xffc6d5ce);
       canvas.drawCircle(at, i == step ? 12 : 9, p);
@@ -251,7 +256,10 @@ class CowPointPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CowPointPainter old) =>
-      old.step != step || old.right != right || old.front != front;
+      old.step != step ||
+      old.right != right ||
+      old.front != front ||
+      old.showPoints != showPoints;
 }
 
 class FrozenPointPainter extends CustomPainter {

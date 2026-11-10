@@ -394,5 +394,12 @@
   "Improve light or focus": "Ёруғлик ёки фокусни яхшиланг",
   "No sharp frames. Improve light and try again.": "Тиниқ кадр чиқмади. Ёруғликни яхшилаб қайта олинг.",
   "Burst frames are unsupported or too small. Use single photo mode.": "Камера кадр оқими мос эмас ёки ўлчами кичик. Битта сурат режимидан фойдаланинг.",
-  "Video capture is unavailable. Single photo mode is ready.": "Видео билан олиш ишламади. Битта сурат режими тайёр."
+  "Video capture is unavailable. Single photo mode is ready.": "Видео билан олиш ишламади. Битта сурат режими тайёр.",
+  "Side photos for weight data": "Вазн учун ён суратлар",
+  "Left body photo": "Чап ён сурат",
+  "Right body photo": "Ўнг ён сурат",
+  "Fit the whole body, including feet. Start about {0}–{1} m away.": "Бутун гавда ва оёқлар кадрга сиғсин. Тахминан {0}–{1} м узоқликдан бошланг.",
+  "Collected for a future weight model. No weight is calculated from this photo.": "Бу суратлар келажакдаги вазн модели учун йиғилмоқда; ҳозир суратдан вазн ҳисобланмайди.",
+  "No nearby scale weight. Add kg and weighing date.": "Яқин санадаги тарози вазни йўқ. Кг ва тортилган санани киритинг.",
+  "Saving photo…": "Сурат сақланяпти…"
 }
