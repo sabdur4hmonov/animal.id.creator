@@ -18,7 +18,7 @@ Stop for remote-only commits or any discovered secret; never rewrite history.
 Public repository/remote ancestor and all 33 initially outgoing commits audited; see
 docs/PUBLICATION_AUDIT_2026-11-10.md. No secrets/personal phone numbers or real
 owner records found. Feature milestones published as 091a66f, 6b04d79,
-3fb1324 and 655b8ee; final server-plan documentation follows. Entry main was
+3fb1324 and 655b8ee; server-plan documentation published as 42c63ee. Entry main was
 clean at 5910f35, remote eaaf857. See actual post-push evidence below.
 
 **Next action is a field check, not more model claims:** manually install the
@@ -162,6 +162,30 @@ synthetic verification, not field accuracy. Final artifact and SHA256SUMS.txt:
 `data/artifacts/chorvam-pilot-ready-20261110/` (ignored).
 Final APK SHA-256:
 `c83163495a8dcf834cd1c8b99e08df9fbc17e868fb8796f3413b559c56a04cae`.
+
+**Stage 5 post-push evidence (directly executed 2026-11-10):**
+
+```text
+git status --short --branch
+## main...origin/main
+
+git log -3 --oneline
+42c63ee Document Uzbekistan pilot hosting, current privacy rules and field verification gates
+655b8ee Register local cattle IDs with durable replay and immutable derived uploads
+3fb1324 Collect separate body-side photos linked to dated true scale weights
+
+git rev-list --left-right --count HEAD...origin/main
+0  0
+
+git remote -v
+origin https://github.com/sabdur4hmonov/animal.id.creator.git (fetch)
+origin https://github.com/sabdur4hmonov/animal.id.creator.git (push)
+```
+
+All five stage pushes were ordinary fast-forward updates. This last documentation
+commit records the observed post-stage-5 snapshot; it changes no APK/code. Final
+live clean/ahead-behind check is repeated after publishing this evidence commit
+and reported to Sardorbek, avoiding a self-referencing commit-hash loop.
 
 Historical sections below describe their own dates; this current five-stage
 summary overrides obsolete SDK/phone blockers and earlier planned-only wording.
