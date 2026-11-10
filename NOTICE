@@ -37,5 +37,11 @@ Apache License 2.0: https://github.com/opencv/opencv/blob/4.13.0/LICENSE
 The unchanged license is shipped in mobile/assets/licenses/opencv-4.13.0.txt.
 
 Flutter's generated application license registry also retains dependency licenses.
+Burst capture uses the existing official Flutter camera plugin (camera 0.12.1,
+BSD-3-Clause) and image (MIT) for original-resolution JPEG encoding. Installed
+package LICENSE files were checked; no MP4 decoder or new library was added.
+https://pub.dev/packages/camera/license
+https://pub.dev/packages/image/license
+The YUV quality selector, review workflow and frame provenance code are original.
 Other existing dependencies retain their own licenses; this file does not relicense
 the repository or declare every dependency permissively licensed.

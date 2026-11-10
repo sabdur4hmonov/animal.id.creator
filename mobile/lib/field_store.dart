@@ -196,8 +196,10 @@ class FieldStore {
     Map<String, dynamic>? animal,
     String view,
     String session,
-    Map<String, dynamic> speciesConfig,
-  ) async {
+    Map<String, dynamic> speciesConfig, {
+    Map? provenance,
+    String? captureGroup,
+  }) async {
     if (!fieldViews.contains(view) || session.trim().isEmpty) {
       throw const FormatException('Invalid field view/session');
     }
@@ -216,6 +218,8 @@ class FieldStore {
       'sha256': (await sha256.bind(File(entry.imagePath).openRead()).first)
           .toString(),
       'config_snapshot': speciesConfig,
+      'capture_provenance': ?provenance,
+      'capture_group': ?captureGroup,
     });
   }
 

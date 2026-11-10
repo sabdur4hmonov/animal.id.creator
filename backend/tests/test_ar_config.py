@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from app.core.business_config import (
     AdvisoryMatchingConfig,
     ArConfig,
+    BurstCaptureConfig,
     BusinessConfig,
     load_business_configs,
 )
@@ -16,9 +17,11 @@ from app.core.species import Species
 def test_ar_is_additive_and_sheep_stays_disabled():
     configs = load_business_configs(get_settings().business_config_dir)
     cattle = configs[Species.cattle]
-    assert cattle.config_version == 4
+    assert cattle.config_version == 5
     assert cattle.ar_policy_version == 3
     assert cattle.advisory_matching.top_k == 3
+    assert cattle.burst_capture.best_frame_count == 3
+    assert cattle.burst_capture.duration_ms == 4000
     assert cattle.ar.min_repeats == 2
     assert cattle.ar.max_repeats == 3
     assert cattle.ar.min_calibration_animals == 10
@@ -27,6 +30,7 @@ def test_ar_is_additive_and_sheep_stays_disabled():
     assert not configs[Species.sheep].enabled
     assert configs[Species.sheep].ar is None
     assert configs[Species.sheep].advisory_matching is None
+    assert configs[Species.sheep].burst_capture is None
     legacy = deepcopy(cattle.model_dump())
     legacy.pop("ar")
     legacy.pop("ar_policy_version")
@@ -49,6 +53,13 @@ def test_advisory_thresholds_reject_invalid_values(changes):
     values = cattle.advisory_matching.model_dump()
     with pytest.raises(ValidationError):
         AdvisoryMatchingConfig(**(values | changes))
+
+
+@pytest.mark.parametrize("change", [{"duration_ms": 9000}, {"best_frame_count": 0}, {"jpeg_quality": 101}])
+def test_burst_config_rejects_unbounded_acquisition(change):
+    cattle = load_business_configs(get_settings().business_config_dir)[Species.cattle]
+    with pytest.raises(ValidationError):
+        BurstCaptureConfig(**(cattle.burst_capture.model_dump() | change))
 
 
 @pytest.mark.parametrize(

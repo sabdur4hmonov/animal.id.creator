@@ -12,6 +12,8 @@ import 'quality_control.dart';
 import 'queue_backup.dart';
 import 'species.dart';
 import 'package:gal/gal.dart';
+import 'package:flutter/services.dart';
+import 'burst_capture.dart';
 
 abstract class CaptureCamera {
   bool get initialized;
@@ -21,7 +23,7 @@ abstract class CaptureCamera {
   Future<void> dispose();
 }
 
-class NativeCaptureCamera implements CaptureCamera {
+class NativeCaptureCamera implements CaptureCamera, BurstCaptureCamera {
   final CameraController controller;
   NativeCaptureCamera(this.controller);
   static Future<CaptureCamera> open() async {
@@ -36,6 +38,7 @@ class NativeCaptureCamera implements CaptureCamera {
       rear.isEmpty ? cameras.first : rear.first,
       ResolutionPreset.high,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
     try {
       await controller.initialize();
@@ -54,6 +57,48 @@ class NativeCaptureCamera implements CaptureCamera {
   Widget preview() => CameraPreview(controller);
   @override
   Future<XFile> takePicture() => controller.takePicture();
+  @override
+  Future<void> startFrames(void Function(CaptureFrame) receive) async {
+    if (!controller.supportsImageStreaming() ||
+        controller.description.lensDirection != CameraLensDirection.back) {
+      throw UnsupportedError('Camera image streaming unavailable');
+    }
+    await controller.startImageStream((frame) {
+      final angle = switch (controller.value.deviceOrientation) {
+        DeviceOrientation.portraitUp => 0,
+        DeviceOrientation.landscapeLeft => 90,
+        DeviceOrientation.portraitDown => 180,
+        DeviceOrientation.landscapeRight => 270,
+      };
+      receive(
+        CaptureFrame(
+          frame.width,
+          frame.height,
+          frame.format.group == ImageFormatGroup.yuv420
+              ? frame.planes
+                    .map(
+                      (p) => FramePlane(
+                        p.bytes,
+                        p.bytesPerRow,
+                        p.bytesPerPixel ?? 1,
+                      ),
+                    )
+                    .toList()
+              : [],
+          (controller.description.sensorOrientation - angle + 360) % 360,
+          DateTime.now().toUtc(),
+        ),
+      );
+    });
+  }
+
+  @override
+  Future<void> stopFrames() async {
+    if (controller.value.isInitialized && controller.value.isStreamingImages) {
+      await controller.stopImageStream();
+    }
+  }
+
   @override
   Future<void> dispose() => controller.dispose();
 }

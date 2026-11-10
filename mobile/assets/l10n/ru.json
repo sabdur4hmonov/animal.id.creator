@@ -379,5 +379,20 @@
   "No, a different animal": "Нет, другое животное",
   "This looks like {0}. Is it the same animal?": "Похоже на {0} из списка. Это то же животное?",
   "Saved photo": "Сохранённое фото",
-  "New animal": "Новое животное"
+  "New animal": "Новое животное",
+  "Video capture": "Снять видео",
+  "Single photo": "Один снимок",
+  "Video is not stored. Review the sharpest frames.": "Видео не сохраняется. Выберите самые чёткие кадры.",
+  "Capture best frames": "Снять чёткие кадры",
+  "Review best frames": "Выбор чётких кадров",
+  "Confirm the animal separately for each selected photo.": "Подтвердите животное отдельно для каждого выбранного снимка.",
+  "Frame {0} · sharpness {1}": "Кадр {0} · резкость {1}",
+  "Select all frames": "Выбрать все кадры",
+  "Use selected frames": "Использовать выбранные кадры",
+  "Sharp frame": "Чёткий кадр",
+  "Hold still": "Держите неподвижно",
+  "Improve light or focus": "Улучшите освещение или фокус",
+  "No sharp frames. Improve light and try again.": "Чётких кадров нет. Улучшите освещение и повторите.",
+  "Burst frames are unsupported or too small. Use single photo mode.": "Поток кадров не поддерживается или разрешение мало. Используйте один снимок.",
+  "Video capture is unavailable. Single photo mode is ready.": "Видеозахват недоступен. Можно сделать один снимок."
 }

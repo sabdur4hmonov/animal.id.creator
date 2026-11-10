@@ -379,5 +379,20 @@
   "No, a different animal": "Yo‘q, boshqa mol",
   "This looks like {0}. Is it the same animal?": "Ro‘yxatdagi {0} ga o‘xshaydi — o‘shami?",
   "Saved photo": "Saqlangan surat",
-  "New animal": "Yangi mol"
+  "New animal": "Yangi mol",
+  "Video capture": "Video bilan olish",
+  "Single photo": "Bitta surat",
+  "Video is not stored. Review the sharpest frames.": "Video saqlanmaydi. Eng tiniq kadrlarni ko‘rib tanlang.",
+  "Capture best frames": "Tiniq kadrlarni olish",
+  "Review best frames": "Tiniq kadrlarni tanlash",
+  "Confirm the animal separately for each selected photo.": "Har bir tanlangan suratda molni alohida tasdiqlang.",
+  "Frame {0} · sharpness {1}": "Kadr {0} · tiniqlik {1}",
+  "Select all frames": "Hamma kadrni tanlash",
+  "Use selected frames": "Tanlangan kadrlarni olish",
+  "Sharp frame": "Kadr tiniq",
+  "Hold still": "Qimirlatmay turing",
+  "Improve light or focus": "Yorug‘lik yoki fokusni yaxshilang",
+  "No sharp frames. Improve light and try again.": "Tiniq kadr chiqmadi. Yorug‘likni yaxshilab qayta oling.",
+  "Burst frames are unsupported or too small. Use single photo mode.": "Kamera kadr oqimi mos emas yoki o‘lchami kichik. Bitta surat rejimidan foydalaning.",
+  "Video capture is unavailable. Single photo mode is ready.": "Video bilan olish ishlamadi. Bitta surat rejimi tayyor."
 }

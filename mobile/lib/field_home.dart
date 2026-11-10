@@ -82,6 +82,7 @@ class _FieldHomeState extends State<FieldHome> {
     if (flow == null || busy) return;
     final wf = flow!;
     String? openId;
+    Map<String, dynamic>? nextBurstFrame;
     setState(() {
       busy = true;
       notice = null;
@@ -99,14 +100,20 @@ class _FieldHomeState extends State<FieldHome> {
               ),
             ),
           );
-      if (draft == null || !mounted) return;
+      if (draft == null || !mounted) {
+        if (mounted) pendingDraft = (await wf.pending()).lastOrNull;
+        return;
+      }
       pendingDraft = draft;
       final profileId = draft['profile_id'] as String?;
       final target = profileId == null ? null : wf.catalog.get(profileId);
       if (profileId != null && target == null) {
         throw const FormatException('Saved photo target is missing');
       }
-      final evaluation = await wf.evaluate(draft, knownProfile: target != null),
+      final evaluation = await wf.evaluate(
+            draft,
+            knownProfile: target != null && draft['capture_group'] == null,
+          ),
           prior = await wf.priorDecision(draft);
       final reservation = prior == null && target == null
           ? (await wf.store.records('animal'))
@@ -188,6 +195,11 @@ class _FieldHomeState extends State<FieldHome> {
         session: session,
       );
       pendingDraft = (await wf.pending()).lastOrNull;
+      if (draft['capture_group'] != null) {
+        nextBurstFrame = (await wf.pending())
+            .where((r) => r['capture_group'] == draft['capture_group'])
+            .firstOrNull;
+      }
       if (saved.galleryWarning) {
         notice = const UiText(
           'Original saved. Gallery copy failed; check permission and storage. {0}',
@@ -200,7 +212,12 @@ class _FieldHomeState extends State<FieldHome> {
     } finally {
       if (mounted) setState(() => busy = false);
     }
-    if (openId != null && mounted) await _profile(openId);
+    if (nextBurstFrame != null && mounted) {
+      // Every frame runs the existing candidate/new-ID confirmation independently.
+      await _scan(resume: nextBurstFrame);
+    } else if (openId != null && mounted) {
+      await _profile(openId);
+    }
   }
 
   Future<String?> _pick() => Navigator.of(context).push<String>(

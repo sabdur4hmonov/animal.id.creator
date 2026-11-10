@@ -87,6 +87,16 @@ class AdvisoryMatchingConfig(ConfigBase):
         return self
 
 
+class BurstCaptureConfig(ConfigBase):
+    duration_ms: int = Field(ge=3000, le=5000)
+    sample_interval_ms: int = Field(ge=50, le=1000)
+    best_frame_count: int = Field(ge=1, le=5)
+    max_analyzed_frames: int = Field(ge=5, le=100)
+    max_frame_pixels: int = Field(ge=307200, le=16777216)
+    jpeg_quality: int = Field(ge=80, le=100)
+    soft_blur_ratio: float = Field(gt=0, lt=1)
+
+
 class BusinessConfig(ConfigBase):
     species: Species
     enabled: bool
@@ -95,6 +105,7 @@ class BusinessConfig(ConfigBase):
     weight: WeightConfig
     ar: ArConfig | None = None
     advisory_matching: AdvisoryMatchingConfig | None = None
+    burst_capture: BurstCaptureConfig | None = None
 
 
 def load_business_configs(directory: Path):

@@ -379,5 +379,20 @@
   "No, a different animal": "Йўқ, бошқа мол",
   "This looks like {0}. Is it the same animal?": "Рўйхатдаги {0} га ўхшайди — ўшами?",
   "Saved photo": "Сақланган сурат",
-  "New animal": "Янги мол"
+  "New animal": "Янги мол",
+  "Video capture": "Видео билан олиш",
+  "Single photo": "Битта сурат",
+  "Video is not stored. Review the sharpest frames.": "Видео сақланмайди. Энг тиниқ кадрларни кўриб танланг.",
+  "Capture best frames": "Тиниқ кадрларни олиш",
+  "Review best frames": "Тиниқ кадрларни танлаш",
+  "Confirm the animal separately for each selected photo.": "Ҳар бир танланган суратда молни алоҳида тасдиқланг.",
+  "Frame {0} · sharpness {1}": "Кадр {0} · тиниқлик {1}",
+  "Select all frames": "Ҳамма кадрни танлаш",
+  "Use selected frames": "Танланган кадрларни олиш",
+  "Sharp frame": "Кадр тиниқ",
+  "Hold still": "Қимирлатмай туринг",
+  "Improve light or focus": "Ёруғлик ёки фокусни яхшиланг",
+  "No sharp frames. Improve light and try again.": "Тиниқ кадр чиқмади. Ёруғликни яхшилаб қайта олинг.",
+  "Burst frames are unsupported or too small. Use single photo mode.": "Камера кадр оқими мос эмас ёки ўлчами кичик. Битта сурат режимидан фойдаланинг.",
+  "Video capture is unavailable. Single photo mode is ready.": "Видео билан олиш ишламади. Битта сурат режими тайёр."
 }

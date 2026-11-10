@@ -10,7 +10,12 @@ String configDigest(Map config) =>
 // Matching-only updates must not discard existing AR correction cohorts.
 Map<String, dynamic> arPolicy(Map<String, dynamic> business) => {
   for (final entry in business.entries)
-    if (!{'ar_policy_version', 'advisory_matching'}.contains(entry.key))
+    if (!{
+      'ar_policy_version',
+      'advisory_matching',
+      'burst_capture',
+      'side_photos',
+    }.contains(entry.key))
       entry.key: entry.key == 'config_version'
           ? (business['ar_policy_version'] ?? entry.value)
           : entry.value,

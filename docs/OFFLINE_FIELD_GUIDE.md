@@ -3,8 +3,15 @@
 ## Molni skanerlash va profil
 
 1. **Molni skanerlash** → bitta molning tumshug‘ini markazga oling →
-   **Suratga olish**. App sifatni tekshiradi. Surat xira yoki yorug‘lik
-   yomon bo‘lsa, qayta oling. Har suratni alohida oling.
+   standart **Video bilan olish** rejimida **Eng tiniq kadrlarni olish**ni bosing.
+   4 soniya bir molning tumshug‘ini ushlang: yashil — tiniq, sariq — qimirlamang,
+   qizil — yorug‘lik/fokusni yaxshilang. So‘ng eng yaxshi suratni yoki hammasini
+   tanlang. Har tanlangan suratda mol ID sini alohida tasdiqlang; keyingi surat
+   avtomatik ayni molga biriktirilmaydi. Jarayon to‘xtasa saqlangan suratdan davom
+   eting. Video fayl saqlanmaydi, faqat tanlangan original o‘lchamdagi JPEGlar.
+   Kadrlar kichik yoki kamera oqimi ishlamasa, aniq xabar bilan **Bitta surat**ga
+   qaytadi. Yakuniy QCdan o‘tmagan surat qabul qilinmaydi. Bir burst bir xil
+   ko‘rinish: olti turli checklist qatorini bitta burst bilan to‘ldirmang.
 2. O‘xshash nomzod chiqsa, yangi va eski surat, birka va vaznni ko‘ring.
    Faqat o‘sha mol ekaniga ishonchingiz komil bo‘lsa **Ha, shu mol**ni
    bosing: surat yangi sessiya bilan o‘sha **L-…** IDga qo‘shiladi.

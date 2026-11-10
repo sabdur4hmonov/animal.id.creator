@@ -64,6 +64,8 @@ class FieldScanWorkflow {
     String view,
     Map speciesConfig, {
     String? profileId,
+    Map<String, dynamic>? provenance,
+    String? captureGroup,
   }) async {
     if (!validFieldOperator(store.operatorId) ||
         metadata['operator_id'] != store.operatorId ||
@@ -84,6 +86,8 @@ class FieldScanWorkflow {
       'scan_key': key,
       'species': metadata['species'],
       'profile_id': ?profileId,
+      'capture_provenance': ?provenance,
+      'capture_group': ?captureGroup,
       'capture_metadata': metadata,
       'quality': quality,
       'view': view,
@@ -238,6 +242,8 @@ class FieldScanWorkflow {
         draft['view'] as String,
         visit,
         Map<String, dynamic>.from(draft['config_snapshot'] as Map),
+        provenance: draft['capture_provenance'] as Map?,
+        captureGroup: draft['capture_group'] as String?,
       );
     }
     var warning = false;

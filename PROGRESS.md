@@ -1,6 +1,6 @@
 # BioLivestock AI — project progress
 
-Last live repository inspection: 2026-11-07, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
+Last live repository inspection: 2026-11-10, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
 
 ## Current stop point
 
@@ -17,9 +17,8 @@ User now explicitly authorizes ordinary origin main pushes after milestones.
 Stop for remote-only commits or any discovered secret; never rewrite history.
 Public repository/remote ancestor and all 33 outgoing commits audited; see
 docs/PUBLICATION_AUDIT_2026-11-10.md. No secrets/personal phone numbers or real
-owner records found. First brand milestone is being tested/built; it has not
-yet been committed or pushed at that initial inspection. Entry main clean
-at 5910f35, remote eaaf857.
+owner records found. Brand milestone was committed and published as 091a66f;
+entry main was clean at 5910f35, remote eaaf857. See push evidence below.
 
 **Stage 1 complete — 2026-11-10:** Chorvam Android launcher label, native
 splash icon/Flutter startup wordmark and in-app titles/backup wording. Original
@@ -33,6 +32,35 @@ ae469628632e81db4fafe4b444f85a030f107d10aced454106abc11826123cd0.
 All bundled config/catalog bytes match source. Phone runtime and retention
 after this update: **unverified**, no adb/install/device access performed.
 Local commit and ordinary fast-forward push follow, then Stage 2 burst capture.
+
+**Stage 1 push directly verified:** after publication, status was
+`## main...origin/main` (clean), `git rev-list --left-right --count
+HEAD...origin/main` returned **0 / 0**. Real `git log -3 --oneline`:
+
+```text
+091a66f Brand Android capture app as Chorvam and audit public publication
+5910f35 Research Chorvam market demand and refine accelerator application
+ac1a091 Review Chorvam accelerator pitch and record six-cattle founder trial
+```
+
+**Stage 2 built and host-verified:** selected original-resolution YUV stream candidates
+are JPEG-encoded, receive the existing full JPEG QC, and are staged durably
+with frame/time/quality/count provenance outside strict upload JSON. Each
+selected frame runs an independent existing identity confirmation; no group
+ID inheritance or automatic multi-photo binding. An automatic safety review
+rejected the initial group-binding proposal; it was replaced with individual
+confirmation. Cattle business config v5 adds bounded 4-second/top-3 capture;
+AR policy digest remains v3 and sheep unchanged. Existing official camera
+BSD-3-Clause + image MIT reused; original selector, no new MP4 dependency.
+Direct checks: analyzer clean, all **158 Flutter tests**, **224 backend tests**
+and Ruff passed. Synthetic-only: sharpness ranking, original-buffer ownership,
+strides/rotation/JPEG dimensions, threshold/cadence/exposure/small-stream gates,
+durable multi-frame review and 4-locale 320×720/200% layouts. No camera stream,
+device speed, moving-cattle sharpness or matching accuracy claim.
+ARM64 release and original signer/package/version verified; artifact
+`data/artifacts/chorvam-burst-20261110/app-release.apk`, SHA-256
+`a234a4981d16ac83e4180102a6a8a3da24f2c4629e45542b05f75ae9611109af`.
+Phone runtime **unverified**, no device access. Next: separate side photos.
 
 **Latest field correction / market research — 2026-11-07:** Sardorbek
 clarified his earlier six-animal report: the trial was **2026-11-06** and

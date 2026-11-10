@@ -379,5 +379,20 @@
   "No, a different animal": "No, a different animal",
   "This looks like {0}. Is it the same animal?": "This looks like {0}. Is it the same animal?",
   "Saved photo": "Saved photo",
-  "New animal": "New animal"
+  "New animal": "New animal",
+  "Video capture": "Video capture",
+  "Single photo": "Single photo",
+  "Video is not stored. Review the sharpest frames.": "Video is not stored. Review the sharpest frames.",
+  "Capture best frames": "Capture best frames",
+  "Review best frames": "Review best frames",
+  "Confirm the animal separately for each selected photo.": "Confirm the animal separately for each selected photo.",
+  "Frame {0} · sharpness {1}": "Frame {0} · sharpness {1}",
+  "Select all frames": "Select all frames",
+  "Use selected frames": "Use selected frames",
+  "Sharp frame": "Sharp frame",
+  "Hold still": "Hold still",
+  "Improve light or focus": "Improve light or focus",
+  "No sharp frames. Improve light and try again.": "No sharp frames. Improve light and try again.",
+  "Burst frames are unsupported or too small. Use single photo mode.": "Burst frames are unsupported or too small. Use single photo mode.",
+  "Video capture is unavailable. Single photo mode is ready.": "Video capture is unavailable. Single photo mode is ready."
 }
