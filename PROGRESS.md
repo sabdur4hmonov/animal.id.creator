@@ -4,8 +4,8 @@ Last live repository inspection: 2026-11-10, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
-**Active five-stage task — 2026-11-10:** read the attached continuation and
-user's overriding instructions. Stages: (1) Chorvam label/splash/original
+**Five-stage task completed — 2026-11-10:** implemented the attached continuation
+with the user's overriding instructions. Stages: (1) Chorvam label/splash/original
 adaptive vector icon, (2) bounded burst best-frame capture and review,
 (3) separate weight-training side photos linked to dated real scale weights,
 (4) append-only local L→server MAA registration/replay/upload, (5) sourced
@@ -15,10 +15,23 @@ User reports 23117RA68G cannot use ARCore; keep optional AR for other devices.
 **No adb/install/device checks in this task; phone runtime remains unverified.**
 User now explicitly authorizes ordinary origin main pushes after milestones.
 Stop for remote-only commits or any discovered secret; never rewrite history.
-Public repository/remote ancestor and all 33 outgoing commits audited; see
+Public repository/remote ancestor and all 33 initially outgoing commits audited; see
 docs/PUBLICATION_AUDIT_2026-11-10.md. No secrets/personal phone numbers or real
-owner records found. Brand milestone was committed and published as 091a66f;
-entry main was clean at 5910f35, remote eaaf857. See push evidence below.
+owner records found. Feature milestones published as 091a66f, 6b04d79,
+3fb1324 and 655b8ee; final server-plan documentation follows. Entry main was
+clean at 5910f35, remote eaaf857. See actual post-push evidence below.
+
+**Next action is a field check, not more model claims:** manually install the
+latest ignored `data/artifacts/chorvam-pilot-ready-20261110/app-release.apk`
+when desired, keeping the existing app/data. Try burst on 5–10 cattle, record
+attempt/completion/rescan outcomes with denominators, confirm every image's ID,
+collect left/right body photos and same-day actual scale kg/date if possible.
+Verify persistence/review/gallery/ZIP after reopening. No APK was installed by
+this session. 23117RA68G ARCore unsupported is founder-reported; preserve AR for
+supported phones. Backend operator credentials must match original scan metadata
+before explicit registration/upload. Do not relabel old operator evidence.
+YOLO checkpoint, calibrated matching/weight accuracy and new native runtime
+remain unverified/externally data-dependent. Sheep stays disabled.
 
 **Stage 1 complete — 2026-11-10:** Chorvam Android launcher label, native
 splash icon/Flutter startup wordmark and in-app titles/backup wording. Original
@@ -31,7 +44,7 @@ data/artifacts/chorvam-brand-20261110/app-release.apk; SHA-256
 ae469628632e81db4fafe4b444f85a030f107d10aced454106abc11826123cd0.
 All bundled config/catalog bytes match source. Phone runtime and retention
 after this update: **unverified**, no adb/install/device access performed.
-Local commit and ordinary fast-forward push follow, then Stage 2 burst capture.
+Published as 091a66f by ordinary fast-forward push; evidence follows.
 
 **Stage 1 push directly verified:** after publication, status was
 `## main...origin/main` (clean), `git rev-list --left-right --count
@@ -119,6 +132,40 @@ ARM64 release built and original signer verified; artifact
 `data/artifacts/chorvam-registration-20261110/app-release.apk`, SHA256SUMS.txt.
 Next: documentation-only pilot server plan, then final publication evidence.
 
+Stage 4 APK SHA-256: `c83163495a8dcf834cd1c8b99e08df9fbc17e868fb8796f3413b559c56a04cae`.
+Repeated publication audit at 655b8ee: 321 tracked paths, zero forbidden/
+credential/personal-phone findings; ignored raw report retained in data/dev.
+Stage 4 ordinary push directly verified: clean `## main...origin/main`,
+ahead/behind **0 / 0**; real log:
+```text
+655b8ee Register local cattle IDs with durable replay and immutable derived uploads
+3fb1324 Collect separate body-side photos linked to dated true scale weights
+6b04d79 Capture and review sharp original burst frames with per-photo identity confirmation
+```
+
+**Stage 5 documentation completed:** sourced Uzbekistan VPS/HTTPS/backup/security
+plan only. Current Lex.uz 27¹ uses the March 2026 revision, not the obsolete
+blanket 2021 localization claim; owner/operator/GPS privacy is separate from
+animal images. UZ-local primary+backup is the proposed simple pilot choice.
+No purchase/account/deployment/contact or real-data movement. Provider prices
+are dated offers/calculator output, not measured SLA or a contracted quote.
+`docs/PILOT_SERVER_PLAN.md` proposes approximately 570–890k UZS/month for
+server + separate backup (dated estimate, excludes domain/operations), flags
+development credentials/Compose exposures and distinguishes proposed RPO/RTO
+from tested guarantees. Current endpoint and original data were not touched.
+Final repeated host checks: **177 Flutter tests**, analyzer clean; previous
+current backend/tool suite **226 tests** and Ruff clean. ARM64 build succeeded;
+APK's four config source bytes/hashes and all four locale catalogs were checked
+inside the actual ZIP, plus manifest/version/package and original APK signer.
+Phone runtime **unverified**; registration IO/UI and quality math remain
+synthetic verification, not field accuracy. Final artifact and SHA256SUMS.txt:
+`data/artifacts/chorvam-pilot-ready-20261110/` (ignored).
+Final APK SHA-256:
+`c83163495a8dcf834cd1c8b99e08df9fbc17e868fb8796f3413b559c56a04cae`.
+
+Historical sections below describe their own dates; this current five-stage
+summary overrides obsolete SDK/phone blockers and earlier planned-only wording.
+
 **Latest field correction / market research — 2026-11-07:** Sardorbek
 clarified his earlier six-animal report: the trial was **2026-11-06** and
 only **2 cattle were properly tested**, with moving cattle making sharp
@@ -126,7 +173,7 @@ capture difficult. Do not reuse the PDF's 'six successfully recognized'
 claim or invent 2/2 accuracy. Matching attempt counts/outcomes remain
 unrecorded; this is founder-reported early field/usability evidence.
 Capture completion and motion handling are the next validation priority;
-short-video best-frame capture is still planned, not implemented.
+short-video best-frame capture was planned then and is now built in Stage 2 above.
 Market/application research in docs/CHORVAM_MARKET_AND_APPLICATION.md:
 government VIS-CHINOR exists; position a proposed complementary offline
 inspection workflow rather than a first national registry. Primary sources

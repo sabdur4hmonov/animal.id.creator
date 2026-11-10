@@ -1,4 +1,4 @@
-# BioLivestock AI — Phase 1
+# Chorvam (BioLivestock AI)
 
 Fresh-install offline cattle profiles, field collection and Android AR measurement: follow
 [the Uzbek farm guide](docs/OFFLINE_FIELD_GUIDE.md). No API token/server is required
@@ -18,6 +18,20 @@ separate mode. Repeatability gates, both formula results, versioned local market
 prices and optional minimum-10-distinct-animal scale correction are available.
 Real phone/animal accuracy remains unverified; AR support must be checked on-device.
 The existing authenticated backend/manual upload and calibrated_3d API stay intact.
+
+The default muzzle capture is a configurable four-second camera burst: review
+up to three sharp original-size JPEGs, then confirm each photo's animal separately.
+No MP4 is saved. Unsupported/undersized streams fall back explicitly to single
+photo capture. Profiles also collect left/right whole-body photos and link dated
+actual scale observations within seven days; body photos do not enter muzzle
+matching/checklists, and no photo-to-weight prediction is implemented.
+
+Explicit profile/Tools registration freezes owner details and safely replays
+L → permanent MAA issuance, then uploads derived original-byte muzzle journals.
+Old L metadata is retained. Credentials for the original capture operator are
+required; the public APK has no token. See the field guide for retry/ZIP steps.
+[The pilot server plan](docs/PILOT_SERVER_PLAN.md) compares dated Uzbekistan
+hosting prices and current legal/security requirements; nothing is deployed.
 
 Native AR rendering is original Kotlin/OpenGL using pinned official
 `com.google.ar:core:1.54.0`; no unlicensed renderer was copied. Google's
@@ -133,10 +147,10 @@ For a non-Docker backend, provide a running PostgreSQL instance, copy `backend/.
 
 See `docs/ARCHITECTURE.md`, `docs/ROADMAP.md` and `docs/VALIDATION.md` for design, scope and checks. Origin points to `https://github.com/sabdur4hmonov/animal.id.creator.git`. The audit repairs were published to `main` on 2026-10-13 at Sardorbek's explicit request. Pushes require an explicit user request and are never automatic.
 
-See `docs/PHASE2_RESEARCH.md` for offline extraction/matching commands and `docs/DATA_REQUIREMENTS.md` for the data gates for later phases. Physical-phone testing is currently paused because the device is being repaired; backend and offline tools proceed independently.
+See `docs/PHASE2_RESEARCH.md` for offline extraction/matching commands and `docs/DATA_REQUIREMENTS.md` for the data gates for later phases. The 2026-11-10 updates were not installed/tested on a phone, by request. Sardorbek reports his 23117RA68G does not support ARCore; ordinary capture/side-photo collection remains the intended non-AR path. Only two cattle were properly tried on 2026-11-06, with motion/sharpness difficulties and no measured accuracy percentage.
 
 See [SECURITY_AND_REGISTRY.md](docs/SECURITY_AND_REGISTRY.md) for operator/admin keys, status/review endpoints, immutable provenance, duplicate-check boundaries and rotation. Existing keys are preserved by initialization; run it only once. Protected endpoints fail closed when credentials are missing. Only the health endpoint and API documentation are public.
 
 See [WEIGHT_AND_VALUATION.md](docs/WEIGHT_AND_VALUATION.md) for deterministic adult-cattle formulas, calibrated 3D measurement inputs, configured carcass-yield scenarios and admin price updates. Prices start unset. Formula arithmetic is tested; real-world accuracy remains unverified.
 
-See [ANTI_SPOOF_GROUNDWORK.md](docs/ANTI_SPOOF_GROUNDWORK.md) for advisory Moiré/reflection/rectangle signals, Android root/emulator hints and mock-GPS plausibility checks. These do not return a live/genuine verdict. Breathing/micro-movement stays blocked on labeled videos and physical-device testing on the repaired phone.
+See [ANTI_SPOOF_GROUNDWORK.md](docs/ANTI_SPOOF_GROUNDWORK.md) for advisory Moiré/reflection/rectangle signals, Android root/emulator hints and mock-GPS plausibility checks. These do not return a live/genuine verdict. Breathing/micro-movement stays blocked on labeled videos; current device behavior remains unverified.
