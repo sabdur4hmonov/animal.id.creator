@@ -304,7 +304,7 @@ class _FieldHomeState extends State<FieldHome> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('BioLivestock')),
+    appBar: AppBar(title: const Text('Chorvam')),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [

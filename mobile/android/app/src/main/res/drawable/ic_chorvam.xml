@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Original muzzle mark. No stock artwork or third-party brand. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#1E3A2B" android:pathData="M0,0h108v108h-108z"/>
+    <path android:fillColor="#FFF2D4" android:pathData="M33,45Q25,42 27,33Q37,32 43,39Q54,35 65,39Q71,32 81,33Q83,42 75,45L76,61Q74,77 54,79Q34,77 32,61Z"/>
+    <path android:fillColor="#1E3A2B" android:pathData="M41,57a4,5 0,1 0,0.1 0M63,57a4,5 0,1 0,0.1 0"/>
+    <path android:strokeColor="#1E3A2B" android:strokeWidth="3" android:strokeLineCap="round"
+        android:fillColor="#00000000" android:pathData="M47,69Q54,73 61,69"/>
+    <path android:fillColor="#E0A33B" android:pathData="M49,30a5,5 0,1 0,10 0a5,5 0,1 0,-10 0"/>
+</vector>

@@ -9,6 +9,24 @@ import 'field_home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: Color(0xff1e3a2b),
+        body: Center(
+          child: Text(
+            'Chorvam',
+            style: TextStyle(
+              color: Color(0xfffff2d4),
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
   final language = LanguageController();
   await language.load();
   runApp(BioLivestockApp(language: language));
@@ -36,7 +54,7 @@ class _BioLivestockAppState extends State<BioLivestockApp> {
     child: ListenableBuilder(
       listenable: language,
       builder: (context, _) => MaterialApp(
-        title: 'BioLivestock Capture',
+        title: 'Chorvam',
         debugShowCheckedModeBanner: false,
         theme: fieldTheme(),
         locale: language.language.locale,
@@ -55,7 +73,7 @@ class _BioLivestockAppState extends State<BioLivestockApp> {
                   environment: CaptureEnvironment.native(
                     backupShareText: () => FieldLocalizations.of(context).resolve(
                       const UiText(
-                        'BioLivestock phone backup — save a copy outside this app.',
+                        'Chorvam phone backup — save a copy outside this app.',
                       ),
                     ),
                   ),

@@ -188,7 +188,7 @@ class CaptureEnvironment {
               sharePositionOrigin: origin,
               text:
                   backupShareText?.call() ??
-                  'BioLivestock phone backup — save a copy outside this app.',
+                  'Chorvam phone backup — save a copy outside this app.',
             ),
           );
         },

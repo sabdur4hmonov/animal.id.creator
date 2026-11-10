@@ -4,6 +4,36 @@ Last live repository inspection: 2026-11-07, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Active five-stage task — 2026-11-10:** read the attached continuation and
+user's overriding instructions. Stages: (1) Chorvam label/splash/original
+adaptive vector icon, (2) bounded burst best-frame capture and review,
+(3) separate weight-training side photos linked to dated real scale weights,
+(4) append-only local L→server MAA registration/replay/upload, (5) sourced
+pilot-server plan only. Preserve package/signing/storage, existing AR modes,
+all strict journals and disabled sheep. No external AI service or paid work.
+User reports 23117RA68G cannot use ARCore; keep optional AR for other devices.
+**No adb/install/device checks in this task; phone runtime remains unverified.**
+User now explicitly authorizes ordinary origin main pushes after milestones.
+Stop for remote-only commits or any discovered secret; never rewrite history.
+Public repository/remote ancestor and all 33 outgoing commits audited; see
+docs/PUBLICATION_AUDIT_2026-11-10.md. No secrets/personal phone numbers or real
+owner records found. First brand milestone is being tested/built; it has not
+yet been committed or pushed at that initial inspection. Entry main clean
+at 5910f35, remote eaaf857.
+
+**Stage 1 complete — 2026-11-10:** Chorvam Android launcher label, native
+splash icon/Flutter startup wordmark and in-app titles/backup wording. Original
+forest/cream/amber adaptive vector muzzle icon. Package/applicationId, version
+code, existing gallery album, storage and signing preserved. Direct checks:
+150 Flutter tests passed; flutter analyze clean (initial command waited at
+startup; explicit no-version-check retry also passed), audit-tool Ruff clean.
+ARM64 release built in 9m9s; APK v2 and original signer verified. Artifact:
+data/artifacts/chorvam-brand-20261110/app-release.apk; SHA-256
+ae469628632e81db4fafe4b444f85a030f107d10aced454106abc11826123cd0.
+All bundled config/catalog bytes match source. Phone runtime and retention
+after this update: **unverified**, no adb/install/device access performed.
+Local commit and ordinary fast-forward push follow, then Stage 2 burst capture.
+
 **Latest field correction / market research — 2026-11-07:** Sardorbek
 clarified his earlier six-animal report: the trial was **2026-11-06** and
 only **2 cattle were properly tested**, with moving cattle making sharp

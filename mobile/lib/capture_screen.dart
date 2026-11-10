@@ -84,7 +84,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         widget.environment ??
         CaptureEnvironment.native(
           backupShareText: () => const UiText(
-            'BioLivestock phone backup — save a copy outside this app.',
+            'Chorvam phone backup — save a copy outside this app.',
           ).resolve(context),
         );
     _operator.text = _environment.operatorId;
@@ -489,7 +489,7 @@ class _CaptureScreenState extends State<CaptureScreen>
             await _fieldStore!.append('field-gallery-${queued.key}.json', {
               'version': 1,
               'request_key': queued.key,
-              'album': 'BioLivestock',
+              'album': 'Chorvam',
               'name': name,
               'saved': true,
             });
@@ -849,7 +849,10 @@ class _CaptureScreenState extends State<CaptureScreen>
   }
 
   Future<void> _openAr() async {
-    if (_busy || _photo != null || _localAnimal == null || _fieldStore == null) {
+    if (_busy ||
+        _photo != null ||
+        _localAnimal == null ||
+        _fieldStore == null) {
       return;
     }
     _measuringAr = true;
@@ -1751,7 +1754,7 @@ class _CaptureScreenState extends State<CaptureScreen>
           const SizedBox(width: 10),
           const Expanded(
             child: FieldText(
-              'BioLivestock',
+              'Chorvam',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

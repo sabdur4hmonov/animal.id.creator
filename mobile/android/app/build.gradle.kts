@@ -46,7 +46,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "ai.biolivestock.biolivestock_capture"
-        manifestPlaceholders["bioApplicationLabel"] = if (advisoryProbe) "BioLivestock Synthetic Probe" else "BioLivestock Capture"
+        manifestPlaceholders["bioApplicationLabel"] = if (advisoryProbe) "Chorvam Synthetic Probe" else "Chorvam"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
