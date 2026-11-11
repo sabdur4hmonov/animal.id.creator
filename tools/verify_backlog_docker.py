@@ -3,6 +3,7 @@
 import argparse
 import json
 import subprocess
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -103,13 +104,70 @@ def verify_health(client):
     }
 
 
+def verify_ownership(client):
+    issued = client.post(
+        "/api/v1/registry/animals",
+        headers={"Idempotency-Key": uuid4().hex},
+        json={
+            "species": "cattle",
+            "owner": {"owner_id": "SYNTHETIC-A", "name": "Synthetic seller"},
+        },
+    )
+    assert issued.status_code == 201
+    label = issued.json()["animal_id"]
+    root = f"/api/v1/registry/animals/cattle/{label}"
+    key = uuid4().hex
+    body = {
+        "expected_version": 1,
+        "owner": {"owner_id": "SYNTHETIC-B", "name": "Synthetic buyer"},
+        "observed_at": datetime.now(UTC).isoformat(),
+        "gps": None,
+        "reason": "Synthetic sale",
+        "price_uzs": 25000000,
+        "currency": "UZS",
+    }
+    first = client.post(root + "/owner", json=body, headers={"Idempotency-Key": key})
+    assert first.status_code == 200, first.text
+    assert (
+        client.post(root + "/owner", json=body, headers={"Idempotency-Key": key}).json()
+        == first.json()
+    )
+    assert (
+        client.post(
+            root + "/owner",
+            json={
+                **body,
+                "owner": {"owner_id": "SYNTHETIC-C", "name": "Synthetic conflict"},
+            },
+            headers={"Idempotency-Key": uuid4().hex},
+        ).status_code
+        == 409
+    )
+    events = client.get(root + "/history").json()
+    transfer = [e for e in events if e["action"] == "owner_changed"]
+    assert len(transfer) == 1
+    assert transfer[0]["details"]["price_uzs"] == 25000000
+    return {
+        "animal_id": label,
+        "idempotent_transfer": True,
+        "stale_version_rejected": True,
+        "price_audited": True,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=["health"], required=True)
+    parser.add_argument("--stage", choices=["health", "ownership"], required=True)
     args = parser.parse_args()
-    binding = subprocess.run(['docker','compose','-p',PROJECT,'-f',str(COMPOSE),
-        'port','api','8000'],capture_output=True,text=True,check=True).stdout.strip()
-    assert binding == '127.0.0.1:18001', 'Dedicated verification API binding differs; no requests sent'
+    binding = subprocess.run(
+        ["docker", "compose", "-p", PROJECT, "-f", str(COMPOSE), "port", "api", "8000"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    assert binding == "127.0.0.1:18001", (
+        "Dedicated verification API binding differs; no requests sent"
+    )
     root = ROOT / "data/verification-backlog-20261111"
     keys = json.loads((root / "secrets/tokens.json").read_text("utf-8"))
     with httpx.Client(
@@ -117,8 +175,18 @@ def main():
         headers={"Authorization": "Bearer " + keys["operator"]["token"]},
         timeout=60,
     ) as client:
-        assert client.get("/health").status_code == 200
-        evidence = verify_health(client)
+        for _ in range(20):
+            try:
+                if client.get("/health", timeout=2).status_code == 200:
+                    break
+            except httpx.TransportError:
+                pass
+            time.sleep(0.5)
+        else:
+            raise RuntimeError("Dedicated API is not ready; no mutations attempted")
+        evidence = {"health": verify_health, "ownership": verify_ownership}[args.stage](
+            client
+        )
     evidence.update(
         stage=args.stage,
         verified_at=datetime.now(UTC).isoformat(),

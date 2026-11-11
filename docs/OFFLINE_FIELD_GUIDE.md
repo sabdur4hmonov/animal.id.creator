@@ -1,4 +1,4 @@
-# Qishloqda serversiz yig‘ish — 2026-11-10
+# Qishloqda serversiz yig‘ish — 2026-11-11
 
 ## Molni skanerlash va profil
 
@@ -43,6 +43,20 @@ va asl JSONlar qoladi. Bu tashxis yoki dori tavsiyasi emas.
    qarorlarni saqlaydi. Bu sanovlar operator tasdiqlariga asoslanadi.
 
 ## Olti ko‘rinish va zaxira
+
+### Sotuv va egalik tarixi
+
+Profil → **Egalik tarixi → Sotildi / egasi o‘zgardi**. Yangi ega yorlig‘i va
+ismi, sana hamda o‘tkazish izohini kiriting. Narx ixtiyoriy: faqat **butun so‘m
+(UZS)**. Qayd avval telefonda append-only saqlanadi; bu to‘lov yoki huquqiy
+mulk tasdig‘i emas. ZIPda `ledger/ownership.csv` va asl yozuvlar bor.
+
+MAA va asl operator kaliti bo‘lsa **Egalik tarixini yuborish**. App server
+versiyasini so‘rovdan oldin saqlaydi. Aloqa uzilsa ayni tugma bilan davom eting;
+yangi yozuv/kalit bilan avvalgi transferni qayta yaratmang. Serverdagi egasi
+yoki versiya o‘zgargan bo‘lsa, xato ko‘rsatiladi; app o‘zi yangi versiyaga
+moslab yubormaydi. Sana kun aniqligida kiritiladi (API uchun UTC 00:00), hodisaning
+o‘lchangan aniq soati deb qaralmaydi. Sotuv qaydi bir molning ID sini o‘zgartirmaydi.
 
 P0 oqimi: app ichida source YAML bilan bir xil oflayn qoidalar bor. Yangi
 o‘rnatilgan telefonda server yoki API token shart emas. Samolyot rejimida

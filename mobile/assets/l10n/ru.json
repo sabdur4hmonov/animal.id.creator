@@ -435,5 +435,14 @@
   "Sync health history": "Отправить историю здоровья",
   "Reported history, not a diagnosis. Corrections keep every earlier record.": "Это история записей, не диагноз. Исправления сохраняют прежние записи.",
   "Operator record": "Запись оператора",
-  "Correcting record": "Исправляющая запись"
+  "Correcting record": "Исправляющая запись",
+  "Ownership history": "История владельцев",
+  "Sold / owner changed": "Продано / смена владельца",
+  "Sale price, whole UZS (optional)": "Цена, целые сумы (необязательно)",
+  "Transfer notes (required)": "Причина передачи (обязательно)",
+  "Check the owner, date, notes and whole-sum price.": "Проверьте владельца, дату, причину и цену в целых сумах.",
+  "Save ownership report": "Сохранить запись о владельце",
+  "Sync ownership history": "Отправить историю владельцев",
+  "Operator-reported ownership, not verified legal title or payment.": "Это запись оператора, не подтверждение права собственности или оплаты.",
+  "{0} UZS": "{0} сум"
 }

@@ -115,6 +115,11 @@ class HealthHistoryConfig(ConfigBase):
     notes_max_length: int = Field(ge=1, le=1000)
 
 
+class OwnershipHistoryConfig(ConfigBase):
+    max_price_uzs: int = Field(ge=0, le=10**15)
+    notes_max_length: int = Field(ge=1, le=1000)
+
+
 class BusinessConfig(ConfigBase):
     species: Species
     enabled: bool
@@ -126,6 +131,7 @@ class BusinessConfig(ConfigBase):
     burst_capture: BurstCaptureConfig | None = None
     side_photos: SidePhotoConfig | None = None
     health_history: HealthHistoryConfig | None = None
+    ownership_history: OwnershipHistoryConfig | None = None
 
 
 def load_business_configs(directory: Path):

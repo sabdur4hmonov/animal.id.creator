@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Header, Query, Request
+from fastapi import APIRouter, Header, HTTPException, Query, Request
 from sqlalchemy import func, select
 
 from app.api.business import SessionDep, enabled
@@ -77,13 +77,20 @@ def owner(
     key: RequestKey,
 ):
     enabled(request, species)
+
+    def apply_owner():
+        limits = request.app.state.business_configs[species].ownership_history
+        if limits and data.price_uzs is not None and data.price_uzs > limits.max_price_uzs:
+            raise HTTPException(422, "Sale price exceeds configured limit")
+        return change_owner(session, require_record(session, species, animal_id), data, principal)
+
     return run_operation(
         session,
         principal,
         key,
         f"owner:{species.value}:{animal_id}",
         data,
-        lambda: change_owner(session, require_record(session, species, animal_id), data, principal),
+        apply_owner,
     )
 
 

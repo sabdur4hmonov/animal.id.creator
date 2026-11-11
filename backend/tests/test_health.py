@@ -16,11 +16,15 @@ def animal(client):
 
 
 def payload(**changes):
-    return (
-        {"local_event_key":uuid4().hex,"kind":"vaccination","event_date":"2026-11-01",
-         "description":"Synthetic record","veterinarian_name":"Synthetic veterinarian","notes":"","correction_of":None}
-        | changes
-    )
+    return {
+        "local_event_key": uuid4().hex,
+        "kind": "vaccination",
+        "event_date": "2026-11-01",
+        "description": "Synthetic record",
+        "veterinarian_name": "Synthetic veterinarian",
+        "notes": "",
+        "correction_of": None,
+    } | changes
 
 
 def test_health_replay_correction_and_role_cannot_be_forged(client, db_session):
@@ -32,6 +36,16 @@ def test_health_replay_correction_and_role_cannot_be_forged(client, db_session):
     assert first.status_code == 201
     assert first.json()["verified_by_veterinarian"] is False
     assert client.post(url, json=body, headers={"Idempotency-Key": key}).json() == first.json()
+    from app.core.species import Species
+
+    original_config = client.app.state.business_configs[Species.cattle]
+    client.app.state.business_configs[Species.cattle] = original_config.model_copy(
+        update={
+            "health_history": original_config.health_history.model_copy(update={"description_max_length": 1})
+        }
+    )
+    assert client.post(url, json=body, headers={"Idempotency-Key": key}).json() == first.json()
+    client.app.state.business_configs[Species.cattle] = original_config
     assert client.post(url, json=body, headers={"Idempotency-Key": uuid4().hex}).status_code == 409
     corrected = payload(correction_of=first.json()["id"], description="Synthetic correction")
     second = client.post(url, json=corrected, headers={"Idempotency-Key": uuid4().hex})

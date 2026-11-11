@@ -1,6 +1,6 @@
 species: cattle
 enabled: true
-config_version: 7
+config_version: 8
 ar_policy_version: 3
 weight:
   schoorl_offset_cm: 22
@@ -67,4 +67,7 @@ side_photos:
 health_history:
   description_max_length: 500
   veterinarian_max_length: 120
+  notes_max_length: 1000
+ownership_history:
+  max_price_uzs: 1000000000000
   notes_max_length: 1000

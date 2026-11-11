@@ -124,7 +124,7 @@
   "The animal keeps its ID and complete ownership history.": "Hayvon IDsi va egalar tarixi to‘liq saqlanadi.",
   "Removes this animal from the active list. Its ID and evidence remain permanently reserved. This records your report, not independent proof of physical identity/slaughter.": "Hayvon faol ro‘yxatdan chiqariladi. ID va dalillar doimiy saqlanadi. Bu sizning xabaringizni qayd etadi; hayvon shaxsi yoki so‘yilganining mustaqil isboti emas.",
   "A pending request already exists. Retry its original details.": "Kutilayotgan so‘rov mavjud. O‘sha tafsilotlar bilan qayta yuboring.",
-  "New owner reference": "Yangi ega kodi",
+  "New owner reference": "Yangi ega yorlig‘i",
   "Enter a valid owner reference": "To‘g‘ri ega kodini kiriting (lotin harflari)",
   "New owner name": "Yangi ega ismi",
   "Enter a name": "Ism kiriting",
@@ -435,5 +435,14 @@
   "Sync health history": "Sog‘liq tarixini yuborish",
   "Reported history, not a diagnosis. Corrections keep every earlier record.": "Bu kiritilgan tarix, tashxis emas. Tuzatish avvalgi qaydni o‘chirmaydi.",
   "Operator record": "Operator yozuvi",
-  "Correcting record": "Tuzatuvchi qayd"
+  "Correcting record": "Tuzatuvchi qayd",
+  "Ownership history": "Egalik tarixi",
+  "Sold / owner changed": "Sotildi / egasi o‘zgardi",
+  "Sale price, whole UZS (optional)": "Sotuv narxi, butun so‘m (ixtiyoriy)",
+  "Transfer notes (required)": "O‘tkazish izohi (majburiy)",
+  "Check the owner, date, notes and whole-sum price.": "Ega, sana, izoh va butun so‘mdagi narxni tekshiring.",
+  "Save ownership report": "Egalik qaydini saqlash",
+  "Sync ownership history": "Egalik tarixini yuborish",
+  "Operator-reported ownership, not verified legal title or payment.": "Bu operator kiritgan egalik tarixi; huquqiy mulk yoki to‘lov tasdig‘i emas.",
+  "{0} UZS": "{0} so‘m"
 }

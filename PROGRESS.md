@@ -4,6 +4,15 @@ Last live repository inspection: 2026-11-11, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Latest: backlog item 2 built/directly verified (2026-11-11), publishing now.**
+189 Flutter tests + analyze clean, 230 backend/tool tests + Ruff clean;
+isolated PostgreSQL transfer/replay/stale-version/price audit passed.
+ARM64 APK built in 3m48s, package/version/original signer preserved:
+`data/artifacts/chorvam-ownership-20261111/app-release.apk`, SHA-256
+`79d20d567df63972707962b0de750a3b3517f256f30645cf94293414f8b5bd46`.
+New ownership math/IO/forms remain synthetic-only; phone runtime unverified.
+Next backlog item is 3 (revocable public slaughter QR), then 4–9 in order.
+
 **ACTIVE 2026-11-11 nine-item backlog:** health → offline sale/ownership →
 revocable public slaughter QR → UZ/RU web portal → role/password sessions →
 isolated production deployment kit → onboarding → isolated demo flavor →
@@ -41,6 +50,53 @@ run stalled and was replaced by the verified full run. ARM64 release built in
 7m26s, original package/version/signer checked; no phone install/runtime claim.
 Artifact: `data/artifacts/chorvam-health-20261111/app-release.apk`; SHA256SUMS.txt
 in the same ignored folder. Publication audit/commit/push follows, then item 2.
+
+Item 1 publication completed: d422ea2; audit zero secret/credential/phone findings,
+clean `## main...origin/main`, ahead/behind 0/0. Actual log:
+```text
+d422ea2 Add append-only offline health history and idempotent registry sync
+34fd2b1 Record verified five-stage push state and final artifact evidence
+42c63ee Document Uzbekistan pilot hosting, current privacy rules and field verification gates
+```
+APK SHA-256 `fd2cf8ed8ef10bbca95dd40ddf6c4d4005a1d270fe4c386fcf48e7fc131dfc54`.
+
+**Current item 2:** append-only offline ownership/sale events with optional whole
+UZS price, predecessor chain, owner/date/reason, and explicit MAA synchronization.
+Existing owner endpoint gains optional price/currency; omit absent new fields
+from canonical request hashing so historical receipts remain replayable. No
+new database table/migration needed: owner changes already use immutable audits.
+Freeze expected_version BEFORE HTTP and reuse existing RegistryJournal receipts;
+on conflict do not rebase intent/change key or silently overwrite a newer owner.
+Day-only dates are transmitted as UTC midnight representing the entered day,
+not a claim of a measured event time. Price/ownership remain operator reports.
+
+Item 2 checks so far: **189 Flutter tests**, analyzer clean; **230 backend/tool
+tests**, Ruff clean. UZ/RU/Cyrillic/EN 320px/200% owner forms pass after making
+long dialog title/content jointly scrollable (RU overflow was caught/fixed).
+Dedicated PostgreSQL proof:
+`data/verification-backlog-20261111/evidence-ownership-e5d9d58acd7a4914907cd54e6d430b31.json`.
+HTTP replay preserves one transfer, stale version rejected, optional UZS price
+present in immutable audit. Existing absent-price owner hashes remain identical.
+Health replay now runs before configurable text limits to preserve accepted
+receipts if future limits become stricter (regression tested).
+Publication audit now uses Git batch object reads, still checks all current
+tracked paths plus outgoing blobs. Compared against the archived d422ea2 audit
+under its original immutable base: all findings/coverage/ignore checks equal.
+This saves hundreds of Windows process startups without reducing checks.
+
+Upcoming implementation choices, **not built yet**: item 3 QR generated on the
+server with pinned python-qrcode 8.2 (official PyPI/repository BSD-3-Clause
+checked), reusing Pillow and decoding test with existing OpenCV. No new mobile
+library needed; QR only from server-recorded slaughter, opaque random token,
+append-only revocations, strict public-field whitelist, shared DB rate windows.
+Require configured public origin rather than inventing a reachable domain.
+For item 4 SSR panel, secure short-lived token-to-cookie session foundation
+can precede item 5 password users/roles; never put bearer keys in URLs/storage.
+Item 5 adds Argon2/bcrypt login and authoritative roles with CSRF protection;
+operator-entered vet name must never imply vet verification. Future UX cleanup
+should group health/ownership actions with profile actions rather than under
+the measurement heading. All code-independent fields/accuracy remain unverified
+on a phone. No current architectural decision requires Sardorbek.
 
 **Five-stage task completed — 2026-11-10:** implemented the attached continuation
 with the user's overriding instructions. Stages: (1) Chorvam label/splash/original

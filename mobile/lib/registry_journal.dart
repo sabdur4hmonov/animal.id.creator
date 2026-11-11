@@ -70,6 +70,7 @@ class RegistryRequest {
         'observed_at',
         'gps',
         'reason',
+        if (match.group(3) == 'owner') ...['price_uzs', 'currency'],
         if (match.group(3) == 'owner')
           'owner'
         else ...[
@@ -83,6 +84,15 @@ class RegistryRequest {
       }
       if (match.group(3) == 'owner' && body['owner'] == null) {
         throw const FormatException('Owner is required');
+      }
+      if (body['price_uzs'] != null || body['currency'] != null) {
+        if (match.group(3) != 'owner' ||
+            body['price_uzs'] is! int ||
+            body['price_uzs'] < 0 ||
+            body['price_uzs'] > 1000000000000000 ||
+            body['currency'] != 'UZS') {
+          throw const FormatException('Invalid whole-sum sale price');
+        }
       }
       if (match.group(3) == 'retirement') {
         if (!{'deceased', 'slaughtered'}.contains(body['lifecycle'])) {
@@ -346,15 +356,16 @@ class RegistryJournal {
   Future<Map<String, dynamic>> submitKeyed(
     String key,
     Map<String, dynamic> body,
-    ApiClient api,
-  ) async {
+    ApiClient api, {
+    String path = registryRoot,
+  }) async {
     if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(key)) {
       throw const FormatException('Invalid stable registry key');
     }
     final lock = await _acquire();
     try {
       final wanted = RegistryRequest.decode(
-        RegistryRequest(key, backend, operatorId, registryRoot, body).toJson(),
+        RegistryRequest(key, backend, operatorId, path, body).toJson(),
         key,
       );
       final requests = await pending();
@@ -363,10 +374,11 @@ class RegistryJournal {
           'Registry journals need review; export a backup',
         );
       }
-      if (requests.any((r) => r.path == registryRoot && r.key != key) ||
-          (await issued()).any(
-            (r) => r['_delivered'] != true && r['_request_key'] != key,
-          )) {
+      if (requests.any((r) => r.path == path && r.key != key) ||
+          (path == registryRoot &&
+              (await issued()).any(
+                (r) => r['_delivered'] != true && r['_request_key'] != key,
+              ))) {
         throw StateError(
           'Finish the earlier registry request before registering another animal',
         );

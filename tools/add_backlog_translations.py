@@ -5,6 +5,57 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS = [
+    ("Ownership history", "Egalik tarixi", "Эгалик тарихи", "История владельцев"),
+    (
+        "Sold / owner changed",
+        "Sotildi / egasi o‘zgardi",
+        "Сотилди / эгаси ўзгарди",
+        "Продано / смена владельца",
+    ),
+    (
+        "New owner reference",
+        "Yangi ega yorlig‘i",
+        "Янги эга ёрлиғи",
+        "Код нового владельца",
+    ),
+    ("New owner name", "Yangi ega ismi", "Янги эга исми", "Имя нового владельца"),
+    (
+        "Sale price, whole UZS (optional)",
+        "Sotuv narxi, butun so‘m (ixtiyoriy)",
+        "Сотув нархи, бутун сўм (ихтиёрий)",
+        "Цена, целые сумы (необязательно)",
+    ),
+    (
+        "Transfer notes (required)",
+        "O‘tkazish izohi (majburiy)",
+        "Ўтказиш изоҳи (мажбурий)",
+        "Причина передачи (обязательно)",
+    ),
+    (
+        "Check the owner, date, notes and whole-sum price.",
+        "Ega, sana, izoh va butun so‘mdagi narxni tekshiring.",
+        "Эга, сана, изоҳ ва бутун сўмдаги нархни текширинг.",
+        "Проверьте владельца, дату, причину и цену в целых сумах.",
+    ),
+    (
+        "Save ownership report",
+        "Egalik qaydini saqlash",
+        "Эгалик қайдини сақлаш",
+        "Сохранить запись о владельце",
+    ),
+    (
+        "Sync ownership history",
+        "Egalik tarixini yuborish",
+        "Эгалик тарихини юбориш",
+        "Отправить историю владельцев",
+    ),
+    (
+        "Operator-reported ownership, not verified legal title or payment.",
+        "Bu operator kiritgan egalik tarixi; huquqiy mulk yoki to‘lov tasdig‘i emas.",
+        "Бу оператор киритган эгалик тарихи; ҳуқуқий мулк ёки тўлов тасдиғи эмас.",
+        "Это запись оператора, не подтверждение права собственности или оплаты.",
+    ),
+    ("{0} UZS", "{0} so‘m", "{0} сўм", "{0} сум"),
     (
         "Health and vaccinations",
         "Sog‘liq va emlashlar",

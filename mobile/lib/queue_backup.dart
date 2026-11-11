@@ -167,6 +167,7 @@ Future<Map<String, dynamic>> verifyPhoneBackup(String filename) async {
                 'ledger/match_decisions.csv',
                 'ledger/side_photos.csv',
                 'ledger/health.csv',
+                'ledger/ownership.csv',
                 'ledger/registrations.csv',
                 'ledger/registered_uploads.csv',
               }.contains(name)) ||

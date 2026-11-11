@@ -94,6 +94,11 @@ def require_record(session, species, animal_id):
 
 def run_operation(session, principal, key, operation, data, execute):
     body = data.model_dump(mode="json")
+    # New optional sale fields must not alter digests of existing transfer receipts.
+    if operation.startswith("owner:"):
+        for field in ("price_uzs", "currency"):
+            if body.get(field) is None:
+                body.pop(field, None)
     if hasattr(data, "observed_at"):
         body["observed_at"] = utc(data.observed_at).isoformat()
     digest = hashlib.sha256(
@@ -221,6 +226,9 @@ def change_owner(session, record, data, principal):
         {
             "before": previous,
             "after": owner,
+            **(
+                {"price_uzs": data.price_uzs, "currency": data.currency} if data.price_uzs is not None else {}
+            ),
             "observed_at": utc(data.observed_at).isoformat(),
             "gps": data.gps.model_dump() if data.gps else None,
             "reason": data.reason,

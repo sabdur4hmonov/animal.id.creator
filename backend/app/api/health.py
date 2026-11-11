@@ -67,18 +67,18 @@ def add_event(
 ):
     enabled(request, species)
     health_access(session, species, animal_id, principal, write=True)
-    limits = request.app.state.business_configs[species].health_history
-    if limits and any(
-        len(value or "") > maximum
-        for value, maximum in (
-            (data.description, limits.description_max_length),
-            (data.veterinarian_name, limits.veterinarian_max_length),
-            (data.notes, limits.notes_max_length),
-        )
-    ):
-        raise HTTPException(422, "Health text exceeds configured limit")
 
     def create():
+        limits = request.app.state.business_configs[species].health_history
+        if limits and any(
+            len(value or "") > maximum
+            for value, maximum in (
+                (data.description, limits.description_max_length),
+                (data.veterinarian_name, limits.veterinarian_max_length),
+                (data.notes, limits.notes_max_length),
+            )
+        ):
+            raise HTTPException(422, "Health text exceeds configured limit")
         lock_request(session, f"health:{species.value}", animal_id)
         if session.scalar(
             select(HealthEvent.id).where(

@@ -1,5 +1,6 @@
 """Read-only publication audit. Reports locations, never matched secret values."""
 
+import io
 import json
 import re
 import subprocess
@@ -10,6 +11,25 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def git(*args: str) -> bytes:
     return subprocess.check_output(["git", *args], cwd=ROOT)
+
+
+def read_blobs(objects):
+    """One Git process avoids hundreds of Windows process launches per audit."""
+    output = subprocess.check_output(
+        ["git", "cat-file", "--batch"],
+        cwd=ROOT,
+        input=("\n".join(objects) + "\n").encode(),
+    )
+    stream = io.BytesIO(output)
+    for expected in objects:
+        header = stream.readline().decode("ascii").strip().split()
+        if len(header) != 3 or header[0] != expected:
+            raise RuntimeError("Unexpected Git object response; stop publication")
+        raw = stream.read(int(header[2]))
+        if stream.read(1) != b"\n":
+            raise RuntimeError("Truncated Git object response; stop publication")
+        if header[1] == "blob":
+            yield expected, raw
 
 
 def audit() -> dict:
@@ -37,12 +57,13 @@ def audit() -> dict:
         "aws_key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
         "openai_key": re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}\b"),
     }
-    for oid, path in objects.items():
-        if git("cat-file", "-t", oid).strip() != b"blob":
-            continue
+    for path in tracked:
+        if forbidden.search(path):
+            findings.append({"kind": "forbidden_tracked_path", "path": path})
+    for oid, raw in read_blobs(objects):
+        path = objects[oid]
         if forbidden.search(path):
             findings.append({"kind": "forbidden_path", "path": path, "blob": oid})
-        raw = git("cat-file", "blob", oid)
         if b"\0" in raw:
             if path.lower().endswith((".png", ".jpg", ".jpeg", ".pdf", ".zip")):
                 media.append(path)

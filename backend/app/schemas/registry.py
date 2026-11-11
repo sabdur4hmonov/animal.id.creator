@@ -43,6 +43,14 @@ class RegistryObservation(StrictInput):
 
 class OwnerChange(RegistryObservation):
     owner: Owner
+    price_uzs: int | None = Field(default=None, ge=0, le=10**15, strict=True)
+    currency: Literal["UZS"] | None = None
+
+    @model_validator(mode="after")
+    def price_currency(self):
+        if (self.price_uzs is None) != (self.currency is None):
+            raise ValueError("An optional whole-sum sale price requires UZS currency")
+        return self
 
 
 class Retirement(RegistryObservation):

@@ -18,7 +18,7 @@ from app.core.species import Species
 def test_ar_is_additive_and_sheep_stays_disabled():
     configs = load_business_configs(get_settings().business_config_dir)
     cattle = configs[Species.cattle]
-    assert cattle.config_version == 7
+    assert cattle.config_version == 8
     assert cattle.ar_policy_version == 3
     assert cattle.advisory_matching.top_k == 3
     assert cattle.burst_capture.best_frame_count == 3

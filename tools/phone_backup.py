@@ -10,7 +10,7 @@ from pathlib import Path
 from zipfile import ZipFile
 
 NAME = re.compile(
-    r"^(?:queue/(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt|field-animal|field-scan|field-gallery|field-measurement|field-price)-[a-f0-9]{32}\.json)(?:\.next)?|ledger/(?:roster|scans|measurements|prices|match_decisions|side_photos|registrations|registered_uploads|health)\.csv)$"
+    r"^(?:queue/(?:[a-f0-9]{32}\.jpg|(?:entry|receipt|registry|registry-receipt|field-animal|field-scan|field-gallery|field-measurement|field-price)-[a-f0-9]{32}\.json)(?:\.next)?|ledger/(?:roster|scans|measurements|prices|match_decisions|side_photos|registrations|registered_uploads|health|ownership)\.csv)$"
 )
 
 

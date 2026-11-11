@@ -435,5 +435,14 @@
   "Sync health history": "Sync health history",
   "Reported history, not a diagnosis. Corrections keep every earlier record.": "Reported history, not a diagnosis. Corrections keep every earlier record.",
   "Operator record": "Operator record",
-  "Correcting record": "Correcting record"
+  "Correcting record": "Correcting record",
+  "Ownership history": "Ownership history",
+  "Sold / owner changed": "Sold / owner changed",
+  "Sale price, whole UZS (optional)": "Sale price, whole UZS (optional)",
+  "Transfer notes (required)": "Transfer notes (required)",
+  "Check the owner, date, notes and whole-sum price.": "Check the owner, date, notes and whole-sum price.",
+  "Save ownership report": "Save ownership report",
+  "Sync ownership history": "Sync ownership history",
+  "Operator-reported ownership, not verified legal title or payment.": "Operator-reported ownership, not verified legal title or payment.",
+  "{0} UZS": "{0} UZS"
 }

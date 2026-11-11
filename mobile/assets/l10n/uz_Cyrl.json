@@ -124,7 +124,7 @@
   "The animal keeps its ID and complete ownership history.": "Ҳайвон IDси ва эгалар тарихи тўлиқ сақланади.",
   "Removes this animal from the active list. Its ID and evidence remain permanently reserved. This records your report, not independent proof of physical identity/slaughter.": "Ҳайвон фаол рўйхатдан чиқарилади. ID ва далиллар доимий сақланади. Бу сизнинг хабарингизни қайд этади; ҳайвон шахси ёки сўйилганининг мустақил исботи эмас.",
   "A pending request already exists. Retry its original details.": "Кутилаётган сўров мавжуд. Ўша тафсилотлар билан қайта юборинг.",
-  "New owner reference": "Янги эга коди",
+  "New owner reference": "Янги эга ёрлиғи",
   "Enter a valid owner reference": "Тўғри эга кодини киритинг (лотин ҳарфлари)",
   "New owner name": "Янги эга исми",
   "Enter a name": "Исм киритинг",
@@ -435,5 +435,14 @@
   "Sync health history": "Соғлиқ тарихини юбориш",
   "Reported history, not a diagnosis. Corrections keep every earlier record.": "Бу киритилган тарих, ташхис эмас. Тузатиш аввалги қайдни ўчирмайди.",
   "Operator record": "Оператор ёзуви",
-  "Correcting record": "Тузатувчи қайд"
+  "Correcting record": "Тузатувчи қайд",
+  "Ownership history": "Эгалик тарихи",
+  "Sold / owner changed": "Сотилди / эгаси ўзгарди",
+  "Sale price, whole UZS (optional)": "Сотув нархи, бутун сўм (ихтиёрий)",
+  "Transfer notes (required)": "Ўтказиш изоҳи (мажбурий)",
+  "Check the owner, date, notes and whole-sum price.": "Эга, сана, изоҳ ва бутун сўмдаги нархни текширинг.",
+  "Save ownership report": "Эгалик қайдини сақлаш",
+  "Sync ownership history": "Эгалик тарихини юбориш",
+  "Operator-reported ownership, not verified legal title or payment.": "Бу оператор киритган эгалик тарихи; ҳуқуқий мулк ёки тўлов тасдиғи эмас.",
+  "{0} UZS": "{0} сўм"
 }
