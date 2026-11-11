@@ -418,5 +418,22 @@
   "This registration belongs to another operator. Use that operator; no new ID was created.": "Эта регистрация принадлежит другому оператору. Используйте его учётные данные; новый ID не создан.",
   "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Оператор сохранённого фото отличается. Настройте исходного оператора; метаданные не изменены.",
   "Finish the earlier registry request before registering another animal": "Завершите предыдущий запрос перед регистрацией другого животного",
-  "Registration or upload is already running": "Регистрация или загрузка уже выполняется"
+  "Registration or upload is already running": "Регистрация или загрузка уже выполняется",
+  "Health and vaccinations": "Здоровье и прививки",
+  "Vaccination": "Вакцинация",
+  "Treatment": "Лечение",
+  "Illness": "Заболевание",
+  "Veterinary examination": "Ветеринарный осмотр",
+  "Add health record": "Добавить запись о здоровье",
+  "Add correcting record": "Добавить исправление",
+  "Event date YYYY-MM-DD": "Дата события ГГГГ-ММ-ДД",
+  "Description": "Описание",
+  "Veterinarian name (optional)": "Имя ветеринара (необязательно)",
+  "Notes": "Примечание",
+  "Save record": "Сохранить запись",
+  "Check the date and required description.": "Проверьте дату и обязательное описание.",
+  "Sync health history": "Отправить историю здоровья",
+  "Reported history, not a diagnosis. Corrections keep every earlier record.": "Это история записей, не диагноз. Исправления сохраняют прежние записи.",
+  "Operator record": "Запись оператора",
+  "Correcting record": "Исправляющая запись"
 }

@@ -2,6 +2,16 @@
 
 ## Molni skanerlash va profil
 
+### Sog‘liq va emlashlar
+
+Profil → **Sog‘liq va emlashlar** → emlash/davolash/kasallik/ko‘rik turi,
+sana (`YYYY-MM-DD`), tavsif; veterinar ismi va izoh ixtiyoriy. **Qaydni saqlash**
+oflayn ishlaydi. Xatoni **Tuzatuvchi qayd qo‘shish** orqali to‘g‘rilang: eski
+yozuv o‘chmaydi. Hozir hammasi **Operator yozuvi**; ism yozish veterinarning
+tasdig‘i degani emas. MAA va asl operator kaliti bo‘lsa **Sog‘liq tarixini
+yuborish**; aloqa uzilsa ayni tugma bilan davom eting. ZIPda `ledger/health.csv`
+va asl JSONlar qoladi. Bu tashxis yoki dori tavsiyasi emas.
+
 1. **Molni skanerlash** → bitta molning tumshug‘ini markazga oling →
    standart **Video bilan olish** rejimida **Eng tiniq kadrlarni olish**ni bosing.
    4 soniya bir molning tumshug‘ini ushlang: yashil — tiniq, sariq — qimirlamang,

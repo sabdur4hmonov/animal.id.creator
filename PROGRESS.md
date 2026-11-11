@@ -1,8 +1,46 @@
 # BioLivestock AI — project progress
 
-Last live repository inspection: 2026-11-10, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
+Last live repository inspection: 2026-11-11, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
 
 ## Current stop point
+
+**ACTIVE 2026-11-11 nine-item backlog:** health → offline sale/ownership →
+revocable public slaughter QR → UZ/RU web portal → role/password sessions →
+isolated production deployment kit → onboarding → isolated demo flavor →
+truthful roadmap/architecture/pitch status. Current request attachment:
+4a74362c-75b8-475e-840d-b895e1e8d545. Entry 34fd2b1 clean; live fetch 0/0.
+Milestone pushes authorized for this project only; no force/rebase. Every item:
+Flutter analyze/test, APK+SHA (ignored), backend pytest/Ruff when touched,
+isolated 18001 Docker verification, publication audit, commit/push, progress.
+No phone installation, real-data/normal-stack changes or purchases.
+Current item 1: additive migration 0006 is needed for append-only health events
+and immutable correction chains. Reuse registry transactional idempotency receipts.
+Until item 5 adds verified roles, all records are operator reports, including
+those with a typed veterinarian name. New health config stays outside AR hash.
+The previous five-stage status below is historical, not the current stop point.
+
+**Backlog item 1 built/directly verified — 2026-11-11:** offline health timeline,
+four event kinds/date/description/optional veterinarian/notes, immutable corrective
+records, explicit MAA sync with durable intent/receipt and parent-first correction
+ordering, ZIP `ledger/health.csv`. Cattle business config v7, unrelated health
+limits excluded from the unchanged AR correction cohort hash; sheep unchanged.
+New additive migration 0006 creates health events, one correction successor,
+unique actor/local-event key and database UPDATE/DELETE rejection triggers.
+All records deliberately labeled Operator record until item 5 adds vet roles.
+Direct checks: **183 Flutter tests**, analyze clean; **228 backend/tool tests**,
+Ruff clean. New tests include 4-locale 320px/200% timeline/form, lost reply/reopen,
+correction/export persistence, request validation and replay/role spoof rejection.
+These are synthetic software checks, not clinical/dataset/phone verification.
+Dedicated stack `chorvam-backlog-20261111` on localhost 18001 uses its own new
+volume, data/verification-backlog-20261111 storage and random synthetic credentials.
+Actual HTTP upload/replay/correction and SQL UPDATE/DELETE rejection verified:
+`data/verification-backlog-20261111/evidence-health-c3cde29f4f2b43c79b6797386e75b1dc.json`.
+Normal stack/real IDs untouched. Initial migration/model index mismatch was
+caught by tests and fixed; full final suite passed. One restricted host pytest
+run stalled and was replaced by the verified full run. ARM64 release built in
+7m26s, original package/version/signer checked; no phone install/runtime claim.
+Artifact: `data/artifacts/chorvam-health-20261111/app-release.apk`; SHA256SUMS.txt
+in the same ignored folder. Publication audit/commit/push follows, then item 2.
 
 **Five-stage task completed — 2026-11-10:** implemented the attached continuation
 with the user's overriding instructions. Stages: (1) Chorvam label/splash/original

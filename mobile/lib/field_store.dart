@@ -333,6 +333,40 @@ Future<Map<String, List<int>>> fieldLedgerFiles(Directory root) async {
   return {
     'roster.csv': utf8.encode(fieldCsv(roster)),
     'scans.csv': utf8.encode(fieldCsv(ledger)),
+    if (measurements.any((e) => e['record_type'] == 'health_event'))
+      'health.csv': utf8.encode(
+        fieldCsv([
+          [
+            'key',
+            'label',
+            'species',
+            'kind',
+            'event_date',
+            'description',
+            'veterinarian_name',
+            'notes',
+            'correction_of',
+            'operator_id',
+            'created_at',
+          ],
+          for (final e in measurements.where(
+            (e) => e['record_type'] == 'health_event',
+          ))
+            [
+              e['key'],
+              e['label'],
+              e['species'],
+              e['kind'],
+              e['event_date'],
+              e['description'],
+              e['veterinarian_name'],
+              e['notes'],
+              e['correction_of'],
+              e['operator_id'],
+              e['created_at'],
+            ],
+        ]),
+      ),
     if (measurements.any((m) => m['record_type'] == 'server_mapping'))
       'registrations.csv': utf8.encode(
         fieldCsv([

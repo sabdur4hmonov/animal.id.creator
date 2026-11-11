@@ -418,5 +418,22 @@
   "This registration belongs to another operator. Use that operator; no new ID was created.": "This registration belongs to another operator. Use that operator; no new ID was created.",
   "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Saved photo operator differs. Configure its original operator; metadata was not changed.",
   "Finish the earlier registry request before registering another animal": "Finish the earlier registry request before registering another animal",
-  "Registration or upload is already running": "Registration or upload is already running"
+  "Registration or upload is already running": "Registration or upload is already running",
+  "Health and vaccinations": "Health and vaccinations",
+  "Vaccination": "Vaccination",
+  "Treatment": "Treatment",
+  "Illness": "Illness",
+  "Veterinary examination": "Veterinary examination",
+  "Add health record": "Add health record",
+  "Add correcting record": "Add correcting record",
+  "Event date YYYY-MM-DD": "Event date YYYY-MM-DD",
+  "Description": "Description",
+  "Veterinarian name (optional)": "Veterinarian name (optional)",
+  "Notes": "Notes",
+  "Save record": "Save record",
+  "Check the date and required description.": "Check the date and required description.",
+  "Sync health history": "Sync health history",
+  "Reported history, not a diagnosis. Corrections keep every earlier record.": "Reported history, not a diagnosis. Corrections keep every earlier record.",
+  "Operator record": "Operator record",
+  "Correcting record": "Correcting record"
 }

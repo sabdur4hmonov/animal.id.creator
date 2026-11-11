@@ -1,0 +1,34 @@
+# Synthetic-only test stack. Never use the collection volumes or credentials.
+services:
+  db:
+    image: postgres:16-alpine@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
+    environment:
+      POSTGRES_USER: biolivestock
+      POSTGRES_PASSWORD: synthetic
+      POSTGRES_DB: biolivestock
+    volumes:
+      - verification-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U biolivestock']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  api:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    ports:
+      - '127.0.0.1:18001:8000'
+    environment:
+      DATABASE_URL: postgresql+psycopg://biolivestock:synthetic@db:5432/biolivestock
+      MODEL_ROOT: /srv
+      STORAGE_ROOT: /srv/data
+      AUTH_CONFIG_PATH: /srv/secrets/api_keys.json
+    volumes:
+      - ../data/verification-backlog-20261111/storage:/srv/data
+      - ../data/verification-backlog-20261111/secrets:/srv/secrets:ro
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  verification-db:

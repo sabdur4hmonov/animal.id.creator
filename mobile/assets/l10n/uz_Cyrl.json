@@ -418,5 +418,22 @@
   "This registration belongs to another operator. Use that operator; no new ID was created.": "Бу рўйхат бошқа операторники. Ўша оператор билан киринг; янги ID яратилмади.",
   "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Сақланган сурат оператори бошқа. Унинг асл операторини созланг; метадата ўзгартирилмади.",
   "Finish the earlier registry request before registering another animal": "Бошқа молни рўйхатлашдан олдин аввалги сўровни якунланг",
-  "Registration or upload is already running": "Рўйхатлаш ёки юбориш аллақачон ишлаяпти"
+  "Registration or upload is already running": "Рўйхатлаш ёки юбориш аллақачон ишлаяпти",
+  "Health and vaccinations": "Соғлиқ ва эмлашлар",
+  "Vaccination": "Эмлаш",
+  "Treatment": "Даволаш",
+  "Illness": "Касаллик",
+  "Veterinary examination": "Ветеринар кўриги",
+  "Add health record": "Соғлиқ қайдини қўшиш",
+  "Add correcting record": "Тузатувчи қайд қўшиш",
+  "Event date YYYY-MM-DD": "Ҳодиса санаси YYYY-MM-DD",
+  "Description": "Тавсиф",
+  "Veterinarian name (optional)": "Ветеринар исми (ихтиёрий)",
+  "Notes": "Изоҳ",
+  "Save record": "Қайдни сақлаш",
+  "Check the date and required description.": "Сана ва мажбурий тавсифни текширинг.",
+  "Sync health history": "Соғлиқ тарихини юбориш",
+  "Reported history, not a diagnosis. Corrections keep every earlier record.": "Бу киритилган тарих, ташхис эмас. Тузатиш аввалги қайдни ўчирмайди.",
+  "Operator record": "Оператор ёзуви",
+  "Correcting record": "Тузатувчи қайд"
 }

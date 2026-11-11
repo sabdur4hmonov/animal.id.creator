@@ -15,6 +15,7 @@ Map<String, dynamic> arPolicy(Map<String, dynamic> business) => {
       'advisory_matching',
       'burst_capture',
       'side_photos',
+      'health_history',
     }.contains(entry.key))
       entry.key: entry.key == 'config_version'
           ? (business['ar_policy_version'] ?? entry.value)

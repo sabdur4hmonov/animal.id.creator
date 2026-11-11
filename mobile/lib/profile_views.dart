@@ -7,6 +7,7 @@ import 'localization.dart';
 import 'side_photo_link.dart';
 import 'local_registration.dart';
 import 'registration_views.dart';
+import 'health_screen.dart';
 
 String fieldDay(Object? value) {
   final s = value?.toString() ?? '';
@@ -473,6 +474,21 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
           for (final s in p.sidePhotos) _sidePhoto(s),
           const Divider(),
           const FieldText(UiText('Measurement history')),
+          OutlinedButton(
+            onPressed: busy
+                ? null
+                : () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => HealthHistoryScreen(
+                        store: widget.catalog.store,
+                        label: p.id,
+                        config: widget.config,
+                        registration: widget.registration,
+                      ),
+                    ),
+                  ),
+            child: const FieldText(UiText('Health and vaccinations')),
+          ),
           for (final m in p.measurements)
             if (m['record_type'] == 'repeat_set')
               Card(

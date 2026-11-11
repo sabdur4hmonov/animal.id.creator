@@ -109,6 +109,12 @@ class SidePhotoConfig(ConfigBase):
         return self
 
 
+class HealthHistoryConfig(ConfigBase):
+    description_max_length: int = Field(ge=1, le=500)
+    veterinarian_max_length: int = Field(ge=1, le=120)
+    notes_max_length: int = Field(ge=1, le=1000)
+
+
 class BusinessConfig(ConfigBase):
     species: Species
     enabled: bool
@@ -119,6 +125,7 @@ class BusinessConfig(ConfigBase):
     advisory_matching: AdvisoryMatchingConfig | None = None
     burst_capture: BurstCaptureConfig | None = None
     side_photos: SidePhotoConfig | None = None
+    health_history: HealthHistoryConfig | None = None
 
 
 def load_business_configs(directory: Path):

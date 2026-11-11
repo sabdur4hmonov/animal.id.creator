@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.business import router as business_router
+from app.api.health import router as health_router
 from app.api.registry import router as registry_router
 from app.api.routes import router
 from app.api.valuation import router as valuation_router
@@ -36,6 +37,7 @@ app.include_router(router)
 app.include_router(business_router)
 app.include_router(valuation_router)
 app.include_router(registry_router)
+app.include_router(health_router)
 app.add_middleware(RequestSizeLimit)
 
 

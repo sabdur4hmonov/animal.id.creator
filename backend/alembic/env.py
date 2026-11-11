@@ -5,6 +5,7 @@ from app.core.database import Base
 from app.core.settings import get_settings
 from app.models.business import Animal, AuditEvent, DuplicateCase  # noqa: F401
 from app.models.capture import Capture  # noqa: F401
+from app.models.health import HealthEvent  # noqa: F401
 from app.models.registry import AnimalNumberCounter, AnimalProfile, RegistryReceipt  # noqa: F401
 from app.models.upload_receipt import UploadReceipt  # noqa: F401
 from app.models.valuation import MarketRate  # noqa: F401

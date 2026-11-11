@@ -418,5 +418,22 @@
   "This registration belongs to another operator. Use that operator; no new ID was created.": "Bu ro‘yxat boshqa operatorniki. O‘sha operator bilan kiring; yangi ID yaratilmadi.",
   "Saved photo operator differs. Configure its original operator; metadata was not changed.": "Saqlangan surat operatori boshqa. Uning asl operatorini sozlang; metadata o‘zgartirilmadi.",
   "Finish the earlier registry request before registering another animal": "Boshqa molni ro‘yxatlashdan oldin avvalgi so‘rovni yakunlang",
-  "Registration or upload is already running": "Ro‘yxatlash yoki yuborish allaqachon ishlayapti"
+  "Registration or upload is already running": "Ro‘yxatlash yoki yuborish allaqachon ishlayapti",
+  "Health and vaccinations": "Sog‘liq va emlashlar",
+  "Vaccination": "Emlash",
+  "Treatment": "Davolash",
+  "Illness": "Kasallik",
+  "Veterinary examination": "Veterinar ko‘rigi",
+  "Add health record": "Sog‘liq qaydini qo‘shish",
+  "Add correcting record": "Tuzatuvchi qayd qo‘shish",
+  "Event date YYYY-MM-DD": "Hodisa sanasi YYYY-MM-DD",
+  "Description": "Tavsif",
+  "Veterinarian name (optional)": "Veterinar ismi (ixtiyoriy)",
+  "Notes": "Izoh",
+  "Save record": "Qaydni saqlash",
+  "Check the date and required description.": "Sana va majburiy tavsifni tekshiring.",
+  "Sync health history": "Sog‘liq tarixini yuborish",
+  "Reported history, not a diagnosis. Corrections keep every earlier record.": "Bu kiritilgan tarix, tashxis emas. Tuzatish avvalgi qaydni o‘chirmaydi.",
+  "Operator record": "Operator yozuvi",
+  "Correcting record": "Tuzatuvchi qayd"
 }

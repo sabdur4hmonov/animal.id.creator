@@ -1,6 +1,6 @@
 species: cattle
 enabled: true
-config_version: 6
+config_version: 7
 ar_policy_version: 3
 weight:
   schoorl_offset_cm: 22
@@ -64,3 +64,7 @@ side_photos:
   max_scale_age_days: 7
   suggested_distance_min_m: 3
   suggested_distance_max_m: 4
+health_history:
+  description_max_length: 500
+  veterinarian_max_length: 120
+  notes_max_length: 1000
