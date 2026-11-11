@@ -50,3 +50,7 @@ https://pub.dev/packages/image/license
 The YUV quality selector, review workflow and frame provenance code are original.
 Other existing dependencies retain their own licenses; this file does not relicense
 the repository or declare every dependency permissively licensed.
+The private pilot portal renders original templates with Jinja2 3.1.6
+(BSD-3-Clause, already present in the pinned Docker dependency closure).
+Retained license: docs/licenses/jinja2-3.1.6.txt.
+Official project: https://palletsprojects.com/projects/jinja/

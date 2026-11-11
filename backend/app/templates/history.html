@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block content %}<h1>{{ animal_id }} — {{ t.audit }}</h1>
+{% for e in events %}<article><h2>{{ e.action }}</h2><p>{{ t.actor }}: {{ e.actor_id }} · {{ t.date }}: {{ e.received_at }}</p><pre>{{ e.details|tojson(indent=2) }}</pre></article>{% else %}<p>{{ t.empty }}</p>{% endfor %}
+<nav>{% if offset %}<a href="?lang={{ lang }}&offset={{ [0,offset-100]|max }}">{{ t.previous }}</a>{% endif %}{% if more %}<a href="?lang={{ lang }}&offset={{ offset+100 }}">{{ t.next }}</a>{% endif %}</nav>{% endblock %}

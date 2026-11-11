@@ -456,5 +456,6 @@
   "Revoke code": "Отозвать код",
   "Revoke verification code": "Отозвать код проверки",
   "Registry record only, not a laboratory test. Check the QR online.": "Только запись реестра, не лабораторный анализ. Проверьте QR онлайн.",
-  "Reason": "Причина"
+  "Reason": "Причина",
+  "Send profile summary to panel": "Отправить сведения профиля в панель"
 }

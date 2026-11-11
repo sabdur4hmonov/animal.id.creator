@@ -456,5 +456,6 @@
   "Revoke code": "Kodni bekor qilish",
   "Revoke verification code": "Tekshiruv kodini bekor qilish",
   "Registry record only, not a laboratory test. Check the QR online.": "Bu faqat registr yozuvi, laboratoriya tahlili emas. QR kodni internetda tekshiring.",
-  "Reason": "Sabab"
+  "Reason": "Sabab",
+  "Send profile summary to panel": "Profil ma’lumotlarini panelga yuborish"
 }

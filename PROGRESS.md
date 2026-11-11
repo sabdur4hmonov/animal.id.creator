@@ -4,6 +4,42 @@ Last live repository inspection: 2026-11-11, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Item 4 complete — 2026-11-11, publishing.** Analyzer clean, **195 Flutter
+tests**, **236 backend/tool tests**, Ruff clean. Directly verified private SSR
+UZ/RU search by ID/tag, profile photos with stored-hash verification, ownership/
+health/weight/slaughter/status display, paged audit, escaped hostile tags,
+admin-only expected_version/reason finance edits and stale-version rejection.
+Operator portal scope is own registered records; role-specific partner access
+follows item 5. HTTPS TestClient verifies Secure/HttpOnly/SameSite=strict opaque
+cookies, CSRF rejection, logout, expiry and credential invalidation. Actual
+Docker/PostgreSQL summary/search/replay evidence is linked below. Phone runtime
+and actual browser HTTPS remain unverified (item 6 supplies isolated TLS).
+Release ARM64 APK in 3m04s, original package/version/signer checked:
+`data/artifacts/chorvam-partner-panel-20261111/app-release.apk`, SHA-256
+`64c68c5c8414b2af376577cc2ea9f72acb8f16365a0e51eed4ebfbd494cb918f`.
+All new profile/weight records were synthetic; no measured-animal accuracy claim.
+New account/roles/CLI draft files may already exist but are **not** part of this
+milestone/test claim. Next: item 5 register/test these roles and password login.
+
+**Item 3 published: 5ad683e**, audit 0 findings, origin/main ahead/behind 0/0.
+Last log: 5ad683e / a20a9f2 / d422ea2. Working tree contains item-4 drafts.
+**Item 4 in progress:** small server-side UZ/RU panel, existing bearer exchange
+into opaque short-lived Secure/HttpOnly/SameSite browser cookies, CSRF checks,
+no browser key storage. Jinja2 already pinned in Linux closure; now a direct
+dependency. Additive 0008 is justified: browser session state and append-only
+compact field summaries for explicitly synchronized tag/AR/scale records.
+No raw depth is uploaded; local original evidence stays unchanged. Panel shows
+only synchronized server data and never invents missing mobile weights.
+Targeted summary lost-reply/reopen test passes; raw AR bytes unchanged, no depth
+in the request. Tag/valid repeat-set/standalone scale records are supported.
+Isolated PostgreSQL evidence:
+`data/verification-backlog-20261111/evidence-panel-458fddd9ee5f4edfa8e2c0d333e56d1a.json`.
+UZ/RU SSR tag search, immutable summary replay/delete rejection and Secure cookie
+issuance directly verified. Actual HTTPS browser cookie roundtrip belongs to
+item 6; current cookie behavior tested using HTTPS TestClient, not a phone.
+Finance edits reuse existing expected_version/status/reason audit endpoint;
+currently admin-only, bank_officer authorization follows in item 5.
+
 **Backlog item 3 complete — 2026-11-11.** Built: revocable public slaughter
 QR, private management/share/cache, four-language public whitelist page and
 shared database rate limits. Directly verified: analyzer clean, **194 Flutter

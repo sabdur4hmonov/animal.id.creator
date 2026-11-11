@@ -2,6 +2,17 @@
 
 ## Molni skanerlash va profil
 
+### Hamkorlar paneliga ma’lumot yuborish
+
+MAAga ro‘yxatlangan profilda **Profil ma’lumotlarini panelga yuborish**:
+birka/laqab, saqlangan yaroqli AR vazn xulosalari va tarozi qaydlari yuboriladi.
+Bu alohida, qo‘lda bajariladigan amal; internet uzilsa ayni tugmani qayta bosing.
+Rasm yuborish avvalgi alohida oqim orqali. Xom depth/AR nuqtalari telefon va
+ZIPda qoladi. Panel faqat serverga yuborilgan narsani ko‘rsatadi.
+Panel manzili: serverning `/panel/login` sahifasi; hozir API kaliti bilan,
+keyingi rollar bosqichida shaxsiy login/parol ham qo‘shiladi. Brauzer uchun
+HTTPS kerak; localhost sinovi alohida test muhitida bajariladi.
+
 ### So‘yish qaydi uchun QR
 
 Serverda so‘yilgani qayd etilgan MAA profilida **So‘yish qaydi QR**ni oching.

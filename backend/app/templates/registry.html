@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}
+<h1>{{ t.registry }}</h1><p class="notice">{{ t.offline }}</p>
+<form><input type="hidden" name="lang" value="{{ lang }}"><input type="hidden" name="species" value="{{ species }}">
+<label>{{ t.search }}<input name="q" value="{{ q }}" maxlength="120"></label><button>{{ t.search }}</button></form>
+<div class="grid">{% for row in records %}<article>
+<h2><a href="/panel/animals/{{ row.species }}/{{ row.animal_id }}?lang={{ lang }}">{{ row.animal_id }}</a></h2>
+<p>{{ t.financial }}: {{ t[row.status] }}</p><p>{{ t.lifecycle }}: {{ t[row.lifecycle] }}</p>
+<p>{{ t.owner }}: {{ row.owner.name if row.owner else '—' }}</p><p class="meta">{{ row.created_at }}</p>
+</article>{% else %}<p>{{ t.empty }}</p>{% endfor %}</div>
+<nav>{% if offset %}<a href="?lang={{ lang }}&species={{ species }}&q={{ q|urlencode }}&offset={{ [0,offset-50]|max }}">{{ t.previous }}</a>{% endif %}
+{% if more %}<a href="?lang={{ lang }}&species={{ species }}&q={{ q|urlencode }}&offset={{ offset+50 }}">{{ t.next }}</a>{% endif %}</nav>
+{% endblock %}

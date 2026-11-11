@@ -10,6 +10,7 @@ import 'registration_views.dart';
 import 'health_screen.dart';
 import 'ownership_screen.dart';
 import 'verification_screen.dart';
+import 'profile_sync.dart';
 
 String fieldDay(Object? value) {
   final s = value?.toString() ?? '';
@@ -404,6 +405,14 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
               OutlinedButton(
                 onPressed: busy ? null : _weigh,
                 child: const FieldText(UiText('Scale weight')),
+              ),
+              OutlinedButton(
+                onPressed: busy || widget.registration?.configured != true
+                    ? null
+                    : () => _update(
+                        () => ProfileSync(widget.registration!).send(p.id),
+                      ),
+                child: const FieldText(UiText('Send profile summary to panel')),
               ),
             ],
           ),

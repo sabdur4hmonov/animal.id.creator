@@ -1,0 +1,24 @@
+{% extends 'base.html' %}{% block content %}
+<h1>{{ animal.animal_id }}</h1><p class="notice">{{ t.offline }}</p>
+<div class="grid"><section><h2>{{ t.profile }}</h2><dl>
+<dt>{{ t.owner }}</dt><dd>{{ animal.owner.name if animal.owner else '—' }} · {{ animal.owner.owner_id if animal.owner else '' }}</dd>
+<dt>{{ t.lifecycle }}</dt><dd>{{ t[animal.lifecycle] }}</dd><dt>{{ t.financial }}</dt><dd>{{ t[animal.status] }}</dd>
+<dt>{{ t.version }}</dt><dd>{{ animal.version }}</dd></dl>
+{% if animal.terminal_record %}<h2>{{ t.slaughter }}</h2><pre>{{ animal.terminal_record|tojson(indent=2) }}</pre>{% endif %}
+{% if can_finance %}<form id="finance" data-url="/api/v1/animals/{{ animal.species }}/{{ animal.animal_id }}/status">
+<label>{{ t.financial }}<select name="status">{% for s in ['open','insured','collateral'] %}<option value="{{ s }}" {% if animal.status==s %}selected{% endif %}>{{ t[s] }}</option>{% endfor %}</select></label>
+<label>{{ t.reason }}<textarea name="reason" required maxlength="1000"></textarea></label><button>{{ t.save }}</button><p id="error" role="alert"></p></form>{% endif %}
+</section><section><h2>{{ t.photos }}</h2><div class="photos">{% for photo in photos %}<a href="/panel/photos/{{ photo.id }}"><img loading="lazy" src="/panel/photos/{{ photo.id }}" alt="{{ photo.timestamp }}"></a>{% else %}<p>{{ t.empty }}</p>{% endfor %}</div></section></div>
+<section><h2>{{ t.weights }} / {{ t.tag }}</h2><p class="muted">{{ t.approximate }}</p>
+{% for s in summaries %}<article><p class="meta">{{ s.observed_at }} · {{ s.actor_id }}</p>
+{% if s.payload.tag %}<p>{{ t.tag }}: {{ s.payload.tag }}</p>{% endif %}
+{% if s.payload.weight %}<p>{{ s.payload.weight.mode }} · Trukhanovsky: {{ s.payload.weight.trukhanovsky_kg }} kg · Schoorl: {{ s.payload.weight.schoorl_kg }} kg</p>{% endif %}
+{% if s.payload.scale_kg %}<p>{{ t.scale }}: {{ s.payload.scale_kg }} kg</p>{% endif %}</article>{% else %}<p>{{ t.empty }}</p>{% endfor %}</section>
+<section><h2>{{ t.health }}</h2>{% for e in health %}<article><p class="meta">{{ e.event_date }} · {{ e.actor_id }} · {{ e.kind }}</p>
+<p>{{ e.description }}</p><p>{{ e.veterinarian_name or '' }} · {{ e.notes or '' }}</p><strong>{{ t.examination if e.actor_role=='veterinar' else t.operator }}</strong>
+{% if e.correction_of %}<p>↳ {{ e.correction_of }}</p>{% endif %}</article>{% else %}<p>{{ t.empty }}</p>{% endfor %}</section>
+<section><h2>{{ t.owner }} / {{ t.audit }}</h2><a href="/panel/animals/{{ animal.species }}/{{ animal.animal_id }}/history?lang={{ lang }}">{{ t.audit }}</a>
+{% for e in events if e.action in ['owner_changed','animal_number_issued'] %}<article><p class="meta">{{ e.received_at }} · {{ e.actor_id }}</p><pre>{{ e.details|tojson(indent=2) }}</pre></article>{% endfor %}</section>
+{% endblock %}{% block script %}<script nonce="{{ nonce }}">
+document.getElementById('finance')?.addEventListener('submit',async e=>{e.preventDefault();const f=e.target;const button=f.querySelector('button');button.disabled=true;try{const r=await fetch(f.dataset.url,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify({status:f.elements.status.value,reason:f.elements.reason.value,expected_version:{{ animal.version }}})});if(!r.ok)throw Error();location.reload();}catch(e){document.getElementById('error').textContent={{ t.failed|tojson }};button.disabled=false;}});
+</script>{% endblock %}

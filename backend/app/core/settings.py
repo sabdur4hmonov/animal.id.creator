@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     public_rate_window_seconds: int = Field(default=60, ge=1, le=3600)
     qr_box_size: int = Field(default=8, ge=4, le=20)
     qr_border: int = Field(default=4, ge=4, le=10)
+    browser_session_seconds: int = Field(default=28800, ge=300, le=86400)
 
 
 @lru_cache

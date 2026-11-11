@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS = [
+    ('Send profile summary to panel','Profil ma’lumotlarini panelga yuborish','Профил маълумотларини панелга юбориш','Отправить сведения профиля в панель'),
     ('Reason','Sabab','Сабаб','Причина'),
     ('Slaughter verification QR','So‘yish qaydi QR kodi','Сўйиш қайди QR коди','QR записи об убое'),
     ('QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.',

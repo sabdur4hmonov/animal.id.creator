@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="{{ 'uz' if lang == 'uz_Latn' else 'ru' }}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="csrf-token" content="{{ csrf }}"><title>{{ t.title }}</title>
+<style>
+:root{font:17px/1.5 system-ui,sans-serif;color:#173d2b;background:#f6f5ee}*{box-sizing:border-box}
+body{margin:0}header{background:#173d2b;color:#fff3d6;padding:1rem}header a{color:inherit}
+nav{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;max-width:74rem;margin:auto}
+main{max-width:74rem;margin:1rem auto;padding:1rem}h1{font-size:1.8rem}h2{font-size:1.25rem}
+a{color:#175536}button,.button{background:#1c593a;color:white;border:0;border-radius:.6rem;padding:.75rem;cursor:pointer;white-space:normal;font:inherit}
+input,select,textarea{padding:.7rem;font:inherit;max-width:100%;width:100%;border:1px solid #92aa99;border-radius:.4rem;background:#fff}
+label{display:block;margin:1rem 0}section,article{background:white;border:1px solid #dae2d7;border-radius:.8rem;padding:1rem;margin:1rem 0;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1rem}
+.muted{color:#526655}.notice{background:#fff1cc;padding:1rem;border-radius:.5rem}.photos{display:flex;flex-wrap:wrap;gap:1rem}
+.photos img{width:12rem;max-width:100%;height:10rem;object-fit:contain}.meta{font-size:.9rem;color:#526655}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f5f0;padding:.5rem}p,dd,a,h1,h2,button{overflow-wrap:anywhere}
+dl{display:grid;grid-template-columns:minmax(5rem,1fr) 2fr;gap:.5rem}dd{margin:0}
+@media(max-width:400px){main{padding:.6rem}dl{display:block}dd{margin-bottom:.7rem}}
+</style></head><body><header><nav><strong>Chorvam</strong>
+<a href="/panel?lang={{ lang }}">{{ t.registry }}</a><a href="?lang=uz_Latn">O‘zbek</a><a href="?lang=ru">Русский</a>
+{% if principal is defined %}<span>{{ principal.operator_id }} · {{ principal.role }}</span><button id="logout">{{ t.logout }}</button>{% endif %}
+</nav></header><main>{% block content %}{% endblock %}</main>
+<script nonce="{{ nonce }}">
+const csrf=document.querySelector('meta[name="csrf-token"]').content;
+document.getElementById('logout')?.addEventListener('click',async()=>{const r=await fetch('/panel/logout',{method:'POST',headers:{'X-CSRF-Token':csrf}});if(r.ok)location.href='/panel/login?lang={{ lang }}';});
+</script>{% block script %}{% endblock %}</body></html>

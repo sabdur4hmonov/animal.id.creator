@@ -230,9 +230,57 @@ def verify_qr(client):
     }
 
 
+def verify_panel(client):
+    response = client.post(
+        "/api/v1/registry/animals",
+        json={
+            "species": "cattle",
+            "owner": {"owner_id": "SYNTHETIC", "name": "Synthetic portal owner"},
+        },
+        headers={"Idempotency-Key": uuid4().hex},
+    )
+    assert response.status_code == 201, response.text
+    label = response.json()["animal_id"]
+    path = f"/api/v1/registry/animals/cattle/{label}/field-summaries"
+    body = {
+        "local_event_key": uuid4().hex,
+        "observed_at": datetime.now(UTC).isoformat(),
+        "tag": "SYNTHETIC-PANEL-" + label,
+    }
+    key = uuid4().hex
+    first = client.post(path, json=body, headers={"Idempotency-Key": key})
+    assert first.status_code == 201, first.text
+    assert (
+        client.post(path, json=body, headers={"Idempotency-Key": key}).json()
+        == first.json()
+    )
+    for lang in ("uz_Latn", "ru"):
+        listing = client.get("/panel", params={"q": body["tag"], "lang": lang})
+        assert listing.status_code == 200 and label in listing.text
+        detail = client.get(f"/panel/animals/cattle/{label}", params={"lang": lang})
+        assert detail.status_code == 200 and body["tag"] in detail.text
+        assert detail.headers["cache-control"] == "no-store"
+    session = client.post("/panel/session")
+    assert session.status_code == 200 and "Secure" in session.headers["set-cookie"]
+    assert (
+        sql(f"DELETE FROM field_summaries WHERE id='{first.json()['id']}'").returncode
+        != 0
+    )
+    return {
+        "animal_id": label,
+        "uz_ru_ssr_search": True,
+        "summary_replay": True,
+        "summary_delete_rejected": True,
+        "secure_cookie_issued": True,
+        "real_browser_https_cookie_roundtrip": "not_yet_verified; item 6",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=["health", "ownership", "qr"], required=True)
+    parser.add_argument(
+        "--stage", choices=["health", "ownership", "qr", "panel"], required=True
+    )
     args = parser.parse_args()
     binding = subprocess.run(
         ["docker", "compose", "-p", PROJECT, "-f", str(COMPOSE), "port", "api", "8000"],
@@ -263,6 +311,7 @@ def main():
             "health": verify_health,
             "ownership": verify_ownership,
             "qr": verify_qr,
+            "panel": verify_panel,
         }[args.stage](client)
     evidence.update(
         stage=args.stage,
