@@ -444,5 +444,17 @@
   "Save ownership report": "Эгалик қайдини сақлаш",
   "Sync ownership history": "Эгалик тарихини юбориш",
   "Operator-reported ownership, not verified legal title or payment.": "Бу оператор киритган эгалик тарихи; ҳуқуқий мулк ёки тўлов тасдиғи эмас.",
-  "{0} UZS": "{0} сўм"
+  "{0} UZS": "{0} сўм",
+  "Slaughter verification QR": "Сўйиш қайди QR коди",
+  "QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.": "QR фақат серверда сўйиш қайди бор бўлса берилади. Бу регистр ёзуви, лаборатория таҳлили эмас.",
+  "Saved copy. Connect to check whether the code is still active.": "Сақланган нусха. Код ҳали фаол эканини интернетда текширинг.",
+  "Connect and register this animal to manage its QR code.": "QR код учун серверга уланиб молни рўйхатланг.",
+  "Refresh code status": "Код ҳолатини янгилаш",
+  "Create verification QR": "Текширув QR кодини олиш",
+  "Code revoked": "Код бекор қилинган",
+  "Share QR": "QR кодни улашиш",
+  "Revoke code": "Кодни бекор қилиш",
+  "Revoke verification code": "Текширув кодини бекор қилиш",
+  "Registry record only, not a laboratory test. Check the QR online.": "Бу фақат регистр ёзуви, лаборатория таҳлили эмас. QR кодни интернетда текширинг.",
+  "Reason": "Сабаб"
 }

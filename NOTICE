@@ -37,6 +37,11 @@ Apache License 2.0: https://github.com/opencv/opencv/blob/4.13.0/LICENSE
 The unchanged license is shipped in mobile/assets/licenses/opencv-4.13.0.txt.
 
 Flutter's generated application license registry also retains dependency licenses.
+Public slaughter QR PNGs use python-qrcode 8.2 (BSD-3-Clause), with existing
+Pillow encoding. No Flutter dependency added. Full distributed license:
+docs/licenses/qrcode-8.2.txt. Official sources checked 2026-11-11:
+https://pypi.org/project/qrcode/8.2/
+https://github.com/lincolnloop/python-qrcode
 Burst capture uses the existing official Flutter camera plugin (camera 0.12.1,
 BSD-3-Clause) and image (MIT) for original-resolution JPEG encoding. Installed
 package LICENSE files were checked; no MP4 decoder or new library was added.

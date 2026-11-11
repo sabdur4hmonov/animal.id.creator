@@ -444,5 +444,17 @@
   "Save ownership report": "Сохранить запись о владельце",
   "Sync ownership history": "Отправить историю владельцев",
   "Operator-reported ownership, not verified legal title or payment.": "Это запись оператора, не подтверждение права собственности или оплаты.",
-  "{0} UZS": "{0} сум"
+  "{0} UZS": "{0} сум",
+  "Slaughter verification QR": "QR записи об убое",
+  "QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.": "QR доступен только после записи об убое на сервере. Это запись реестра, не лабораторный анализ.",
+  "Saved copy. Connect to check whether the code is still active.": "Сохранённая копия. Подключитесь, чтобы проверить актуальность кода.",
+  "Connect and register this animal to manage its QR code.": "Подключитесь и зарегистрируйте животное для управления QR.",
+  "Refresh code status": "Обновить статус кода",
+  "Create verification QR": "Создать QR проверки",
+  "Code revoked": "Код отозван",
+  "Share QR": "Поделиться QR",
+  "Revoke code": "Отозвать код",
+  "Revoke verification code": "Отозвать код проверки",
+  "Registry record only, not a laboratory test. Check the QR online.": "Только запись реестра, не лабораторный анализ. Проверьте QR онлайн.",
+  "Reason": "Причина"
 }

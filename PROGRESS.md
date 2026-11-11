@@ -4,6 +4,49 @@ Last live repository inspection: 2026-11-11, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Backlog item 3 complete — 2026-11-11.** Built: revocable public slaughter
+QR, private management/share/cache, four-language public whitelist page and
+shared database rate limits. Directly verified: analyzer clean, **194 Flutter
+tests**, **233 backend/tool tests**, Ruff clean. Isolated PostgreSQL/API proof:
+`data/verification-backlog-20261111/evidence-qr-42a7027f234d4ca28b48b8072715a417.json`;
+PNG decodes to exact URL; public page contains no owner/GPS/price/notes;
+revocation makes URL 404 and database rejects deletion of its evidence.
+Release ARM64 APK (3m16s), original package/version/signature verified:
+`data/artifacts/chorvam-public-qr-20261111/app-release.apk`, SHA-256
+`ef8e21c08b7273c72ea6cbff68bd972a73de94ea12e395403b959b8f4fc7502f`.
+Synthetic-only: all new QR/health/ownership fixtures, including generated
+QR PNG under mobile/test/fixtures (not a real capture). Phone/share-target
+runtime unverified. External HTTPS domain not provisioned; public_origin
+intentionally empty outside the isolated loopback stack.
+
+Docker dependency verification reused a tagged, previously verified CPU
+runtime (`chorvam-verified-cpu:20261111`) to avoid a very slow full Torch
+download. Full new source and Alembic 0007 were actually built/run; all **64**
+installed pinned distributions matched requirements-docker.lock, pip check
+passed. This is not a claim of a fresh cold-cache build. Optional build argument
+does not change the default pinned clean Python base. No normal stack changed.
+QR UI loading indicator now precedes long instructions, preventing accidental
+actions before cached receipts load. Host widget waits handle asynchronous
+localization/disk IO without weakening AR assertions. All four 320px/200%
+QR widget tests pass. Next: item 4 authenticated UZ/RU web portal, then 5–9.
+Unregistered draft portal files may already exist locally; they are **not**
+part of this QR milestone or its test claims.
+
+**Current backlog item 3: revocable public slaughter QR (being tested).**
+Items 1–2 published: d422ea2, a20a9f2. Post-item-2 status directly checked clean,
+ahead/behind 0/0; log: a20a9f2 / d422ea2 / 34fd2b1. Item 3 uses additive 0007
+immutable code/revocation tables + shared PostgreSQL fixed-window rate counters.
+Default public_origin is intentionally empty (no invented reachable domain);
+explicit localhost origin only on the isolated verification stack. Public
+whitelist excludes owner, GPS, prices, actors, notes and photos. Codes require
+server-recorded slaughter; badge/date only from unsuperseded vet-role records
+once item 5 exists. Python-qrcode 8.2 BSD license retained in NOTICE/licenses;
+Pillow reused, no Flutter library added. Mobile caches receipt/QR, marks offline
+status unverified, shares PNG, and supports explicit revocation with durable
+intent/replay. QR test PNG is generated, synthetic .invalid URL, not animal data.
+BuildKit pip cache now avoids re-downloading the CPU runtime on each new pilot
+dependency; runtime remains pinned and `pip check` retained.
+
 **Latest: backlog item 2 built/directly verified (2026-11-11), publishing now.**
 189 Flutter tests + analyze clean, 230 backend/tool tests + Ruff clean;
 isolated PostgreSQL transfer/replay/stale-version/price audit passed.

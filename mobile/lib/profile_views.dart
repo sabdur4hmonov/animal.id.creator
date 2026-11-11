@@ -9,6 +9,7 @@ import 'local_registration.dart';
 import 'registration_views.dart';
 import 'health_screen.dart';
 import 'ownership_screen.dart';
+import 'verification_screen.dart';
 
 String fieldDay(Object? value) {
   final s = value?.toString() ?? '';
@@ -475,6 +476,21 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
           for (final s in p.sidePhotos) _sidePhoto(s),
           const Divider(),
           const FieldText(UiText('Measurement history')),
+          OutlinedButton(
+            onPressed: busy
+                ? null
+                : () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => VerificationScreen(
+                        store: widget.catalog.store,
+                        label: p.id,
+                        species: p.animal['species'] as String,
+                        registration: widget.registration,
+                      ),
+                    ),
+                  ),
+            child: const FieldText(UiText('Slaughter verification QR')),
+          ),
           OutlinedButton(
             onPressed: busy
                 ? null

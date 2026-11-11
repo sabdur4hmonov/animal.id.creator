@@ -1,6 +1,7 @@
 """Synthetic-only API/SQL evidence for the dedicated backlog stack on 18001."""
 
 import argparse
+import base64
 import json
 import subprocess
 import time
@@ -8,7 +9,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+import cv2
 import httpx
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = "chorvam-backlog-20261111"
@@ -155,9 +158,81 @@ def verify_ownership(client):
     }
 
 
+def verify_qr(client):
+    issued = client.post(
+        "/api/v1/registry/animals",
+        headers={"Idempotency-Key": uuid4().hex},
+        json={
+            "species": "cattle",
+            "owner": {"owner_id": "SYNTHETIC-PRIVATE", "name": "PRIVATE OWNER NAME"},
+        },
+    )
+    assert issued.status_code == 201
+    label = issued.json()["animal_id"]
+    root = f"/api/v1/registry/animals/cattle/{label}"
+    report = {
+        "expected_version": 1,
+        "observed_at": datetime.now(UTC).isoformat(),
+        "gps": None,
+        "reason": "PRIVATE NOTES",
+        "lifecycle": "slaughtered",
+        "facility_id": "SYNTHETIC-FACILITY",
+    }
+    assert (
+        client.post(
+            root + "/retirement", json=report, headers={"Idempotency-Key": uuid4().hex}
+        ).status_code
+        == 200
+    )
+    key = uuid4().hex
+    qr = client.post(
+        root + "/verification-codes", json={}, headers={"Idempotency-Key": key}
+    )
+    assert qr.status_code == 201, qr.text
+    code = qr.json()
+    assert (
+        client.post(
+            root + "/verification-codes", json={}, headers={"Idempotency-Key": key}
+        ).json()
+        == code
+    )
+    png = cv2.imdecode(
+        np.frombuffer(base64.b64decode(code["qr_png_base64"]), dtype=np.uint8),
+        cv2.IMREAD_GRAYSCALE,
+    )
+    assert cv2.QRCodeDetector().detectAndDecode(png)[0] == code["url"]
+    with httpx.Client(timeout=30) as public:
+        response = public.get(code["url"] + "?lang=en")
+        assert response.status_code == 200 and label in response.text
+        assert (
+            "PRIVATE OWNER NAME" not in response.text
+            and "PRIVATE NOTES" not in response.text
+        )
+        assert "not a laboratory test" in response.text
+    revoked = client.post(
+        root + f"/verification-codes/{code['code_id']}/revoke",
+        json={"reason": "Synthetic revoke"},
+        headers={"Idempotency-Key": uuid4().hex},
+    )
+    assert revoked.status_code == 200
+    assert httpx.get(code["url"], timeout=30).status_code == 404
+    assert (
+        sql(
+            f"DELETE FROM code_revocations WHERE code_id='{code['code_id']}'"
+        ).returncode
+        != 0
+    )
+    return {
+        "animal_id": label,
+        "qr_decodes_exact_url": True,
+        "private_fields_absent": True,
+        "revocation_retained": True,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=["health", "ownership"], required=True)
+    parser.add_argument("--stage", choices=["health", "ownership", "qr"], required=True)
     args = parser.parse_args()
     binding = subprocess.run(
         ["docker", "compose", "-p", PROJECT, "-f", str(COMPOSE), "port", "api", "8000"],
@@ -184,9 +259,11 @@ def main():
             time.sleep(0.5)
         else:
             raise RuntimeError("Dedicated API is not ready; no mutations attempted")
-        evidence = {"health": verify_health, "ownership": verify_ownership}[args.stage](
-            client
-        )
+        evidence = {
+            "health": verify_health,
+            "ownership": verify_ownership,
+            "qr": verify_qr,
+        }[args.stage](client)
     evidence.update(
         stage=args.stage,
         verified_at=datetime.now(UTC).isoformat(),

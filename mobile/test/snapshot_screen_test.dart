@@ -73,6 +73,7 @@ void main() {
     home: home,
   );
   Future<void> reveal(WidgetTester tester, Finder finder) async {
+    await waitIdle(tester);
     tester
         .state<ScrollableState>(find.byType(Scrollable).first)
         .position

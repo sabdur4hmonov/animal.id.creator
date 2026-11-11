@@ -444,5 +444,17 @@
   "Save ownership report": "Save ownership report",
   "Sync ownership history": "Sync ownership history",
   "Operator-reported ownership, not verified legal title or payment.": "Operator-reported ownership, not verified legal title or payment.",
-  "{0} UZS": "{0} UZS"
+  "{0} UZS": "{0} UZS",
+  "Slaughter verification QR": "Slaughter verification QR",
+  "QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.": "QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.",
+  "Saved copy. Connect to check whether the code is still active.": "Saved copy. Connect to check whether the code is still active.",
+  "Connect and register this animal to manage its QR code.": "Connect and register this animal to manage its QR code.",
+  "Refresh code status": "Refresh code status",
+  "Create verification QR": "Create verification QR",
+  "Code revoked": "Code revoked",
+  "Share QR": "Share QR",
+  "Revoke code": "Revoke code",
+  "Revoke verification code": "Revoke verification code",
+  "Registry record only, not a laboratory test. Check the QR online.": "Registry record only, not a laboratory test. Check the QR online.",
+  "Reason": "Reason"
 }

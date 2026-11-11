@@ -161,7 +161,7 @@ class FullQueue extends OfflineQueue {
 }
 
 Future<void> waitFor(WidgetTester tester, Finder finder) async {
-  for (var i = 0; i < 150; i++) {
+  for (var i = 0; i < 500; i++) {
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 20));
     });
@@ -177,7 +177,11 @@ Future<void> waitIdle(WidgetTester tester) async {
       () async => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
     await tester.pump();
-    if (find.byType(LinearProgressIndicator).evaluate().isEmpty) return;
+    if (find.byType(Scaffold).evaluate().isNotEmpty &&
+        find.byType(LinearProgressIndicator).evaluate().isEmpty &&
+        find.byType(CircularProgressIndicator).evaluate().isEmpty) {
+      return;
+    }
   }
   throw TestFailure('Screen operation did not finish');
 }

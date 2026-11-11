@@ -17,6 +17,8 @@ services:
     build:
       context: ..
       dockerfile: backend/Dockerfile
+      args:
+        BASE_RUNTIME_IMAGE: ${VERIFICATION_RUNTIME_IMAGE:-python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1}
     ports:
       - '127.0.0.1:18001:8000'
     environment:
@@ -24,6 +26,7 @@ services:
       MODEL_ROOT: /srv
       STORAGE_ROOT: /srv/data
       AUTH_CONFIG_PATH: /srv/secrets/api_keys.json
+      PUBLIC_ORIGIN: http://127.0.0.1:18001
     volumes:
       - ../data/verification-backlog-20261111/storage:/srv/data
       - ../data/verification-backlog-20261111/secrets:/srv/secrets:ro

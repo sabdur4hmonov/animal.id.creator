@@ -2,6 +2,17 @@
 
 ## Molni skanerlash va profil
 
+### So‘yish qaydi uchun QR
+
+Serverda so‘yilgani qayd etilgan MAA profilida **So‘yish qaydi QR**ni oching.
+Internet va o‘sha operator kaliti bilan kod yarating, PNGni ulashing.
+QRni ochgan odam faqat ID, so‘yish sanasi, qassobxona kodi va tasdiqlangan
+veterinar ko‘rigi sanasini ko‘radi. Ega, GPS va narx ochiq sahifada chiqmaydi.
+Internet bo‘lmasa saqlangan QR ko‘rinadi, ammo uning hali faol ekanligi
+tekshirilmaydi. Xato kodni sabab yozib bekor qiling; yangi kod alohida yaratiladi.
+Bu registrdagi qayd, go‘shtning laboratoriya xavfsizlik tasdig‘i emas.
+Ommaviy HTTPS manzil server sozlamasida belgilanishi kerak.
+
 ### Sog‘liq va emlashlar
 
 Profil → **Sog‘liq va emlashlar** → emlash/davolash/kasallik/ko‘rik turi,

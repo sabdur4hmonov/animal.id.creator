@@ -18,7 +18,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'advisory_scan_test.dart' show FixtureAdvisory;
-import 'capture_screen_test.dart' show FakeCamera;
+import 'capture_screen_test.dart' show FakeCamera, waitIdle;
 import 'helpers/design_capture.dart';
 
 Widget localized(Widget home, AppLanguage language, {double scale = 1}) =>
@@ -249,6 +249,7 @@ void main() {
           scale: 2,
         ),
       );
+      await waitIdle(tester);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(
@@ -264,6 +265,7 @@ void main() {
           scale: 2,
         ),
       );
+      await waitIdle(tester);
       await tester.pumpAndSettle();
       await tester.drag(find.byType(ListView), const Offset(0, -580));
       await tester.pumpAndSettle();

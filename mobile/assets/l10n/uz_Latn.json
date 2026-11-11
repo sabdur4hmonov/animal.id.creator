@@ -444,5 +444,17 @@
   "Save ownership report": "Egalik qaydini saqlash",
   "Sync ownership history": "Egalik tarixini yuborish",
   "Operator-reported ownership, not verified legal title or payment.": "Bu operator kiritgan egalik tarixi; huquqiy mulk yoki to‘lov tasdig‘i emas.",
-  "{0} UZS": "{0} so‘m"
+  "{0} UZS": "{0} so‘m",
+  "Slaughter verification QR": "So‘yish qaydi QR kodi",
+  "QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.": "QR faqat serverda so‘yish qaydi bor bo‘lsa beriladi. Bu registr yozuvi, laboratoriya tahlili emas.",
+  "Saved copy. Connect to check whether the code is still active.": "Saqlangan nusxa. Kod hali faol ekanini internetda tekshiring.",
+  "Connect and register this animal to manage its QR code.": "QR kod uchun serverga ulanib molni ro‘yxatlang.",
+  "Refresh code status": "Kod holatini yangilash",
+  "Create verification QR": "Tekshiruv QR kodini olish",
+  "Code revoked": "Kod bekor qilingan",
+  "Share QR": "QR kodni ulashish",
+  "Revoke code": "Kodni bekor qilish",
+  "Revoke verification code": "Tekshiruv kodini bekor qilish",
+  "Registry record only, not a laboratory test. Check the QR online.": "Bu faqat registr yozuvi, laboratoriya tahlili emas. QR kodni internetda tekshiring.",
+  "Reason": "Sabab"
 }

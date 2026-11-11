@@ -5,6 +5,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS = [
+    ('Reason','Sabab','Сабаб','Причина'),
+    ('Slaughter verification QR','So‘yish qaydi QR kodi','Сўйиш қайди QR коди','QR записи об убое'),
+    ('QR is available only after slaughter is recorded on the server. This is a registry record, not a laboratory test.',
+     'QR faqat serverda so‘yish qaydi bor bo‘lsa beriladi. Bu registr yozuvi, laboratoriya tahlili emas.',
+     'QR фақат серверда сўйиш қайди бор бўлса берилади. Бу регистр ёзуви, лаборатория таҳлили эмас.',
+     'QR доступен только после записи об убое на сервере. Это запись реестра, не лабораторный анализ.'),
+    ('Saved copy. Connect to check whether the code is still active.','Saqlangan nusxa. Kod hali faol ekanini internetda tekshiring.',
+     'Сақланган нусха. Код ҳали фаол эканини интернетда текширинг.','Сохранённая копия. Подключитесь, чтобы проверить актуальность кода.'),
+    ('Connect and register this animal to manage its QR code.','QR kod uchun serverga ulanib molni ro‘yxatlang.',
+     'QR код учун серверга уланиб молни рўйхатланг.','Подключитесь и зарегистрируйте животное для управления QR.'),
+    ('Refresh code status','Kod holatini yangilash','Код ҳолатини янгилаш','Обновить статус кода'),
+    ('Create verification QR','Tekshiruv QR kodini olish','Текширув QR кодини олиш','Создать QR проверки'),
+    ('Code revoked','Kod bekor qilingan','Код бекор қилинган','Код отозван'),
+    ('Share QR','QR kodni ulashish','QR кодни улашиш','Поделиться QR'),
+    ('Revoke code','Kodni bekor qilish','Кодни бекор қилиш','Отозвать код'),
+    ('Revoke verification code','Tekshiruv kodini bekor qilish','Текширув кодини бекор қилиш','Отозвать код проверки'),
+    ('Registry record only, not a laboratory test. Check the QR online.','Bu faqat registr yozuvi, laboratoriya tahlili emas. QR kodni internetda tekshiring.',
+     'Бу фақат регистр ёзуви, лаборатория таҳлили эмас. QR кодни интернетда текширинг.','Только запись реестра, не лабораторный анализ. Проверьте QR онлайн.'),
     ("Ownership history", "Egalik tarixi", "Эгалик тарихи", "История владельцев"),
     (
         "Sold / owner changed",

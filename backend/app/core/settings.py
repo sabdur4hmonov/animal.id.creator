@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     security_config_dir: Path = ROOT / "security_configs"
     max_upload_bytes: int = Field(default=15 * 1024 * 1024, gt=0)
     max_image_pixels: int = Field(default=25_000_000, gt=0)
+    public_origin: str = Field(default="", max_length=512)
+    public_token_bytes: int = Field(default=32, ge=32, le=64)
+    public_rate_requests: int = Field(default=30, ge=1, le=1000)
+    public_rate_window_seconds: int = Field(default=60, ge=1, le=3600)
+    qr_box_size: int = Field(default=8, ge=4, le=20)
+    qr_border: int = Field(default=4, ge=4, le=10)
 
 
 @lru_cache
