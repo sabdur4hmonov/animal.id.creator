@@ -1,0 +1,48 @@
+{
+    admin off
+    auto_https disable_redirects
+    log default {
+        output stdout
+        format filter {
+            wrap json
+            fields {
+                request>uri delete
+                request>headers delete
+                resp_headers delete
+            }
+        }
+    }
+}
+
+http://{$CHORVAM_DOMAIN} {
+    redir {$PUBLIC_ORIGIN}{uri} 308
+}
+
+https://{$CHORVAM_DOMAIN} {
+    import /etc/caddy/tls.caddy
+    encode zstd gzip
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+        -Server
+    }
+    log {
+        output stdout
+        format filter {
+            wrap json
+            fields {
+                request>uri delete
+                request>headers delete
+                resp_headers delete
+            }
+        }
+    }
+    reverse_proxy api:8000 {
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto https
+        health_uri /health
+        health_interval 15s
+        health_timeout 3s
+    }
+}

@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "backend/docker-compose.yml"
+ENV_FILE = None
 
 
 def digest(path):
@@ -33,8 +34,11 @@ def contained(root, relative):
 def run(project, *args, **kwargs):
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", project):
         raise ValueError("Invalid Compose project name")
+    command = ["docker", "compose", "-p", project, "-f", str(COMPOSE)]
+    if ENV_FILE is not None:
+        command += ["--env-file", str(ENV_FILE)]
     result = subprocess.run(
-        ["docker", "compose", "-p", project, "-f", str(COMPOSE), *args],
+        [*command, *args],
         cwd=ROOT, check=True, stderr=subprocess.PIPE, timeout=300, **kwargs,
     )
     return result
@@ -63,6 +67,13 @@ def capture_index(project, database="biolivestock"):
              (SELECT id, species, animal_id, file_path, crop_path, stored_sha256
               FROM captures ORDER BY id) c"""
     return json.loads(query(project, sql, database))
+
+
+def registry_counters(project, database="biolivestock"):
+    if not query(project, "SELECT coalesce(to_regclass('public.animal_number_counters')::text, '')", database):
+        return {}
+    raw = query(project, "SELECT coalesce(json_object_agg(prefix, last_number), '{}'::json) FROM animal_number_counters", database)
+    return json.loads(raw)
 
 
 def counts(project, database="biolivestock"):
@@ -182,6 +193,7 @@ def backup(args):
             "version": 1, "created_at": datetime.now(UTC).isoformat(), "source_project": args.project,
             "schema_revision": query(args.project, "SELECT version_num FROM alembic_version"),
             "table_counts": counts(args.project), "reconciliation": inspection,
+            "registry_counters": registry_counters(args.project),
             "files": {file.relative_to(args.output).as_posix(): digest(file)
                       for file in sorted(args.output.rglob("*")) if file.is_file()},
         }
@@ -213,6 +225,10 @@ def restore(args):
     verify_restored_files(args.target_storage, manifest)
     if counts(args.project, name) != manifest["table_counts"]:
         raise ValueError("Restored table counts differ; clone retained for inspection")
+    if "registry_counters" in manifest and registry_counters(args.project, name) != manifest["registry_counters"]:
+        raise ValueError("Restored numbering high-water differs; clone retained for inspection")
+    if query(args.project, "SELECT version_num FROM alembic_version", name) != manifest["schema_revision"]:
+        raise ValueError("Restored schema revision differs; clone retained for inspection")
     records = capture_index(args.project, name)
     expected = json.loads((args.bundle / "capture_index.json").read_text("utf-8"))
     if records != expected:
@@ -224,7 +240,10 @@ def restore(args):
 
 
 def main():
+    global COMPOSE, ENV_FILE
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--compose-file", type=Path, default=COMPOSE)
+    parser.add_argument("--env-file", type=Path)
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("backup", "verify", "restore", "reconcile"):
         command = commands.add_parser(name)
@@ -239,6 +258,10 @@ def main():
             command.add_argument("--target-database", required=True)
             command.add_argument("--target-storage", type=Path, required=True)
     args = parser.parse_args()
+    COMPOSE = args.compose_file.resolve()
+    ENV_FILE = args.env_file.resolve() if args.env_file else None
+    if not COMPOSE.is_file() or (ENV_FILE is not None and not ENV_FILE.is_file()):
+        parser.error("Compose/environment file is missing; no container changed")
     if args.command == "backup":
         backup(args)
     elif args.command == "restore":

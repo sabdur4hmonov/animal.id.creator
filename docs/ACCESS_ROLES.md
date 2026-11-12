@@ -27,8 +27,8 @@ polisi yoki kredit shartnomasini o‘zi yaratmaydi.
 Konteyner ichida (server xarid qilingach, to‘g‘ri Compose loyihasini tanlang):
 
 ```sh
-docker compose -f backend/docker-compose.prod.yml exec api python /srv/tools/manage_users.py create --username pilot-admin --operator-id PILOT-ADMIN --role admin --actor LOCAL-ADMIN
-docker compose -f backend/docker-compose.prod.yml exec api python /srv/tools/manage_users.py create --username pilot-vet --operator-id PILOT-VET --role veterinar --actor LOCAL-ADMIN
+docker compose -p chorvam-pilot -f backend/docker-compose.prod.yml --env-file /srv/chorvam/pilot.env exec api python /srv/tools/manage_users.py create --username pilot-admin --operator-id STAFF-ADMIN --role admin --actor LOCAL-ADMIN
+docker compose -p chorvam-pilot -f backend/docker-compose.prod.yml --env-file /srv/chorvam/pilot.env exec api python /srv/tools/manage_users.py create --username pilot-vet --operator-id STAFF-VET --role veterinar --actor LOCAL-ADMIN
 ```
 
 Parol terminalda yashirin so‘raladi, kamida 12 belgi. Standart parol yo‘q.

@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str = "postgresql+psycopg://biolivestock:biolivestock@localhost:5432/biolivestock"
+    database_url_file: Path | None = None
     species_config_dir: Path = ROOT / "species_configs"
     model_root: Path = ROOT
     storage_root: Path = ROOT / "data"
@@ -33,6 +34,16 @@ class Settings(BaseSettings):
     argon_time_cost: int = Field(default=3, ge=2, le=10)
     argon_memory_kib: int = Field(default=65536, ge=19456, le=262144)
     argon_parallelism: int = Field(default=4, ge=1, le=8)
+
+    @model_validator(mode="after")
+    def private_database_file(self):
+        # Also used by Alembic and independent administrative CLI processes.
+        if self.database_url_file is not None:
+            value = self.database_url_file.read_text("utf-8").strip()
+            if not value or any(ord(c) < 32 for c in value):
+                raise ValueError("Database URL file must contain one nonempty line")
+            self.database_url = value
+        return self
 
 
 @lru_cache

@@ -4,6 +4,35 @@ Last live repository inspection: 2026-11-12, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
+**Item 6 complete, 2026-11-12; publishing next.** Items 1–5 already published,
+HEAD before this milestone `727d3b3`; last verified origin/main ahead/behind 0/0.
+Built: isolated HTTPS production Compose/Caddy, file secrets, guarded CLI identity,
+backup/restore verification, monitoring, log rotation and Uzbek deployment runbook.
+Directly verified using SYNTHETIC data only in `chorvam-prodverify-20261112`,
+loopback HTTPS 18443 / HTTP 18480, separate DB/volumes/storage; normal stacks untouched.
+Actual TLS hostname and explicit local-CA verification, Secure cookie roundtrip,
+CSRF denial/authorized vet write, photo access, JPEG QC/upload/replay/hash with
+`pending_model`, public QR privacy and credential/QR log redaction passed:
+`data/verification-prod-20261112/evidence-https-6f96d87da3a9421dbeeed4ac1631397e.json`.
+Backup `20261112T065444Z-5a866c04` restored into fresh
+`biolivestock_restore_be3e9ee9050340598bc1` and new clone folder; schema, counters,
+rows and file hashes matched. External verified receipt is outside immutable bundle.
+HTTPS/disk/backup-age monitor passed; local test explicitly used 1 GiB minimum
+because workstation has ~3.6 GiB free. Production 10 GiB threshold unchanged.
+**Analyzer clean, 195 Flutter tests, 253 backend/tool tests, canonical Ruff clean.**
+ARM64 release/package/version/original signer and actual bundled assets verified:
+`data/artifacts/chorvam-pilot-deployment-20261112/app-release.apk`, SHA-256
+`64c68c5c8414b2af376577cc2ea9f72acb8f16365a0e51eed4ebfbd494cb918f`.
+Same binary as item 5 (backend/tool-only milestone). No phone/adb accessed.
+Unverified: browser visual/JS, device runtime, actual VPS/public domain/systemd.
+External: server/domain/off-site destination are not purchased or configured.
+Next: item 7 first-run guide; unimported `mobile/lib/field_guide.dart` draft is
+excluded from item 6. Then separate demo flavor and final truthful pitch status.
+Ruff must run from backend (`check . ../tools ../research`). All prior notes below
+are historical snapshots; this block is authoritative for the current stop point.
+
+## Historical milestone notes
+
 **Item 5 complete — 2026-11-12, publishing.** Analyzer clean, **195 Flutter
 tests**, **248 backend/tool tests**, Ruff clean (canonical backend-directory
 invocation). Five authoritative roles + Argon2 password login/CLI, per-IP and

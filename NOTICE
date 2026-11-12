@@ -61,3 +61,10 @@ docs/licenses/. Official package/source documentation checked 2026-11-11:
 https://pypi.org/project/argon2-cffi/25.1.0/
 https://pypi.org/project/argon2-cffi-bindings/26.1.0/
 https://argon2-cffi.readthedocs.io/en/stable/parameters.html
+The optional pilot HTTPS proxy uses the official Caddy 2.11.9 image,
+Apache License 2.0. No third-party Caddy plugin or copied application code.
+Retained upstream license: docs/licenses/caddy-2.11.9.txt.
+Version, source/license and official operational docs checked 2026-11-12:
+https://github.com/caddyserver/caddy/releases/tag/v2.11.9
+https://github.com/caddyserver/caddy/blob/v2.11.9/LICENSE
+https://caddyserver.com/docs/automatic-https

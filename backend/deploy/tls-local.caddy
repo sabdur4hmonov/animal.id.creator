@@ -1,0 +1,2 @@
+# Isolated localhost verification only. Never install this CA globally.
+tls internal

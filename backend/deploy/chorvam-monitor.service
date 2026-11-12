@@ -1,0 +1,11 @@
+[Unit]
+Description=Chorvam HTTPS health and backup monitoring
+After=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/chorvam
+EnvironmentFile=/srv/chorvam/pilot.env
+ExecStart=/usr/bin/python3 tools/pilot_monitor.py --url ${PUBLIC_ORIGIN}/health --project chorvam-pilot --disk-root /srv/chorvam --backup-root /srv/chorvam/backups
+TimeoutStartSec=30

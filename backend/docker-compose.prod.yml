@@ -1,0 +1,105 @@
+# Preparation only. Select an explicit project and private env file; never reuse collection volumes.
+x-logging: &rotating-logs
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  db:
+    image: postgres:16-alpine@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: biolivestock
+      POSTGRES_DB: biolivestock
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    volumes: [pilot-postgres:/var/lib/postgresql/data]
+    networks: [private]
+    logging: *rotating-logs
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U biolivestock -d biolivestock']
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    mem_limit: ${DB_MEMORY_LIMIT:-2g}
+  api:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      args:
+        BASE_RUNTIME_IMAGE: ${PILOT_RUNTIME_IMAGE:-python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1}
+    command: [python, production_entrypoint.py]
+    restart: unless-stopped
+    user: '10001:10001'
+    read_only: true
+    tmpfs: ['/tmp:size=134217728,mode=1777']
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      DATABASE_URL_FILE: /run/secrets/database_url
+      AUTH_CONFIG_PATH: /run/secrets/api_keys
+      STORAGE_ROOT: /srv/data
+      MODEL_ROOT: /srv
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the canonical HTTPS origin}
+      FORWARDED_ALLOW_IPS: ${PILOT_PROXY_IP:-172.30.42.10}
+      HOME: /tmp
+    secrets: [database_url, api_keys]
+    volumes:
+      - ${PILOT_STORAGE_ROOT:?Set an absolute new storage root}:/srv/data
+      - ../models:/srv/models:ro
+      - ../species_configs:/srv/species_configs:ro
+      - ../business_configs:/srv/business_configs:ro
+      - ../security_configs:/srv/security_configs:ro
+    networks: [private]
+    logging: *rotating-logs
+    mem_limit: ${API_MEMORY_LIMIT:-3g}
+    depends_on:
+      db: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, 'import urllib.request; urllib.request.urlopen("http://localhost:8000/health", timeout=3)']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+  proxy:
+    image: caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    environment:
+      CHORVAM_DOMAIN: ${CHORVAM_DOMAIN:?Choose a domain before deployment}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the canonical HTTPS origin}
+    ports:
+      - '${PILOT_HTTP_BIND:-0.0.0.0:80}:80'
+      - '${PILOT_HTTPS_BIND:-0.0.0.0:443}:443'
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${PILOT_TLS_SNIPPET:-./deploy/tls-public.caddy}:/etc/caddy/tls.caddy:ro
+      - pilot-caddy-data:/data
+      - pilot-caddy-config:/config
+    networks:
+      private:
+        ipv4_address: ${PILOT_PROXY_IP:-172.30.42.10}
+    logging: *rotating-logs
+    mem_limit: ${PROXY_MEMORY_LIMIT:-256m}
+    depends_on:
+      api: {condition: service_healthy}
+networks:
+  private:
+    ipam:
+      config:
+        - subnet: ${PILOT_NETWORK_SUBNET:-172.30.42.0/24}
+volumes:
+  pilot-postgres:
+  pilot-caddy-data:
+  pilot-caddy-config:
+secrets:
+  postgres_password:
+    file: ${PILOT_SECRETS_ROOT:?Set the private secret directory}/postgres_password
+  database_url:
+    file: ${PILOT_SECRETS_ROOT:?Set the private secret directory}/database_url
+  api_keys:
+    file: ${PILOT_SECRETS_ROOT:?Set the private secret directory}/api_keys.json

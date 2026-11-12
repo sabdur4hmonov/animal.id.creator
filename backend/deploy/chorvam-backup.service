@@ -1,0 +1,12 @@
+[Unit]
+Description=Chorvam consistent backup and isolated restore verification
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/chorvam
+UMask=0077
+ExecStart=/usr/bin/python3 tools/pilot_backup.py --compose-file backend/docker-compose.prod.yml --env-file /srv/chorvam/pilot.env --project chorvam-pilot --storage-root /srv/chorvam/storage --backup-root /srv/chorvam/backups --restore-root /srv/chorvam/restore-checks
+TimeoutStartSec=3600
