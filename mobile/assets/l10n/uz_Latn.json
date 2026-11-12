@@ -457,5 +457,18 @@
   "Revoke verification code": "Tekshiruv kodini bekor qilish",
   "Registry record only, not a laboratory test. Check the QR online.": "Bu faqat registr yozuvi, laboratoriya tahlili emas. QR kodni internetda tekshiring.",
   "Reason": "Sabab",
-  "Send profile summary to panel": "Profil ma’lumotlarini panelga yuborish"
+  "Send profile summary to panel": "Profil ma’lumotlarini panelga yuborish",
+  "Field guide": "Qisqa yo‘riqnoma",
+  "Skip guide": "Hozircha o‘tkazish",
+  "Start collecting": "Yig‘ishni boshlash",
+  "Next guide page": "Keyingi sahifa",
+  "Guide progress could not be saved. Try again.": "Yo‘riqnoma holati saqlanmadi. Qayta urinib ko‘ring.",
+  "Take clear muzzle frames": "Tumshuqni tiniq oling",
+  "Confirm the animal yourself": "Molni o‘zingiz tasdiqlang",
+  "Keep both side views": "Ikki yon suratni saqlang",
+  "Keep a separate backup": "Alohida zaxira saqlang",
+  "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.": "Video bilan olishni tanlang. Bitta tumshuqni kadrda to‘rt soniya ushlang. Qimirlatmang va tiniq kadrlarni tanlang. Faqat JPEG suratlar saqlanadi.",
+  "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.": "Taklif qilingan profil va ikkala suratni tekshiring. Faqat o‘sha mol bo‘lsa Ha tugmasini bosing. Tajribaviy signal molning kimligini isbotlamaydi.",
+  "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.": "Molni chap va o‘ng yonidan, oyoqlari bilan to‘liq oling. Yon suratdan vazn hisoblanmaydi. Haqiqiy tarozi yoki mos telefonda ixtiyoriy ARdan foydalaning.",
+  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Vositalar → Yig‘ish, til va ZIP zaxira bo‘limini oching. ZIPni ilovadan tashqariga saqlang. Oflayn operator IDni saqlab qoling. Internetda yuborish alohida qo‘lda bajariladi."
 }

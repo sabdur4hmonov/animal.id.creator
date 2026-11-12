@@ -13,15 +13,18 @@ import 'species.dart';
 import 'side_photos.dart';
 import 'local_registration.dart';
 import 'registration_views.dart';
+import 'field_guide.dart';
 
 class FieldHome extends StatefulWidget {
   const FieldHome({
     super.key,
     required this.environment,
     this.engine = const AdvisoryEngine(),
+    this.guidePreferences,
   });
   final CaptureEnvironment environment;
   final AdvisoryEngine engine;
+  final FieldGuidePreferences? guidePreferences;
   @override
   State<FieldHome> createState() => _FieldHomeState();
 }
@@ -34,6 +37,9 @@ class _FieldHomeState extends State<FieldHome> {
   UiText? notice;
   Map<String, dynamic>? pendingDraft;
   CaptureEnvironment get env => widget.environment;
+  late final guidePreferences =
+      widget.guidePreferences ?? FieldGuidePreferences();
+  bool guideOpened = false;
   @override
   void initState() {
     super.initState();
@@ -67,7 +73,19 @@ class _FieldHomeState extends State<FieldHome> {
       notice = UiText('Action failed: {0}', [userError(e)]);
     }
     if (mounted) setState(() => busy = false);
+    if (mounted && flow != null && env.showOnboarding && !guideOpened) {
+      guideOpened = true;
+      if (!await guidePreferences.completed() && mounted) {
+        await _guide();
+      }
+    }
   }
+
+  Future<void> _guide() => Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      builder: (_) => FieldGuideScreen(preferences: guidePreferences),
+    ),
+  );
 
   Future<bool> _operator() async {
     final store = flow!.store;
@@ -302,6 +320,10 @@ class _FieldHomeState extends State<FieldHome> {
             padding: const EdgeInsets.all(16),
             children: [
               FieldText(UiText('Offline operator: {0}', [wf.store.operatorId])),
+              OutlinedButton(
+                onPressed: _guide,
+                child: const FieldText(UiText('Field guide')),
+              ),
               const FieldText(UiText('Advisory scan review')),
               OutlinedButton(
                 onPressed: () => Navigator.of(page).push<void>(

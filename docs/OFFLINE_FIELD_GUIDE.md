@@ -2,6 +2,16 @@
 
 ## Molni skanerlash va profil
 
+### Birinchi ochilish yo‘riqnomasi
+
+Birinchi ochilishda to‘rt qisqa sahifa chiqadi: tumshuqdan tiniq kadrlar olish,
+molni o‘zingiz tasdiqlash, chap/o‘ng yon suratlar, alohida ZIP zaxira.
+**Keyingi sahifa** bilan o‘ting, oxirida **Yig‘ishni boshlash**ni bosing.
+**Hozircha o‘tkazish** ham ko‘rilganini saqlaydi. Istalgan payt
+**Vositalar → Qisqa yo‘riqnoma**dan qayta oching. Bu kamera ochmaydi,
+operator ID yoki hayvon yozuvlarini o‘zgartirmaydi. Yon suratdan vazn
+chiqmaydi; qayta skanda taklifni har safar o‘zingiz tasdiqlaysiz.
+
 ### Hamkorlar paneliga ma’lumot yuborish
 
 MAAga ro‘yxatlangan profilda **Profil ma’lumotlarini panelga yuborish**:

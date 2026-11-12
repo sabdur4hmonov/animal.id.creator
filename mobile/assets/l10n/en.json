@@ -457,5 +457,18 @@
   "Revoke verification code": "Revoke verification code",
   "Registry record only, not a laboratory test. Check the QR online.": "Registry record only, not a laboratory test. Check the QR online.",
   "Reason": "Reason",
-  "Send profile summary to panel": "Send profile summary to panel"
+  "Send profile summary to panel": "Send profile summary to panel",
+  "Field guide": "Field guide",
+  "Skip guide": "Skip guide",
+  "Start collecting": "Start collecting",
+  "Next guide page": "Next guide page",
+  "Guide progress could not be saved. Try again.": "Guide progress could not be saved. Try again.",
+  "Take clear muzzle frames": "Take clear muzzle frames",
+  "Confirm the animal yourself": "Confirm the animal yourself",
+  "Keep both side views": "Keep both side views",
+  "Keep a separate backup": "Keep a separate backup",
+  "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.": "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.",
+  "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.": "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.",
+  "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.": "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.",
+  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected."
 }

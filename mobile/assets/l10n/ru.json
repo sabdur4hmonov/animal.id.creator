@@ -457,5 +457,18 @@
   "Revoke verification code": "Отозвать код проверки",
   "Registry record only, not a laboratory test. Check the QR online.": "Только запись реестра, не лабораторный анализ. Проверьте QR онлайн.",
   "Reason": "Причина",
-  "Send profile summary to panel": "Отправить сведения профиля в панель"
+  "Send profile summary to panel": "Отправить сведения профиля в панель",
+  "Field guide": "Краткое руководство",
+  "Skip guide": "Пропустить",
+  "Start collecting": "Начать сбор",
+  "Next guide page": "Далее",
+  "Guide progress could not be saved. Try again.": "Не удалось сохранить просмотр. Повторите попытку.",
+  "Take clear muzzle frames": "Снимайте морду чётко",
+  "Confirm the animal yourself": "Подтвердите животное сами",
+  "Keep both side views": "Сохраните оба вида сбоку",
+  "Keep a separate backup": "Храните отдельную копию",
+  "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.": "Выберите видеозахват. Держите одну морду в кадре четыре секунды. Не двигайте телефон и выберите чёткие кадры. Сохраняются только снимки JPEG.",
+  "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.": "Проверьте предложенный профиль и оба снимка. Нажмите Да только для того же животного. Экспериментальный сигнал не доказывает личность.",
+  "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.": "Снимите животное целиком слева и справа, включая ноги. Вес по боковым фото не рассчитывается. Используйте весы или AR на совместимом телефоне.",
+  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Откройте Инструменты → Сбор, язык и ZIP-копия. Сохраните ZIP вне приложения. Сохраните офлайн-ID оператора. Отправка на сервер выполняется отдельно вручную при подключении."
 }

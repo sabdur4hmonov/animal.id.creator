@@ -172,6 +172,7 @@ class CaptureEnvironment {
   final DateTime Function() now;
   final Future<Map<String, dynamic>> Function(String, String) backup;
   final bool fieldTools;
+  final bool showOnboarding;
   final Future<void> Function(String, String)? saveGallery;
   CaptureEnvironment({
     required this.api,
@@ -187,6 +188,7 @@ class CaptureEnvironment {
     DateTime Function()? now,
     Future<Map<String, dynamic>> Function(String, String)? backup,
     this.fieldTools = false,
+    this.showOnboarding = false,
     this.saveGallery,
   }) : now = now ?? DateTime.now,
        backup =
@@ -195,6 +197,7 @@ class CaptureEnvironment {
   factory CaptureEnvironment.native({String Function()? backupShareText}) =>
       CaptureEnvironment(
         fieldTools: true,
+        showOnboarding: true,
         saveGallery: (path, name) async {
           if (!await Gal.hasAccess(toAlbum: true)) {
             await Gal.requestAccess(toAlbum: true);
