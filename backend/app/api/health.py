@@ -7,6 +7,7 @@ from sqlalchemy import select
 from app.api.business import SessionDep, enabled
 from app.api.registry import RequestKey
 from app.core.auth import PrincipalDep
+from app.core.roles import require_role
 from app.core.species import Species
 from app.models.health import HealthEvent
 from app.schemas.health import HealthInput
@@ -19,7 +20,9 @@ router = APIRouter(prefix="/api/v1/registry/animals/{species}/{animal_id}/health
 
 def health_access(session, species, animal_id, principal, write=False):
     animal = require_record(session, species, animal_id)
-    if principal.role != "admin" and animal.registered_by != principal.operator_id:
+    if write:
+        require_role(principal, "admin", "operator", "veterinar")
+    if principal.role == "operator" and animal.registered_by != principal.operator_id:
         raise HTTPException(403, "Health history requires access to this animal")
     return animal
 
@@ -39,7 +42,7 @@ def health_view(event):
         "actor_id": event.actor_id,
         "actor_role": event.actor_role,
         "received_at": utc(event.received_at).isoformat(),
-        "verified_by_veterinarian": False,
+        "verified_by_veterinarian": event.actor_role == "veterinar",
     }
 
 
@@ -91,6 +94,10 @@ def add_event(
             target = session.get(HealthEvent, str(data.correction_of))
             if target is None or (target.species, target.animal_id) != (species, animal_id):
                 raise HTTPException(422, "Correction must reference this animal's health event")
+            if target.actor_role == "veterinar" and principal.role == "operator":
+                raise HTTPException(
+                    403, "Only a veterinarian or administrator may correct a veterinarian record"
+                )
             if session.scalar(select(HealthEvent.id).where(HealthEvent.correction_of == target.id)):
                 raise HTTPException(409, "Correct the latest revision, not an older event")
         event = HealthEvent(

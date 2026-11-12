@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.business import router as business_router
 from app.api.field_summaries import router as field_summary_router
 from app.api.health import router as health_router
+from app.api.login import router as login_router
 from app.api.panel import router as panel_router
 from app.api.public_verification import router as public_verification_router
 from app.api.registry import router as registry_router
@@ -44,6 +45,7 @@ app.include_router(health_router)
 app.include_router(public_verification_router)
 app.include_router(field_summary_router)
 app.include_router(panel_router)
+app.include_router(login_router)
 app.add_middleware(RequestSizeLimit)
 
 

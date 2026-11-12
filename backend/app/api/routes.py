@@ -7,7 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.core.auth import PrincipalDep
+from app.core.auth import OperatorDep, PrincipalDep
 from app.core.database import get_session
 from app.schemas.capture import CaptureMetadata, CaptureResponse
 from app.services.collection import QualityRejected, collect_capture
@@ -48,7 +48,7 @@ def species_configs(request: Request, principal: PrincipalDep):
 def upload_capture(
     request: Request,
     session: SessionDep,
-    principal: PrincipalDep,
+    principal: OperatorDep,
     image: Annotated[UploadFile, File()],
     metadata: Annotated[str, Form()],
     idempotency_key: Annotated[str | None, Header(pattern=r"^[A-Za-z0-9_-]{16,128}$")] = None,

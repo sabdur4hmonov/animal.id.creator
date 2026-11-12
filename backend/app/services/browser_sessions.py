@@ -6,7 +6,9 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException
+from sqlalchemy import select
 
+from app.models.accounts import UserAccount
 from app.models.portal import BrowserSession
 from app.services.registry import utc
 
@@ -49,7 +51,18 @@ def browser_principal(request, session):
         None,
     )
     if principal is None:
-        return None
+        account = session.scalar(select(UserAccount).where(UserAccount.operator_id == row.operator_id))
+        if (
+            account is None
+            or account.disabled_at
+            or not hmac.compare_digest(digest(account.password_hash), row.credential_sha256)
+        ):
+            return None
+        from app.core.auth import Principal
+
+        principal = Principal(
+            operator_id=account.operator_id, role=account.role, token_sha256=row.credential_sha256
+        )
     if request.method not in ("GET", "HEAD", "OPTIONS") and not hmac.compare_digest(
         request.headers.get("X-CSRF-Token", ""), row.csrf
     ):

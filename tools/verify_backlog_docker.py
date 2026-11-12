@@ -3,6 +3,8 @@
 import argparse
 import base64
 import json
+import re
+import secrets
 import subprocess
 import time
 from datetime import UTC, datetime
@@ -276,10 +278,141 @@ def verify_panel(client):
     }
 
 
+def verify_roles(client):
+    created = client.post(
+        "/api/v1/registry/animals",
+        json={
+            "species": "cattle",
+            "owner": {"owner_id": "SYNTHETIC", "name": "Synthetic role trial"},
+        },
+        headers={"Idempotency-Key": uuid4().hex},
+    )
+    assert created.status_code == 201
+    label = created.json()["animal_id"]
+    root = f"/api/v1/registry/animals/cattle/{label}"
+    directory = ROOT / "data/verification-backlog-20261111/secrets"
+    users = []
+    for role in ("veterinar", "bank_viewer", "bank_officer"):
+        suffix = uuid4().hex[:12]
+        username = "synthetic-" + suffix
+        operator_id = "SYNTHETIC-" + suffix.upper()
+        password = secrets.token_urlsafe(24)
+        filename = "portal-password-" + suffix + ".txt"
+        (directory / filename).write_text(password, "utf-8")
+        command = [
+            "docker",
+            "compose",
+            "-p",
+            PROJECT,
+            "-f",
+            str(COMPOSE),
+            "exec",
+            "-T",
+            "api",
+            "python",
+            "/srv/tools/manage_users.py",
+            "create",
+            "--username",
+            username,
+            "--operator-id",
+            operator_id,
+            "--role",
+            role,
+            "--actor",
+            "SYNTHETIC-CLI",
+            "--password-file",
+            "/srv/secrets/" + filename,
+        ]
+        cli = subprocess.run(command, capture_output=True, text=True, check=False)
+        assert cli.returncode == 0, (
+            "Synthetic CLI creation failed; no credentials printed"
+        )
+        with httpx.Client(base_url=str(client.base_url), timeout=60) as portal:
+            login = portal.post(
+                "/panel/login",
+                json={"username": username, "password": password},
+                headers={"X-Chorvam-Login": "1"},
+            )
+            assert login.status_code == 200, login.status_code
+            assert (
+                "Secure" in login.headers["set-cookie"]
+                and "HttpOnly" in login.headers["set-cookie"]
+            )
+            # Explicit loopback HTTP header exercises authorization, not HTTPS browser transport.
+            # The deployment milestone performs a real TLS cookie roundtrip with a trusted test CA.
+            portal.headers["Cookie"] = login.headers["set-cookie"].split(";", 1)[0]
+            page = portal.get("/panel")
+            assert page.status_code == 200 and role in page.text
+            csrf = re.search(r'name="csrf-token" content="([^"]+)"', page.text)[1]
+            portal.headers["X-CSRF-Token"] = csrf
+            health = portal.post(
+                root + "/health",
+                json={
+                    "local_event_key": uuid4().hex,
+                    "kind": "examination",
+                    "event_date": datetime.now(UTC).date().isoformat(),
+                    "description": "SYNTHETIC ROLE CHECK",
+                },
+                headers={"Idempotency-Key": uuid4().hex},
+            )
+            assert health.status_code == (201 if role == "veterinar" else 403)
+            if role == "veterinar":
+                assert health.json()["verified_by_veterinarian"] is True
+            finance = portal.patch(
+                f"/api/v1/animals/cattle/{label}/status",
+                json={
+                    "status": "collateral",
+                    "expected_version": 1,
+                    "reason": "Synthetic bank role review",
+                },
+            )
+            assert finance.status_code == (200 if role == "bank_officer" else 403)
+            assert (
+                portal.post(
+                    "/api/v1/registry/animals",
+                    json={
+                        "species": "cattle",
+                        "owner": {"owner_id": "X", "name": "Synthetic"},
+                    },
+                    headers={"Idempotency-Key": uuid4().hex},
+                ).status_code
+                == 403
+            )
+        hashed = sql(
+            f"SELECT password_hash LIKE '$argon2id$%' FROM user_accounts WHERE username='{username}'"
+        )
+        assert hashed.stdout.strip() == "t"
+        users.append(
+            {
+                "username": username,
+                "operator_id": operator_id,
+                "role": role,
+                "password_file": filename,
+            }
+        )
+    (directory / "portal-users.json").write_text(json.dumps(users, indent=2), "utf-8")
+    audit_id = sql(
+        "SELECT id FROM access_audit ORDER BY received_at DESC LIMIT 1"
+    ).stdout.strip()
+    assert sql(f"DELETE FROM access_audit WHERE id='{audit_id}'").returncode != 0
+    return {
+        "animal_id": label,
+        "cli_argon2_users": True,
+        "vet_health_verified": True,
+        "bank_read_write_separation": True,
+        "access_audit_delete_rejected": True,
+        "authorization_http_explicit_cookie": True,
+        "browser_https_transport": "unverified until item 6",
+        "users_manifest": "secrets/portal-users.json",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--stage", choices=["health", "ownership", "qr", "panel"], required=True
+        "--stage",
+        choices=["health", "ownership", "qr", "panel", "roles"],
+        required=True,
     )
     args = parser.parse_args()
     binding = subprocess.run(
@@ -312,6 +445,7 @@ def main():
             "ownership": verify_ownership,
             "qr": verify_qr,
             "panel": verify_panel,
+            "roles": verify_roles,
         }[args.stage](client)
     evidence.update(
         stage=args.stage,

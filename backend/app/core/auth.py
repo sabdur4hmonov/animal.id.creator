@@ -1,24 +1,27 @@
-"""Local API keys with separate operator/admin roles; no default credentials."""
+"""Preserved bearer API keys plus revocable browser sessions and explicit roles."""
 
 import hashlib
 import hmac
 import json
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_session
+from app.core.roles import Role, require_role
+from app.models.accounts import UserAccount
 from app.services.browser_sessions import browser_principal
 
 
 class Principal(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operator_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$")
-    role: Literal["operator", "admin"]
+    role: Role
     token_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
 
 
@@ -51,7 +54,7 @@ def authenticate(
         principal = browser_principal(request, session)
         if principal:
             return principal
-    if not principals:
+    if not principals and not session.scalar(select(UserAccount.username).limit(1)):
         raise HTTPException(503, "API credentials are not configured")
     raise HTTPException(401, "Valid bearer API key required", headers={"WWW-Authenticate": "Bearer"})
 
@@ -66,3 +69,15 @@ def require_admin(principal: PrincipalDep) -> Principal:
 
 
 AdminDep = Annotated[Principal, Depends(require_admin)]
+
+
+def require_operator(principal: PrincipalDep) -> Principal:
+    return require_role(principal, "admin", "operator")
+
+
+def require_finance(principal: PrincipalDep) -> Principal:
+    return require_role(principal, "admin", "bank_officer")
+
+
+OperatorDep = Annotated[Principal, Depends(require_operator)]
+FinanceDep = Annotated[Principal, Depends(require_finance)]

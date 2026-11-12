@@ -8,7 +8,7 @@ from pydantic import Field
 
 from app.api.business import SessionDep, enabled
 from app.api.registry import RequestKey
-from app.core.auth import PrincipalDep
+from app.core.auth import OperatorDep
 from app.core.rate_limit import allowed
 from app.core.species import Species
 from app.schemas.common import StrictInput
@@ -34,10 +34,11 @@ def issue(
     data: IssueInput,
     request: Request,
     session: SessionDep,
-    principal: PrincipalDep,
+    principal: OperatorDep,
     key: RequestKey,
 ):
     enabled(request, species)
+    service.manage(session, species, animal_id, principal)
     return run_operation(
         session,
         principal,
@@ -49,7 +50,7 @@ def issue(
 
 
 @router.get(root)
-def codes(species: Species, animal_id: str, request: Request, session: SessionDep, principal: PrincipalDep):
+def codes(species: Species, animal_id: str, request: Request, session: SessionDep, principal: OperatorDep):
     enabled(request, species)
     return service.code_list(session, species, animal_id, principal)
 
@@ -62,10 +63,11 @@ def revoke(
     data: RevokeInput,
     request: Request,
     session: SessionDep,
-    principal: PrincipalDep,
+    principal: OperatorDep,
     key: RequestKey,
 ):
     enabled(request, species)
+    service.manage(session, species, animal_id, principal)
     return run_operation(
         session,
         principal,

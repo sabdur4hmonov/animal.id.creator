@@ -4,7 +4,7 @@ from fastapi import APIRouter, Header, HTTPException, Query, Request
 from sqlalchemy import func, select
 
 from app.api.business import SessionDep, enabled
-from app.core.auth import PrincipalDep
+from app.core.auth import OperatorDep, PrincipalDep
 from app.core.species import Species
 from app.models.business import Animal, AuditEvent
 from app.models.registry import AnimalProfile
@@ -15,6 +15,7 @@ from app.services.registry import (
     registry_detail,
     registry_query,
     render_registry,
+    require_manager,
     require_record,
     retire_animal,
     run_operation,
@@ -27,7 +28,7 @@ RequestKey = Annotated[str, Header(alias="Idempotency-Key", pattern=r"^[A-Za-z0-
 
 @router.post("/animals", response_model=RegistryAnimal, status_code=201)
 def issue(
-    data: NumberedAnimal, request: Request, session: SessionDep, principal: PrincipalDep, key: RequestKey
+    data: NumberedAnimal, request: Request, session: SessionDep, principal: OperatorDep, key: RequestKey
 ):
     enabled(request, data.species)
     return run_operation(
@@ -73,10 +74,11 @@ def owner(
     data: OwnerChange,
     request: Request,
     session: SessionDep,
-    principal: PrincipalDep,
+    principal: OperatorDep,
     key: RequestKey,
 ):
     enabled(request, species)
+    require_manager(require_record(session, species, animal_id), principal)
 
     def apply_owner():
         limits = request.app.state.business_configs[species].ownership_history
@@ -101,10 +103,11 @@ def retire(
     data: Retirement,
     request: Request,
     session: SessionDep,
-    principal: PrincipalDep,
+    principal: OperatorDep,
     key: RequestKey,
 ):
     enabled(request, species)
+    require_manager(require_record(session, species, animal_id), principal)
     return run_operation(
         session,
         principal,

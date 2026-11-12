@@ -1,7 +1,11 @@
 {% extends 'base.html' %}{% block content %}
 <section style="max-width:30rem;margin:3rem auto"><h1>{{ t.login }}</h1>
+<form id="password-login"><label>{{ 'Login' if lang=='uz_Latn' else 'Логин' }}<input name="username" autocomplete="username" required maxlength="64"></label>
+<label>{{ 'Parol' if lang=='uz_Latn' else 'Пароль' }}<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label>
+<button>{{ t.submit }}</button><p id="password-error" role="alert"></p></form><hr>
 <form id="login"><label>{{ t.token }}<input id="key" type="password" autocomplete="off" required maxlength="512"></label>
 <button>{{ t.submit }}</button><p id="error" role="alert"></p></form></section>
 {% endblock %}{% block script %}<script nonce="{{ nonce }}">
+document.getElementById('password-login').addEventListener('submit',async e=>{e.preventDefault();const f=e.target;const body={username:f.elements.username.value,password:f.elements.password.value};f.elements.password.value='';f.querySelector('button').disabled=true;try{const r=await fetch('/panel/login',{method:'POST',headers:{'Content-Type':'application/json','X-Chorvam-Login':'1'},body:JSON.stringify(body)});if(!r.ok)throw Error();location.href='/panel?lang={{ lang }}';}catch(e){document.getElementById('password-error').textContent={{ t.failed|tojson }};f.querySelector('button').disabled=false;}});
 document.getElementById('login').addEventListener('submit',async e=>{e.preventDefault();const field=document.getElementById('key');const value=field.value;field.value='';try{const r=await fetch('/panel/session',{method:'POST',headers:{Authorization:'Bearer '+value}});if(!r.ok)throw Error();location.href='/panel?lang={{ lang }}';}catch(e){document.getElementById('error').textContent={{ t.failed|tojson }};}});
 </script>{% endblock %}

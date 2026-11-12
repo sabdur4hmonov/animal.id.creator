@@ -10,6 +10,7 @@ import qrcode
 from fastapi import HTTPException
 from sqlalchemy import exists, select
 
+from app.core.roles import require_role
 from app.models.business import AuditEvent
 from app.models.health import HealthEvent
 from app.models.public_verification import CodeRevocation, SlaughterCode
@@ -20,6 +21,7 @@ from app.services.registry import require_record
 
 
 def manage(session, species, label, principal):
+    require_role(principal, "admin", "operator")
     record = require_record(session, species, label)
     if principal.role != "admin" and record.registered_by != principal.operator_id:
         raise HTTPException(403, "Only the registering operator/admin can manage verification codes")

@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, pool
 from alembic import context
 from app.core.database import Base
 from app.core.settings import get_settings
+from app.models.accounts import AccessAudit, UserAccount  # noqa: F401
 from app.models.business import Animal, AuditEvent, DuplicateCase  # noqa: F401
 from app.models.capture import Capture  # noqa: F401
 from app.models.health import HealthEvent  # noqa: F401

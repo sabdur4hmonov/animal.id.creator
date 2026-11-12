@@ -7,7 +7,7 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.auth import AdminDep, PrincipalDep
+from app.core.auth import AdminDep, FinanceDep, OperatorDep, PrincipalDep
 from app.core.database import get_session
 from app.core.species import Species
 from app.models.business import Animal, AuditEvent, DuplicateCase
@@ -35,7 +35,7 @@ def enabled(request: Request, species: Species):
 
 
 @router.post("/animals", response_model=AnimalResponse, status_code=201)
-def register(data: AnimalRegistration, request: Request, session: SessionDep, principal: PrincipalDep):
+def register(data: AnimalRegistration, request: Request, session: SessionDep, principal: OperatorDep):
     enabled(request, data.species)
     if reserved_number(request.app.state.species_configs[data.species], data.animal_id):
         raise HTTPException(409, "Numeric species IDs are issued by the registry; do not assign them manually")
@@ -85,7 +85,7 @@ def set_status(
     data: StatusChange,
     request: Request,
     session: SessionDep,
-    admin: AdminDep,
+    admin: FinanceDep,
 ):
     enabled(request, species)
     record = get_animal(species, animal_id, session, admin)
@@ -120,7 +120,7 @@ def set_status(
 @router.get("/captures/{capture_id}", response_model=CaptureResponse)
 def get_capture(capture_id: UUID, session: SessionDep, principal: PrincipalDep):
     record = session.get(Capture, str(capture_id))
-    if record is None or (principal.role != "admin" and record.operator_id != principal.operator_id):
+    if record is None or (principal.role == "operator" and record.operator_id != principal.operator_id):
         raise HTTPException(404, "Capture not found")
     return record
 

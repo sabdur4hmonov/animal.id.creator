@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     qr_box_size: int = Field(default=8, ge=4, le=20)
     qr_border: int = Field(default=4, ge=4, le=10)
     browser_session_seconds: int = Field(default=28800, ge=300, le=86400)
+    login_rate_requests: int = Field(default=5, ge=1, le=100)
+    login_rate_window_seconds: int = Field(default=60, ge=10, le=3600)
+    login_account_rate_requests: int = Field(default=10, ge=1, le=100)
+    login_account_rate_window_seconds: int = Field(default=300, ge=60, le=3600)
+    argon_time_cost: int = Field(default=3, ge=2, le=10)
+    argon_memory_kib: int = Field(default=65536, ge=19456, le=262144)
+    argon_parallelism: int = Field(default=4, ge=1, le=8)
 
 
 @lru_cache

@@ -1,5 +1,9 @@
 # Verified Linux amd64 / CPython 3.12 CPU runtime; intentional updates only.
 qrcode==8.2
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.1.0
+cffi==2.1.1
+pycparser==3.12
 --extra-index-url https://download.pytorch.org/whl/cpu
 alembic==1.20.0
 annotated-doc==0.0.5

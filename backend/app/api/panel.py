@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy import exists, or_, select
@@ -19,6 +19,8 @@ from app.models.health import HealthEvent
 from app.models.portal import FieldSummary
 from app.services.browser_sessions import COOKIE, new_session, set_cookie
 from app.services.integrity import verify_stored_image
+from app.services.login_attempts import login_attempt
+from app.services.passwords import access_audit
 from app.services.registry import registry_query, render_registry, require_record
 
 router = APIRouter()
@@ -138,7 +140,7 @@ def login(request: Request, lang: Lang = "uz_Latn"):
     return page("login", request, lang)
 
 
-@router.post("/panel/session")
+@router.post("/panel/session", dependencies=[Depends(login_attempt)])
 def exchange(request: Request, session: SessionDep, principal: PrincipalDep):
     if not request.headers.get("Authorization", "").lower().startswith("bearer "):
         raise HTTPException(401, "An explicit bearer key is required to create a browser session")
@@ -154,7 +156,8 @@ def logout(request: Request, session: SessionDep, principal: PrincipalDep):
     browser = getattr(request.state, "browser_session", None)
     if browser:
         browser.revoked_at = datetime.now(UTC)
-        session.commit()
+    access_audit(session, principal.operator_id, principal.operator_id, "logout")
+    session.commit()
     response = JSONResponse({"ok": True}, headers={"Cache-Control": "no-store"})
     response.delete_cookie(COOKIE, path="/", secure=True, httponly=True, samesite="strict")
     return response

@@ -7,6 +7,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
+from app.core.roles import require_role
 from app.models.business import Animal, AuditEvent
 from app.models.capture import Capture
 from app.models.registry import AnimalNumberCounter, AnimalProfile, RegistryReceipt
@@ -72,7 +73,8 @@ def render_registry(record, profile, terminal, principal):
         owner=profile.owner if profile else None,
         numbered_id=profile.numbered_id if profile else None,
         retired_at=utc(profile.retired_at) if profile and profile.retired_at else None,
-        can_manage=principal.role == "admin" or record.registered_by == principal.operator_id,
+        can_manage=principal.role == "admin"
+        or (principal.role == "operator" and record.registered_by == principal.operator_id),
         terminal_record=None
         if terminal is None
         else {
@@ -181,9 +183,14 @@ def issue_animal(session, config, data, principal):
     return registry_view(session, record, principal)
 
 
-def prepare_change(session, record, data, principal):
+def require_manager(record, principal):
+    require_role(principal, "admin", "operator")
     if principal.role != "admin" and record.registered_by != principal.operator_id:
         raise HTTPException(403, "Only the registering operator or an administrator can change this animal")
+
+
+def prepare_change(session, record, data, principal):
+    require_manager(record, principal)
     if utc(data.observed_at) > datetime.now(UTC) + timedelta(minutes=5):
         raise HTTPException(422, "Reported event time cannot be in the future")
     changed = session.execute(

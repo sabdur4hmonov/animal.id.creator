@@ -1,8 +1,68 @@
 # BioLivestock AI — project progress
 
-Last live repository inspection: 2026-11-11, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
+Last live repository inspection: 2026-11-12, Asia/Tashkent. Project root: D:\Coding projects\moliddetector. Read this file and inspect the live repository at the start of the next session. Distinguish direct checks, synthetic tests and Sardorbek's reports.
 
 ## Current stop point
+
+**Item 5 complete — 2026-11-12, publishing.** Analyzer clean, **195 Flutter
+tests**, **248 backend/tool tests**, Ruff clean (canonical backend-directory
+invocation). Five authoritative roles + Argon2 password login/CLI, per-IP and
+per-login shared limits, strict Secure/HttpOnly cookies, CSRF, logout/access
+audit, disable/reset/role-change session invalidation all tested. Legacy bearer
+keys preserved. Real isolated PostgreSQL/CLI role proof linked below; no real
+users or accounts created. Actual HTTPS browser transport remains item 6.
+ARM64 build 4m, package/version/original signer and bundled assets verified:
+`data/artifacts/chorvam-secure-roles-20261112/app-release.apk`, SHA-256
+`64c68c5c8414b2af376577cc2ea9f72acb8f16365a0e51eed4ebfbd494cb918f`.
+Same binary as item 4: this milestone changes backend access policy, not mobile
+code. Phone runtime unverified. Next: item 6 isolated deployment kit. Unregistered
+prod Compose/Caddy/entrypoint/secret-init drafts are not included in item 5.
+
+Item 6 implementation decisions (draft, **not yet verified**): pinned Caddy
+2.11.9 with Apache license, file-mounted database/API secrets, no public DB/API
+port, explicit single private trusted-proxy IP, canonical PUBLIC_ORIGIN. Drop
+API access logs and redact Caddy URI/headers so QR capability URLs/cookies never
+enter access logs. Local self-signed test CA trusted only by the verification
+client; do not alter Windows trust. Use a new isolated prod-verification project
+on loopback 18443/18480, leaving the 18001 backlog stack and normal stacks alone.
+Extend existing collection_storage with optional compose/env paths, preserve
+legacy defaults. Scheduled backup quiesces only the selected API; restore checks
+use fresh `biolivestock_restore_...` DBs and absent clone storage, never promote
+or reset ID counters. Keep backups/clones, no automatic purge; monitor disk and
+backup age. Server/domain purchase, real deployment and off-site storage remain
+external tasks, continue remaining code without waiting for them.
+
+**2026-11-12 continuation:** item 5 full analyzer clean (cold startup 227s),
+**195 Flutter tests**, **248 backend/tool tests** pass. Ruff caught an import
+classification difference when launched from backend versus root; move the
+third-party SQLAlchemy import before the explicit tools path bootstrap, then
+rerun Ruff and complete APK. No business behavior/test assertion was removed.
+Direct isolated PostgreSQL proof:
+`data/verification-backlog-20261111/evidence-roles-ff81b44f236e4f7e9d8cf68ff6e65784.json`.
+CLI created synthetic Argon2 users, authoritative vet health badge, bank viewer
+denied writes, bank officer alone changes finance, access-audit DELETE rejected.
+Cookie authorization exercised by explicit header on loopback HTTP; **not** a
+TLS/browser verification. Item 6 will verify real HTTPS cookie transport.
+Role and management access checks run BEFORE immutable receipt replay, including
+former admins losing rights to somebody else's record. No history rewrite.
+Current HEAD bc80f8b, latest live fetch 0/0; item 5 not committed yet.
+Some unregistered deployment draft files exist locally (entrypoint/secret init),
+not included in item 5 validation claim. Caddy 2.11.9 official Apache-2.0 source
+checked and official image pulled, digest
+`sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee`.
+
+**Item 4 published: bc80f8b**, publication audit 0 findings, origin/main 0/0.
+Log: bc80f8b / 5ad683e / a20a9f2. **Item 5 in progress:** preserve API bearer
+format, add password users + immutable access audit (additive migration 0009),
+Argon2id with explicit configurable parameters and permissive dependencies.
+No new external account or default password. CLI create/role/disable/reset
+does not delete accounts; it revokes sessions and preserves the last enabled
+password admin. Five-role tests deliberately keep the original registering
+identity while lowering its role, proving ownership cannot bypass RBAC or
+replay old write receipts. Veterinar role alone gives verified health badge;
+operator cannot correct a vet event. All data and users so far synthetic.
+Targeted role/migration tests: 11 passed, existing panel/QR/health smoke: 10 passed.
+Per-peer and per-login shared rate limits and logout audit are being finalized.
 
 **Item 4 complete — 2026-11-11, publishing.** Analyzer clean, **195 Flutter
 tests**, **236 backend/tool tests**, Ruff clean. Directly verified private SSR
