@@ -7,18 +7,25 @@ snapshots are preserved in `docs/history/PROGRESS_THROUGH_2026-11-12.md`.
 
 ## Exact current stop point
 
-**All nine agreed backlog items are built and validated; item 9 publishing next.**
-Latest published commit before final cleanup is **aa83963**. Full final checks
-completed 2026-11-12: **210 Flutter tests, 253 backend/tool tests, analyzer and Ruff
-clean**. Both prod/demo ARM64 release builds passed. On 2026-11-13 personally
-rechecked live Git, completed logs, APK SHA-256 and every bundled YAML/catalog byte;
-no source changes since those tests (only final documentation updates).
+**All nine agreed backlog items are built, validated and published.** Final
+feature commit **ece14c8**, ordinary origin main push succeeded 2026-11-13.
+Publication audit: **406 tracked files, zero secret/credential/personal-phone
+findings**, all data/secrets/APK/weight ignore probes true. Evidence snapshot
+`data/dev/chorvam-final-publication-audit-20261113.json`. Live Git after feature
+push was clean, ahead/behind **0/0**; exact output below. This final memory update
+is a documentation-only checkpoint after that successful feature push.
+Full checks completed 2026-11-12: **210 Flutter tests, 253 backend/tool tests,
+analyzer and Ruff clean**. Both prod/demo ARM64 builds passed. On 2026-11-13
+personally rechecked live Git, completed logs, actual APK SHA-256 and every
+bundled YAML/catalog byte; only documentation changed after those checks.
 Final cleanup refreshed ROADMAP/ARCHITECTURE and STATUS_FOR_PITCH, archived dated
 progress notes, and fixed receipt-backed mobile vet badge. Seven targeted health
 tests cover four locales at 320×720 / 200%, mismatched receipt/role rejection and
 unchanged original event bytes. No phone/adb, purchase, project relicensing,
-normal/live stack modification, real data deletion or ID change. Finish audited
-fast-forward publication and clean Git verification, then stop feature work.
+normal/live stack modification, real data deletion or ID change.
+**Stop feature work.** Next useful work is the real field/device/server/licensing
+gates listed below, not another speculative module. No routine code decision
+is waiting for Sardorbek.
 
 ## Completed backlog
 
@@ -32,7 +39,7 @@ fast-forward publication and clean Git verification, then stop feature work.
 | 6 Deploy kit | 7bfc55c | HTTPS Caddy/private DB+API/file secrets, rotated redacted logs, guarded backup/clone verification, monitor/systemd templates/UZ runbook. Actual local TLS/restore/monitor proof; no VPS/systemd/public-domain deployment. |
 | 7 First-run guide | 3b01d78 | Four original-vector pages, four locales, durable UI preference and Tools replay; analyzer + 202 Flutter tests, release/package/signer/bundles verified. |
 | 8 Separate demo | aa83963 | prod/.demo flavors, distinct OS sandbox and demo_capture_queue, six original NAMUNA JPEGs/read-only profiles, all-route banner, native mode fail-closed, no INTERNET permission plus Dart HTTP denial; analyzer + 209 Flutter tests/Ruff and both releases verified. |
-| 9 Final cleanup | publishing | Truthful roadmap/architecture/pitch status, concise persistent memory with preserved history, scoped receipt-backed mobile vet badge. Full analyzer/210 Flutter/253 backend/Ruff and both release APKs verified. |
+| 9 Final cleanup | ece14c8 | Truthful roadmap/architecture/pitch status, concise persistent memory with preserved history, scoped receipt-backed mobile vet badge. Full analyzer/210 Flutter/253 backend/Ruff and both release APKs verified. |
 
 Final completed backend/tool suite: **253 passed**, canonical Ruff clean.
 Final item 9 Flutter suite: **210 passed**, analyzer clean (item 8 had 209).
@@ -134,8 +141,8 @@ Build/archive both flavors using `tools/build_mobile_release.ps1`, unique
 
 ## Remaining gates and next real action
 
-Finish item 9 audited push / clean Git proof, then stop coding. All agreed code,
-synthetic tests and release artifacts are complete. No new feature is pending.
+Item 9 audited push and clean Git proof are complete. All agreed code, synthetic
+tests and release artifacts are complete. Stop coding; no new feature is pending.
 Real animal sessions/ground-truth identities, TP/FP/FN/latency counts, labeled
 muzzle model data and independent scale measurements are externally missing.
 Founder reported two cattle properly tried on **2026-11-06**, movement/blur,
@@ -147,17 +154,25 @@ require Sardorbek; no purchase/account. Existing Ultralytics licensing choice
 must be resolved before commercial detector rollout. No routine code decision
 needs his input now; these are the genuine outstanding external decisions.
 
-## Git evidence — after item 8 push, before item 9 changes
+## Git evidence — after final feature push, 2026-11-13
+
+Captured live before this documentation-only memory checkpoint. No assumption
+from an older report; commit/push this checkpoint normally, then recheck clean
+status and 0/0 without creating an endless series of self-referential commits.
 
 ```text
+git status --short --branch
+## main...origin/main
+
+git log -3 --oneline
+ece14c8 Finalize pilot evidence and derive mobile vet badges from scoped server receipts
 aa83963 Isolate synthetic presentation demo with native flavor and network denial
 3b01d78 Add persistent four-language first-run field guide and replay
-7bfc55c Prepare isolated HTTPS pilot deployment and verified backup tooling
 
+git remote -v
 origin	https://github.com/sabdur4hmonov/animal.id.creator.git (fetch)
 origin	https://github.com/sabdur4hmonov/animal.id.creator.git (push)
 
 git rev-list --left-right --count HEAD...origin/main
-0 0
+0	0
 ```
-Working tree has item 9 changes; not claimed clean at this checkpoint.
