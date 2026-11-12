@@ -6,6 +6,8 @@ import 'capture_environment.dart';
 import 'localization.dart';
 import 'uzbek_cyrillic_material.dart';
 import 'field_home.dart';
+import 'app_mode.dart';
+import 'demo_home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,13 +31,26 @@ Future<void> main() async {
   );
   final language = LanguageController();
   await language.load();
-  runApp(BioLivestockApp(language: language));
+  bool modeFailed = false;
+  try {
+    runtimeMode = await AppRuntimeMode.detect();
+  } catch (_) {
+    // Fail closed: never open a production workflow when native mode is unknown.
+    modeFailed = true;
+  }
+  runApp(BioLivestockApp(language: language, modeFailed: modeFailed));
 }
 
 class BioLivestockApp extends StatefulWidget {
-  const BioLivestockApp({super.key, this.language, this.environment});
+  const BioLivestockApp({
+    super.key,
+    this.language,
+    this.environment,
+    this.modeFailed = false,
+  });
   final LanguageController? language;
   final CaptureEnvironment? environment;
+  final bool modeFailed;
   @override
   State<BioLivestockApp> createState() => _BioLivestockAppState();
 }
@@ -67,7 +82,24 @@ class _BioLivestockAppState extends State<BioLivestockApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: widget.environment == null
+        builder: (context, child) =>
+            runtimeMode.demo ? DemoDisclosure(child: child!) : child!,
+        home: widget.modeFailed
+            ? const Scaffold(
+                body: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: FieldText(
+                      UiText(
+                        'Application mode could not be checked. Close and reopen the app.',
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : runtimeMode.demo
+            ? const DemoHome()
+            : widget.environment == null
             ? Builder(
                 builder: (context) => FieldHome(
                   environment: CaptureEnvironment.native(

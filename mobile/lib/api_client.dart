@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'species.dart';
+import 'app_mode.dart';
 
 const apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
@@ -46,6 +47,9 @@ class ApiClient {
       Uri.parse('${_baseUrl.replaceAll(RegExp(r'/+$'), '')}$path');
   bool get hasCredentials => _token.trim().isNotEmpty;
   Map<String, String> get _headers {
+    if (runtimeMode.demo) {
+      throw StateError('Demo server access is disabled');
+    }
     if (_token.isEmpty) {
       throw Exception('Configure an operator API_TOKEN before connecting');
     }

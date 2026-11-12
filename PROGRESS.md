@@ -4,21 +4,30 @@ Last live repository inspection: 2026-11-12, Asia/Tashkent. Project root: D:\Cod
 
 ## Current stop point
 
-**Item 6 published: 7bfc55c**, publication audit zero, origin/main 0/0.
-Live log after push: 7bfc55c / 727d3b3 / bc80f8b.
-**Item 7 complete, 2026-11-12; publishing.** Analyzer clean; all **202 Flutter tests** pass. ARM64 build 1m51s, original package/version/signer and bundled configs/catalogs verified. Artifact `data/artifacts/chorvam-first-run-guide-20261112/app-release.apk`; SHA-256 `468306db07d78d36cf29a434ac1ddc4a242e58f521398ca42a6ae8a9111e8bfe`. Four-page
-first-run guide and Tools replay, original schematic vectors, all four locales.
-Preference lives outside immutable animal/capture records; native mode alone
-shows it automatically. Seven targeted tests pass including 320×720/200% all
-pages/locales, skip/completion/restart, replay and no camera/identity mutation.
-Test async file I/O and route transitions must both advance (real wait + pump
-with duration); do not remove assertions to hide progress animations.
-No new dependency, no backend/mobile collection behavior changed. Phone unverified.
-Next: publish, then separate .demo
-flavor and final evidence-based pitch/architecture cleanup. No routine decision
-needed from Sardorbek. Server/domain/offsite destination, real dataset/scale
-calibration and physical phone verification remain external, not reasons to stop
-items 7–9. No adb used. Historical deployment proofs below remain valid.
+**Item 7 published: 3b01d78**, audit zero, origin/main 0/0. Log after push:
+3b01d78 / 7bfc55c / 727d3b3. Four-page four-language first-run guide and Tools
+replay complete; analyzer clean, 202 Flutter tests, release/signer/assets verified.
+Artifact `data/artifacts/chorvam-first-run-guide-20261112/app-release.apk`, SHA-256
+`468306db07d78d36cf29a434ac1ddc4a242e58f521398ca42a6ae8a9111e8bfe`.
+**Item 8 complete, 2026-11-12; publishing.** Analyzer clean, all **209 Flutter tests** and canonical Ruff pass. Both ARM64 flavors built; manifest/version/original signer/network permissions and source config/catalog bytes directly verified. Artifacts:
+- `data/artifacts/chorvam-demo-prod-20261112/app-prod-release.apk` SHA-256 `b6d3d82c799d3e51b0d26e9874e658c897dbc28a66a74f6a11865f741fb24201`.
+- `data/artifacts/chorvam-demo-sample-20261112/app-demo-release.apk` SHA-256 `8f3ec5b4d065c0fb2de1e4591a08902ece517958a7946ebe50945776adf0b786`.
+No device testing. Synthetic-only tests cover stable six-animal seeding, changed-evidence refusal, untouched regular folder, no queue entries, all API methods blocked with credentials, native mode null rejection and four-language 320×720/200% roster/profile flow. Real Android product
+flavors: prod retains package/signature/version; demo adds .demo and distinct
+launcher label. Native installed package selects mode before any capture flow;
+unknown native mode fails closed. Demo manifest removes INTERNET, camera and GPS;
+ApiClient separately denies every HTTP call even with a supplied API token.
+Demo uses own OS sandbox plus demo_capture_queue; six original geometric muzzle
+JPEGs, stable seeded L labels and NAMUNA tags, no upload entry journals, no fake
+weight/health/matching results. Read-only roster/profile plus guide is deliberate:
+exercise presentation navigation without allowing demo clinical/animal actions.
+Persistent banner remains above Navigator on every route. Seed replay preserves
+IDs/evidence; changed evidence fails rather than overwrite or use real data.
+No new dependency. Official Android/Flutter flavor docs linked in NOTICE.
+Next: commit/audit/push item 8; then item 9 documentation and a discovered UI omission: mobile health always says Operator even for a valid veterinarian-role server receipt. Unimported health_verification.dart + its targeted test (1 passed) are item 9 drafts, excluded here. Do not change immutable event bytes to add the badge.
+Existing Ultralytics dependency is AGPL/Enterprise, not permissive (official source in NOTICE). This predates the backlog; no new GPL dependency or paid license. Commercial detector licensing/product choice is externally blocked pending Sardorbek, continue unrelated items. No project relicensing.
+No phone/adb. Real server/domain/offsite storage, animal accuracy and device
+runtime remain external/unverified. Normal stacks and real IDs untouched.
 
 ## Historical milestone notes
 

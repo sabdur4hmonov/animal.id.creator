@@ -470,5 +470,10 @@
   "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.": "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.",
   "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.": "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.",
   "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.": "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.",
-  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected."
+  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.",
+  "NAMUNA — synthetic drawings. Server upload is disabled.": "NAMUNA — synthetic drawings. Server upload is disabled.",
+  "Demo could not open. Real animal records are not used.": "Demo could not open. Real animal records are not used.",
+  "These six animals are drawn examples. No real weight, health or recognition result is claimed.": "These six animals are drawn examples. No real weight, health or recognition result is claimed.",
+  "Use the regular Chorvam app for real collection. This demo cannot capture, measure or send records.": "Use the regular Chorvam app for real collection. This demo cannot capture, measure or send records.",
+  "Application mode could not be checked. Close and reopen the app.": "Application mode could not be checked. Close and reopen the app."
 }

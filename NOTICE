@@ -68,3 +68,20 @@ Version, source/license and official operational docs checked 2026-11-12:
 https://github.com/caddyserver/caddy/releases/tag/v2.11.9
 https://github.com/caddyserver/caddy/blob/v2.11.9/LICENSE
 https://caddyserver.com/docs/automatic-https
+Demo artwork and first-run guide illustrations (2026-11-12)
+Original geometric drawings in mobile/lib/demo_home.dart and field_guide.dart;
+no real animal photographs, external raster assets or third-party renderer copied.
+Android product-flavor configuration follows the official Flutter/Android guides:
+https://docs.flutter.dev/deployment/flavors
+https://developer.android.com/build/build-variants
+No additional library is introduced by the guide/demo implementation.
+
+Existing detector dependency boundary (reviewed 2026-11-12)
+backend/requirements.txt already pins Ultralytics. Its upstream licensing page
+offers AGPL-3.0 and Enterprise options: https://www.ultralytics.com/license
+This is not a permissively licensed dependency. No new GPL/AGPL package was
+introduced by the pilot backlog, but the complete existing backend cannot be
+described as GPL/AGPL-free. Before commercial detector deployment, Sardorbek must
+resolve the licensing/product choice; no paid license or project relicensing
+was authorized or performed. The current muzzle checkpoint remains absent.
+

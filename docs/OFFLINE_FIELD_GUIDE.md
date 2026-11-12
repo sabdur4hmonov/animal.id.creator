@@ -2,6 +2,16 @@
 
 ## Molni skanerlash va profil
 
+### Taqdimot uchun alohida NAMUNA ilovasi
+
+**Chorvam NAMUNA** — `.demo` paketli alohida APK. Unda olti chizilgan mol,
+namuna ID va profil bor; barcha sahifalarda NAMUNA yozuvi qoladi. Bu real
+suratlar, vazn, sog‘liq yoki tanish aniqligi dalili emas. Taqdimotda kartani
+bosib namuna profilini oching, yo‘riqnomani ko‘rsating. Namuna surat olmaydi,
+AR o‘lchamaydi va serverga yubora olmaydi (Android internet ruxsati ham yo‘q).
+Haqiqiy dala yig‘ishi uchun oddiy **Chorvam** ishlatiladi. Ikki paketning
+operatori, yozuvlari va sozlamalari alohida; NAMUNA bazani ko‘chirmaydi.
+
 ### Birinchi ochilish yo‘riqnomasi
 
 Birinchi ochilishda to‘rt qisqa sahifa chiqadi: tumshuqdan tiniq kadrlar olish,

@@ -71,6 +71,31 @@ Images persist in the repository's ignored `data/` folder. PostgreSQL persists i
 
 ## Run the mobile app
 
+Android has two build flavors: `prod` (default; existing package/data/signature)
+and `demo` (`ai.biolivestock.biolivestock_capture.demo`, **Chorvam NAMUNA**).
+Demo holds six original schematic animals in its own app sandbox and
+`demo_capture_queue`; it never reads the regular queue. Every route retains a
+sample disclosure. It is a read-only presentation, without camera/AR/clinical
+actions or invented weights. The demo manifest removes INTERNET and ApiClient
+also blocks network calls even if credentials were supplied accidentally.
+
+```powershell
+cd 'D:\Coding projects\moliddetector\mobile'
+flutter run --flavor prod
+flutter run --flavor demo
+# Build/archive separately without connecting or installing on a phone:
+cd ..
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+./tools/build_mobile_release.ps1 -Flavor prod -Milestone chorvam-prod-my-review
+./tools/build_mobile_release.ps1 -Flavor demo -Milestone chorvam-demo-my-review
+```
+
+Use a new milestone name each time. APK/SHA-256/manifest/signer evidence stays
+under ignored `data/artifacts/`. The script checks the existing project's signer,
+package/version and opposite network permissions. No install/uninstall occurs.
+These remain development-signed pilot APKs, not a Play Store release-signing setup.
+The first-run four-language guide can be replayed from **Tools → Field guide**.
+
 **Offline farm collection (2026-11-04):** a fresh token-free install now includes
 verified YAML defaults. Set an offline operator in Tools, create a clearly
 temporary `L-…` animal, record six muzzle views and export originals plus CSV

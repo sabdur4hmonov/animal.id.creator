@@ -17,6 +17,11 @@ class MainActivity : FlutterActivity() {
     private var arResult: MethodChannel.Result? = null
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "ai.biolivestock/app_mode")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "isDemo") result.success(packageName.split('.').contains("demo"))
+                else result.notImplemented()
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger,"ai.biolivestock/advisory_matching")
             .setMethodCallHandler { call,result ->
                 if(call.method!="compare")result.notImplemented()

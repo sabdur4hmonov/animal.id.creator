@@ -470,5 +470,10 @@
   "Use Video capture. Hold one muzzle in the frame for four seconds. Keep steady and choose the clear frames. Only JPEG photos are saved.": "Видео билан олишни танланг. Битта тумшуқни кадрда тўрт сония ушланг. Қимирлатманг ва тиниқ кадрларни танланг. Фақат JPEG суратлар сақланади.",
   "Review the suggested profile and both photos. Choose Yes only when it is the same animal. The experimental signal is not proof of identity.": "Таклиф қилинган профил ва иккала суратни текширинг. Фақат ўша мол бўлса Ҳа тугмасини босинг. Тажрибавий сигнал молнинг кимлигини исботламайди.",
   "Take the whole animal from the left and right, including its feet. Side photos do not calculate weight. Use a real scale or optional AR on a supported phone.": "Молни чап ва ўнг ёнидан, оёқлари билан тўлиқ олинг. Ён суратдан вазн ҳисобланмайди. Ҳақиқий тарози ёки мос телефонда ихтиёрий ARдан фойдаланинг.",
-  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Воситалар → Йиғиш, тил ва ZIP захира бўлимини очинг. ZIPни иловадан ташқарига сақланг. Офлайн оператор IDни сақлаб қолинг. Интернетда юбориш алоҳида қўлда бажарилади."
+  "Open Tools, then Collection, language and ZIP backup. Save the ZIP outside this app. Keep your offline operator ID. Upload is a separate manual action when connected.": "Воситалар → Йиғиш, тил ва ZIP захира бўлимини очинг. ZIPни иловадан ташқарига сақланг. Офлайн оператор IDни сақлаб қолинг. Интернетда юбориш алоҳида қўлда бажарилади.",
+  "NAMUNA — synthetic drawings. Server upload is disabled.": "НАМУНА — чизилган моллар. Серверга юбориш ўчирилган.",
+  "Demo could not open. Real animal records are not used.": "Намуна очилмади. Ҳақиқий мол ёзувлари ишлатилмайди.",
+  "These six animals are drawn examples. No real weight, health or recognition result is claimed.": "Бу олти мол чизилган намуна. Ҳақиқий вазн, соғлиқ ёки таниш натижаси кўрсатилмайди.",
+  "Use the regular Chorvam app for real collection. This demo cannot capture, measure or send records.": "Ҳақиқий йиғиш учун оддий Чорвамдан фойдаланинг. Намуна сурат олмайди, ўлчамайди ва ёзув юбормайди.",
+  "Application mode could not be checked. Close and reopen the app.": "Илова режими текширилмади. Иловани ёпиб қайта очинг."
 }

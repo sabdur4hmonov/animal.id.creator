@@ -67,6 +67,15 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    flavorDimensions += "mode"
+    productFlavors {
+        create("prod") { dimension = "mode" }
+        create("demo") {
+            dimension = "mode"
+            applicationIdSuffix = ".demo"
+            manifestPlaceholders["bioApplicationLabel"] = "Chorvam NAMUNA"
+        }
+    }
 }
 
 kotlin {
