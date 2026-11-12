@@ -1,4 +1,4 @@
-# Qishloqda serversiz yig‘ish — 2026-11-11
+# Qishloqda serversiz yig‘ish — 2026-11-12
 
 ## Molni skanerlash va profil
 
@@ -29,8 +29,9 @@ birka/laqab, saqlangan yaroqli AR vazn xulosalari va tarozi qaydlari yuboriladi.
 Bu alohida, qo‘lda bajariladigan amal; internet uzilsa ayni tugmani qayta bosing.
 Rasm yuborish avvalgi alohida oqim orqali. Xom depth/AR nuqtalari telefon va
 ZIPda qoladi. Panel faqat serverga yuborilgan narsani ko‘rsatadi.
-Panel manzili: serverning `/panel/login` sahifasi; hozir API kaliti bilan,
-keyingi rollar bosqichida shaxsiy login/parol ham qo‘shiladi. Brauzer uchun
+Panel manzili: serverning `/panel/login` sahifasi. CLI orqali berilgan shaxsiy
+login/parol yoki avvalgi API kaliti bilan kiring. Admin/operator/veterinar/bank
+rollari farq qiladi; faqat ruxsatli rol moliyaviy holatni o‘zgartiradi. Brauzer uchun
 HTTPS kerak; localhost sinovi alohida test muhitida bajariladi.
 
 ### So‘yish qaydi uchun QR
@@ -49,8 +50,11 @@ Ommaviy HTTPS manzil server sozlamasida belgilanishi kerak.
 Profil → **Sog‘liq va emlashlar** → emlash/davolash/kasallik/ko‘rik turi,
 sana (`YYYY-MM-DD`), tavsif; veterinar ismi va izoh ixtiyoriy. **Qaydni saqlash**
 oflayn ishlaydi. Xatoni **Tuzatuvchi qayd qo‘shish** orqali to‘g‘rilang: eski
-yozuv o‘chmaydi. Hozir hammasi **Operator yozuvi**; ism yozish veterinarning
-tasdig‘i degani emas. MAA va asl operator kaliti bo‘lsa **Sog‘liq tarixini
+yozuv o‘chmaydi. Oflayn qayd **Operator yozuvi**. Faqat mos saqlangan server
+javobida muallif roli `veterinar` bo‘lsa **Veterinar tomonidan tasdiqlangan**
+belgisi chiqadi; ism yozishning o‘zi tasdiq emas. Boshqa veterinarning
+serverdagi qaydlari private panelda ko‘rinadi; telefonda to‘liq ikki tomonlama
+tarix yuklash yo‘q. MAA va asl operator kaliti bo‘lsa **Sog‘liq tarixini
 yuborish**; aloqa uzilsa ayni tugma bilan davom eting. ZIPda `ledger/health.csv`
 va asl JSONlar qoladi. Bu tashxis yoki dori tavsiyasi emas.
 

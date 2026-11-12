@@ -1,53 +1,126 @@
-# Phase 1 architecture
+# Chorvam architecture — 2026-11-12
 
-Flutter native camera → local advisory QC → durable phone queue → idempotent multipart FastAPI upload → validated metadata → server QC → optional YOLOv8n muzzle crop and crop QC → filesystem + PostgreSQL.
+## Boundaries and species configuration
 
-`species_configs/*.yaml` is the source of truth for enabled state, checkpoint location, class label, inference confidence, crop padding/framing constraints, minimum resolution, and quality thresholds. `backend/app/core/species.py` validates these files at startup. The API exposes the same configs through `/api/v1/species`; Flutter offers only enabled species and runs its local quality check using the selected config. The species enum contains both `cattle` and `sheep` in the backend and mobile app, while the database constrains the same values. There are no species-specific detection, storage or UI branches. To activate sheep, supply its model, calibrate its YAML values, set `enabled: true`, and restart the API/app. No new endpoint, migration, or processing branch is needed.
+Flutter native camera → local QC → immutable phone evidence → explicit idempotent
+FastAPI requests → authoritative server QC → optional muzzle detection/crop →
+filesystem originals + PostgreSQL metadata. No gallery picker or implicit model
+download. `species_configs/<species>.yaml` controls enabled state, trained model
+path/class, framing/crop/resolution/QC; `business_configs/` controls formulas,
+AR/repeat/calibration, prices, ownership and experimental advisory matching;
+`security_configs/` controls review heuristics. Backend validators and hash-checked
+bundled mobile YAML share these definitions. Cattle is active; sheep's same-shape
+configs/enum remain disabled. Future sheep needs real data, validated values and
+model assets, not a new detector/storage endpoint or species-specific crop branch.
+The current collection UI deliberately targets cattle. Goats are not implemented.
 
-The model directory is distinct from `backend/app/models`, which holds SQLAlchemy models. `models/<species>/` holds ignored binary checkpoints. The YOLO wrapper loads weights lazily and serializes inference because predictors are stateful. It filters the configured class, requires exactly one muzzle, checks box size and edges, applies configured padding, and clips the final crop to image bounds. A generic COCO checkpoint is unsuitable: its cow object class is not a nose detector. No model is downloaded implicitly. Operators must supply a trusted YOLOv8n checkpoint trained for the configured class.
+`backend/app/models/` is SQLAlchemy, while ignored `models/<species>/` is binary
+weights. YOLO filters exactly one configured muzzle class, checks/pads/clips the
+box and QC-checks the crop. COCO cow boxes are not nose models. No trained muzzle
+checkpoint exists: accepted original is `pending_model`, not a confirmed muzzle
+or animal identity. A present broken model is unavailable rather than silently
+accepted. Existing pending originals are not silently reprocessed.
 
-Without a checkpoint, uploads that pass original-image QC are accepted with `crop_status: pending_model`, no crop, and no detection result. This is an explicit data-collection mode, not proof that the image depicts cattle or contains a usable muzzle. Manual review and labeling are needed before these samples form a training dataset. A present but unusable checkpoint produces HTTP 503; failed detection/framing/crop QC produces HTTP 422. New uploads begin cropping when weights become available. Existing pending records are retained as source material; this MVP does not silently reprocess them.
+Server EXIF orientation/normalization, decoded-pixel/encoded-byte limits,
+Laplacian variance and full-image lighting histogram remain authoritative; mobile
+QC is advisory and bounded. QC score is not a calibrated identity probability.
+GPS can be null; timestamps are timezone-aware UTC. Immutable configuration,
+operator/capture assertions, server receipt time and file SHA remain separate.
+Stored images use species/animal_id/UTC-date/unique-capture names. File fsync
+precedes database commit; uncertain commits preserve evidence for reconciliation.
 
-The API accepts JPEG/PNG bytes and metadata, bounds encoded size and decoded pixels, applies EXIF orientation, and stores normalized JPEG originals without EXIF. The backend uses OpenCV Laplacian variance and a grayscale histogram; mobile approximates these metrics in Dart on a worker isolate. Blur analysis is resized; server lighting uses original pixels so clipped exposure is preserved. Local feedback is advisory and server QC is authoritative. The scalar quality score is a heuristic in [0,1], not a calibrated probability or identity confidence. Pose and occlusion remain clear TODOs. Capture timestamps include a timezone, are normalized to UTC, and determine the date folder. IDs are validated before use in filesystem paths. GPS is nullable when permission or a fix is unavailable, never invented.
+## Offline identity, capture and geometry
 
-Each database row includes the species, operator-provided animal ID, optional GPS, capture timestamp, operator ID, original quality score and measurements, crop status, relative file paths, detection provenance, and full configuration snapshot. Animal IDs are collection labels, not verified biometric identities. Images live at `data/<species>/<animal_id>/<UTC-date>/<capture-uuid>_<kind>.jpg`; multiple captures cannot overwrite one another. Pre-commit persistence failures roll back metadata and remove new images; attempted/uncertain COMMIT failures retain evidence for receipt replay and reconciliation. Filesystem and SQL transactions cannot be atomic together: an abrupt process crash may leave orphan files. Read-only reconciliation and verified backup/clone-restore tooling are documented in COLLECTION_RELIABILITY.md; nothing deletes orphans automatically.
+`FieldStore` keeps append-only per-animal/photo/measurement/price JSON and original
+JPEGs; compact profile indexes/thumbnails do not load raw depth into lists. A local
+random L-label is provisional. Only the canonical PostgreSQL atomic allocator
+issues MAA-series IDs (AA..ZZ blocks of 99,999,999); counters never reset/reuse.
+Mapping freezes original operator/owner/request intent before HTTP. Retries reuse
+the same key/receipt; historical L metadata is retained. Death/slaughter archive
+records retain IDs/photos, never delete animals to make numbers available again.
 
-The mobile queue commits original bytes and immutable metadata to application-support storage before reporting a local save. Cached species/QC settings enable collection offline after the first connection. Journals and separate acknowledgement receipts survive restart; originals are retained after upload. Uploads are manually initiated and scoped to the original backend/operator. A stable request key binds bytes and metadata to an append-only PostgreSQL receipt committed with the scan; transaction locks serialize retries and replay the original response. Failed requests do not consume keys. The app checks the backend retry capability before sending; older keyless clients remain compatible but lack safe replay. Camera temporary files are deleted only after durable copying (or retaking a local-QC rejection). No gallery picker, background uploader or automatic purge is added.
+Android OpenCV ORB/ratio-test/RANSAC produces experimental top candidates, followed
+by explicit human confirmation. No automatic merge, identity selection or invented
+accuracy. Decisions/config/hash/time go into the append-only evaluation ledger.
+Four-second burst saves selected original JPEGs, not MP4, and each frame needs its
+own animal confirmation. Whole-body left/right photos and dated actual scale
+observations support future data collection, without photo-derived weight.
 
-Alembic owns schema creation and runs before the API starts in Compose. PostgreSQL uses a named volume; images use a host bind mount. `/health` checks the database and reports checkpoint presence (not validated model readiness). Config changes require restart. Operator/admin bearer credentials protect `/api/v1/*`; health and API schemas remain public. Additive registration/review/audit tables keep mutable animal status separate from append-only captures. Exact-pixel reuse is an administrative review signal, not a biometric identity decision. See [SECURITY_AND_REGISTRY.md](SECURITY_AND_REGISTRY.md). The service is intended for a trusted local development network; no production biometric matching, vector database, cloud deployment or CI/CD is supplied.
+AR snapshot unprojects tapped pixels from each frozen frame's own depth/confidence,
+intrinsics and pose. Left/right segments never join points across frames; repeat
+rules gate the combined estimate. Optional front width is measured within its own
+frame; otherwise a versioned median ratio needs at least three distinct
+species/breed fast-mode animals. Fast six-point ellipse and closed 3D contour
+remain separate modes. Original points, segment lengths, tracking, JPEG/depth and
+provenance are retained; repeat 5% and minimum-ten-animal scale correction are
+configuration values. Width source/mode/config revisions keep correction groups
+apart; both formula results and raw/corrected estimates stay visible. Real accuracy
+and supported-device behavior still require field testing. Official ARCore SDK
+and original renderer: see NOTICE for sample-code versus binary terms.
 
-References: [Flutter camera plugin](https://pub.dev/packages/camera), [FastAPI multipart uploads](https://fastapi.tiangolo.com/tutorial/request-forms-and-files/), [Ultralytics YOLOv8](https://docs.ultralytics.com/models/yolov8/), [Ultralytics prediction API](https://docs.ultralytics.com/modes/predict/).
+## Pilot records, access and public boundary
 
-## Offline research extension
+Additive Alembic migrations preserve capture schema and old receipts. Health events
+and correcting events, ownership/sale history, field summaries, QR issuance/revocation
+and audit/receipts are append-only (database guards included). Current animal,
+financial status, user/session/rate state are mutable projections with optimistic
+version checks where applicable. Sale price is optional whole UZS, not a payment.
+Compact field summaries sync only explicit tag/valid measurement/scale records;
+raw depth remains local/ZIP. Health and ownership have their own frozen retry flows.
 
-Permanent numbering/ownership/lifecycle lives in the shared registry service and
-additive Alembic 0005 tables. Species YAML includes a distinct numbering prefix
-and width plus two series letters; cattle MAA/AB/... is active, sheep S remains disabled. Atomic counters allocate
-IDs in the canonical PostgreSQL database; immutable idempotency receipts and audit
-events retain ownership/terminal reports, with a mutable current profile for lists.
-Death/slaughter archives retain IDs/scans and never reset numbering. Legacy IDs
-are preserved. Mobile journals uncertain mutations before HTTP and requires an
-issued-ID acknowledgement before another number. Financial status remains separate.
-Lookup states that slaughter/identity are operator reports without independent
-physical/biometric verification. See [ANIMAL_REGISTRY.md](ANIMAL_REGISTRY.md).
+Bearer credentials remain supported. Five authoritative roles are admin, operator,
+veterinar, bank_viewer, bank_officer. Operator management is scoped to its records;
+partner roles read the agreed pilot registry, not separate bank tenants. Only the
+veterinar actor role creates a verified health badge. Mobile derives it only
+from a matching frozen intent/server receipt, not the entered veterinarian name;
+it does not pull the entire remote health history back to the phone. Finance changes require
+admin/bank_officer, reason and expected_version. Authorization precedes receipt
+replay, so downgrade cannot replay old writes. Argon2id password accounts created
+by CLI use revocable opaque SHA-hashed sessions, Secure/HttpOnly/SameSite cookies,
+CSRF and shared database login limits; credentials and role are rechecked.
 
-Series mapping reuses the same prefix counter as a 64-bit ordinal, with 99,999,999
-numbers per block and base-26 AA..ZZ carries. Existing numeric IDs and replay receipts
-are preserved; no counter reset or schema rewrite is required. New IDs have constant
-length; exhaustion rejects issuance. Client config examples are display guidance,
-never a second allocator. This prevents collisions within one authoritative database.
+UZ/RU server-rendered `/panel` lists/searches profiles and audit, renders protected
+photos, and guards finance changes. Public slaughter URLs use random revocable
+capabilities with rate limits and no-store/no-referrer policy. Their strict public
+projection contains ID, slaughter date, facility and latest unsuperseded verified
+vet examination only—never owner/GPS/price. This is a registry report, not physical
+slaughter verification, laboratory testing or legal title/credit approval.
 
-Audit repairs (2026-10-13): both server and mobile exposure histograms use oriented original
-pixels; only blur analysis resizes. The typed mobile journal isolates per-file corruption and
-validates labels before enqueue. Server file fsync precedes COMMIT; attempted/uncertain COMMIT
-failures preserve images for retry/reconciliation. Successful receipt replay requires retained
-original integrity and crop availability. Complete restore verification checks destination
-hashes for every copied file. See [repair evidence](AUDIT_REPAIRS_2026-10-13.md).
+## Deployment, demo and verification
 
-Phase 2 experiments live in `research/` and reuse the backend Species enum. A separate `research/species_configs/` holds feature architecture/node, checkpoint hash and preprocessing, so experiments do not change the mobile capture contract or historical collection config snapshots. Cattle research is enabled; sheep's identical config schema is disabled. Shared dataset, extraction and matching code has no cattle/sheep branches. Current exact cosine comparisons are an evaluation reference, with no production vector database or identity endpoint chosen before measured accuracy/latency requirements.
+Normal development Compose is retained. `backend/docker-compose.prod.yml` adds
+pinned Caddy HTTPS, private DB/API, file secrets, read-only/non-root API, a narrowly
+trusted proxy and bounded rotated logs with QR/credential redaction. Explicit
+PUBLIC_ORIGIN is required; API, Alembic and independent user CLI read the same
+DATABASE_URL_FILE. Backup tooling quiesces only its selected API, retains immutable
+bundles, checks schema/counts/ID high-water marks/files in a new restore database
+and folder, and records external verified receipts. Monitor checks HTTPS, free
+space and restore-proof age. Timer templates are prepared; no VPS/domain, systemd
+installation, off-site service, cloud deployment or CI/CD is claimed.
 
-## Data-independent business/security extension
+A dedicated local project proved real TLS with a client-only trusted test CA,
+Secure-cookie login/CSRF, QC/JPEG/PostgreSQL pending_model upload/replay, public QR
+privacy/log redaction, clone restore and monitoring. Normal stacks/real IDs were
+untouched. Browser visual/JS, latest-APK device behavior and farm accuracy remain
+unverified; automated tests use synthetic records/images. Evidence paths/counts
+and artifact hashes live in PROGRESS.md, ignored raw evidence under data/.
 
-The latest mandate adds local operator/admin credentials, registry/status/audit/review tables and append-only capture provenance without replacing collection schema. New scan receipt time is server-side; capture time, GPS and native telemetry remain client assertions. Exact-pixel reuse uses PostgreSQL fingerprint locks and produces review cases. Mutable status/reviews use optimistic versions; immutable evidence and quote history have database triggers. Admin stored-file integrity checks compare the original retained JPEG to its receipt hash. Swagger is the minimal admin interface, not a multi-tenant or agency-integrated portal.
+First-run guide completion is a UI preference outside immutable journals. Android
+prod flavor preserves package/version/signer; .demo has its own OS sandbox and
+demo_capture_queue, six original NAMUNA drawings, read-only profiles and persistent
+above-Navigator disclosure. Installed native package chooses mode before workflows;
+unknown mode fails closed. Demo has no INTERNET permission and API calls are also
+blocked in Dart. It cannot capture, measure or send synthetic records. It is a
+presentation aid, not evidence of recognition/weight accuracy.
 
-`business_configs/` supplies shared measurement formulas and yield scenarios; `security_configs/` supplies shared image/GPS heuristic thresholds. Each has cattle enabled and sheep disabled with an identical schema. Calculations take provided cm or calibrated 3D geometry and a versioned admin carcass-price quote. Scan heuristics retain unvalidated review signals without liveness decisions. No sheep-specific code paths, detector/keypoint model, new embedding code, external market feed or animal accuracy claims are introduced. See [WEIGHT_AND_VALUATION.md](WEIGHT_AND_VALUATION.md) and [ANTI_SPOOF_GROUNDWORK.md](ANTI_SPOOF_GROUNDWORK.md).
+Research-only embeddings/evaluation remain in `research/`, with separate model
+configs and no production vector DB/identity endpoint. Heuristic anti-spoof signals
+stay review-only/not_assessed; real labeled cattle/attack data, scale calibration,
+phone checks and partner/server decisions are the remaining validation gates.
+See ROADMAP.md, STATUS_FOR_PITCH.md, ACCESS_ROLES.md and DEPLOY_RUNBOOK.md.
+
+Existing dependency boundary: backend/requirements.txt retains Ultralytics from
+the original detector stack. Its upstream offers AGPL/Enterprise options
+(https://www.ultralytics.com/license); the whole backend is not GPL/AGPL-free.
+No new copyleft dependency, paid license or project relicensing was introduced.
+Resolving commercial detector licensing is an external product/legal decision.

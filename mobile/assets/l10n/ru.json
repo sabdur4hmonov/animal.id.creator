@@ -475,5 +475,6 @@
   "Demo could not open. Real animal records are not used.": "Не удалось открыть образец. Реальные записи животных не используются.",
   "These six animals are drawn examples. No real weight, health or recognition result is claimed.": "Эти шесть животных нарисованы для примера. Реального веса, здоровья или результата распознавания нет.",
   "Use the regular Chorvam app for real collection. This demo cannot capture, measure or send records.": "Для реального сбора используйте обычный Chorvam. Этот образец не снимает, не измеряет и не отправляет записи.",
-  "Application mode could not be checked. Close and reopen the app.": "Не удалось проверить режим приложения. Закройте и откройте его снова."
+  "Application mode could not be checked. Close and reopen the app.": "Не удалось проверить режим приложения. Закройте и откройте его снова.",
+  "Verified by veterinarian": "Подтверждено ветеринаром"
 }

@@ -31,7 +31,10 @@ L → permanent MAA issuance, then uploads derived original-byte muzzle journals
 Old L metadata is retained. Credentials for the original capture operator are
 required; the public APK has no token. See the field guide for retry/ZIP steps.
 [The pilot server plan](docs/PILOT_SERVER_PLAN.md) compares dated Uzbekistan
-hosting prices and current legal/security requirements; nothing is deployed.
+hosting prices and dated legal/security requirements; no public server is deployed.
+The tested [HTTPS deployment runbook](docs/DEPLOY_RUNBOOK.md),
+[five-role access guide](docs/ACCESS_ROLES.md) and
+[truthful pitch status](docs/STATUS_FOR_PITCH.md) describe the prepared pilot kit.
 
 Native AR rendering is original Kotlin/OpenGL using pinned official
 `com.google.ar:core:1.54.0`; no unlicensed renderer was copied. Google's
@@ -40,7 +43,7 @@ is Apache-2.0, with **separate binary/AAR terms** in
 [ARCore Additional Terms](https://developers.google.com/ar/develop/terms).
 See [NOTICE](NOTICE) for sources/license distinctions. No Cloud/Geospatial service.
 
-Cattle data collection API: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. Authenticated registration/status controls, exact-image reuse review and immutable scan provenance are available. Offline cattle embedding/matching experiments are in `research/`; they do not provide validated production identity decisions. Cloud deployment and CI/CD are not implemented.
+Cattle data collection API: native camera capture, image quality feedback, optional YOLOv8n muzzle cropping, filesystem images and PostgreSQL metadata. Sheep configuration exists but is disabled. Authenticated registration/status controls, exact-image reuse review and immutable scan provenance are available. Offline cattle embedding/matching experiments are in `research/`; they do not provide validated production identity decisions. Public/cloud deployment and CI/CD are not implemented; an isolated local HTTPS pilot kit is tested.
 
 ## Run the backend
 
@@ -113,14 +116,14 @@ cd 'D:\Coding projects\moliddetector\mobile'
 flutter pub get --enforce-lockfile
 adb reverse tcp:8000 tcp:8000
 $localKeys = Get-Content '../backend/.secrets/tokens.json' -Raw | ConvertFrom-Json
-flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define="API_TOKEN=$($localKeys.operator.token)" --dart-define="OPERATOR_ID=$($localKeys.operator.operator_id)"
+flutter run --flavor prod --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define="API_TOKEN=$($localKeys.operator.token)" --dart-define="OPERATOR_ID=$($localKeys.operator.operator_id)"
 ```
 
-Phone testing targets a physical Android phone connected over USB (USB debugging enabled). Physical-device verification is currently blocked until a repaired/replacement phone is available; no Android emulator is set up or used. `adb reverse tcp:8000 tcp:8000` forwards the phone's port 8000 to the backend on this computer, so the app reaches it at `http://127.0.0.1:8000` with no LAN IP or firewall rule. Re-run `adb reverse` whenever the phone is reconnected or adb restarts (`adb reverse --list` shows active rules). Always pass the `--dart-define` above: the fallback in `mobile/lib/api_client.dart` is still the emulator address `10.0.2.2`, which does not work on a real phone. Without USB, a phone on the same trusted LAN can use the computer's LAN IP instead (for example `http://192.168.1.20:8000`, with port 8000 allowed through the firewall). For iOS Simulator use `http://127.0.0.1:8000`. Local HTTP is allowed for development by the platform manifests. iOS must be built/run on macOS. Start the backend before opening the app so it can fetch species rules.
+Phone testing targets a physical Android phone connected over USB (USB debugging enabled). Latest-build physical-device verification is unverified: the current backlog explicitly excludes installation/device interaction. Earlier founder/device reports are historical; no Android emulator is used for this milestone. `adb reverse tcp:8000 tcp:8000` forwards the phone's port 8000 to the backend on this computer, so the app reaches it at `http://127.0.0.1:8000` with no LAN IP or firewall rule. Re-run `adb reverse` whenever the phone is reconnected or adb restarts (`adb reverse --list` shows active rules). Always pass the `--dart-define` above: the fallback in `mobile/lib/api_client.dart` is still the emulator address `10.0.2.2`, which does not work on a real phone. Without USB, a phone on the same trusted LAN can use the computer's LAN IP instead (for example `http://192.168.1.20:8000`, with port 8000 allowed through the firewall). For iOS Simulator use `http://127.0.0.1:8000`. Local HTTP is allowed for development by the platform manifests. iOS must be built/run on macOS. The offline home uses bundled verified rules without a backend. The legacy authenticated capture tools need a reachable backend to fetch live species rules.
 
 Default UI is Uzbek Latin. In **Vositalar / Воситалар / Инструменты / Tools**, choose **Til / yozuv / Язык / Language** to select Uzbek Latin, Uzbek Cyrillic, Russian or English; the choice persists offline. The following button names use English. Names and notes accept Unicode; permanent IDs/reference codes retain Latin ASCII.
 
-Enter the animal ID, position one muzzle fully within the frame, and tap Capture; the operator comes from the configured key. Camera permission and optional GPS are requested; missing GPS stays null. Local-QC-passing photos are saved to a durable phone queue before **Saved on this phone** appears. After one connection caches species settings, capture can continue offline. **Next capture (saved locally)** retains the image; restart recovers pending uploads. Reconnect and upload individually or use **Upload pending captures**. Stable request keys make retries safe even if a response was lost after persistence. Server QC/framing remains authoritative. **Review saved upload receipts** shows UUID/file-path mappings for the ledger. Originals/receipts are retained locally; do not clear app data/uninstall before upload and backup. See [collection reliability](docs/COLLECTION_RELIABILITY.md) for pre-trip testing and recovery.
+Enter the animal ID, position one muzzle fully within the frame, and tap Capture; the operator comes from the configured key. Camera permission and optional GPS are requested; missing GPS stays null. Local-QC-passing photos are saved to a durable phone queue before **Saved on this phone** appears. In these legacy authenticated tools, after one connection caches species settings, capture can continue offline. The default provisional field collection already has bundled defaults. **Next capture (saved locally)** retains the image; restart recovers pending uploads. Reconnect and upload individually or use **Upload pending captures**. Stable request keys make retries safe even if a response was lost after persistence. Server QC/framing remains authoritative. **Review saved upload receipts** shows UUID/file-path mappings for the ledger. Originals/receipts are retained locally; do not clear app data/uninstall before upload and backup. See [collection reliability](docs/COLLECTION_RELIABILITY.md) for pre-trip testing and recovery.
 
 ## Models and species configuration
 

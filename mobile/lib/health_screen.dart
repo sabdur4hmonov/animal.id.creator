@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'health_records.dart';
+import 'health_verification.dart';
 import 'field_store.dart';
 import 'local_registration.dart';
 import 'localization.dart';
@@ -23,6 +24,7 @@ class HealthHistoryScreen extends StatefulWidget {
 class _HealthHistoryScreenState extends State<HealthHistoryScreen> {
   late final records = HealthRecords(widget.store, widget.config);
   List<Map<String, dynamic>> events = [];
+  Set<String> verifiedKeys = {};
   bool busy = false;
   UiText? error;
   @override
@@ -34,6 +36,11 @@ class _HealthHistoryScreenState extends State<HealthHistoryScreen> {
   Future<void> _refresh() async {
     try {
       events = await records.events(widget.label);
+      verifiedKeys = await veterinarianRecordKeys(
+        widget.store,
+        widget.label,
+        widget.config['species'] as String,
+      );
     } catch (e) {
       error = userError(e);
     }
@@ -214,7 +221,13 @@ class _HealthHistoryScreenState extends State<HealthHistoryScreen> {
                     Text(e['veterinarian_name'] as String),
                   if ((e['notes'] as String).isNotEmpty)
                     Text(e['notes'] as String),
-                  const FieldText(UiText('Operator record')),
+                  FieldText(
+                    UiText(
+                      verifiedKeys.contains(e['key'])
+                          ? 'Verified by veterinarian'
+                          : 'Operator record',
+                    ),
+                  ),
                   if (e['correction_of'] != null)
                     const FieldText(UiText('Correcting record')),
                   if (!events.any((r) => r['correction_of'] == e['key']))

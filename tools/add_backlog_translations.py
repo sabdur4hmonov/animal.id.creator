@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS = [
+    ('Verified by veterinarian', 'Veterinar tomonidan tasdiqlangan', 'Ветеринар томонидан тасдиқланган', 'Подтверждено ветеринаром'),
     ('NAMUNA — synthetic drawings. Server upload is disabled.',
      'NAMUNA — chizilgan mollar. Serverga yuborish o‘chirilgan.',
      'НАМУНА — чизилган моллар. Серверга юбориш ўчирилган.',

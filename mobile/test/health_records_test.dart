@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:biolivestock_capture/ar_records.dart';
 import 'package:biolivestock_capture/bundled_configs.dart';
 import 'package:biolivestock_capture/field_store.dart';
 import 'package:biolivestock_capture/health_records.dart';
@@ -9,6 +10,7 @@ import 'package:biolivestock_capture/queue_backup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'field_home_test.dart' show localized;
+import 'capture_screen_test.dart' show waitFor;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -95,7 +97,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.runAsync(
+      final event = await tester.runAsync(
         () => health.add(
           label,
           'examination',
@@ -105,6 +107,46 @@ void main() {
           '',
         ),
       );
+      await tester.runAsync(() async {
+        final body = {
+          'local_event_key': event!['key'],
+          for (final f in [
+            'kind',
+            'event_date',
+            'description',
+            'veterinarian_name',
+            'notes',
+          ])
+            f: event[f],
+          'correction_of': null,
+        };
+        final common = {
+          'label': label,
+          'species': 'cattle',
+          'source_key': event['key'],
+          'backend': 'https://fixture.invalid',
+          'request_key': 'a' * 32,
+        };
+        final journal = ArRecords(store);
+        await journal.save('health_sync_intent', {
+          ...common,
+          'animal_id': 'MAA00000001',
+          'authenticated_operator_id': 'SYNTHETIC-OP',
+          'body': body,
+        });
+        await journal.save('health_sync_receipt', {
+          ...common,
+          'response': {
+            ...body,
+            'id': 'synthetic-vet-event',
+            'animal_id': 'MAA00000001',
+            'species': 'cattle',
+            'actor_id': 'SYNTHETIC-OP',
+            'actor_role': 'veterinar',
+            'verified_by_veterinarian': true,
+          },
+        });
+      });
       await tester.pumpWidget(
         localized(
           HealthHistoryScreen(store: store, label: label, config: config),
@@ -112,12 +154,15 @@ void main() {
           scale: 2,
         ),
       );
-      for (var i = 0; i < 30; i++) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 20)),
-        );
-        await tester.pump();
-      }
+      await waitFor(
+        tester,
+        find.byWidgetPredicate(
+          (w) =>
+              w is FieldText &&
+              w.data is UiText &&
+              (w.data as UiText).key == 'Verified by veterinarian',
+        ),
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.tap(find.byType(FilledButton).first);
